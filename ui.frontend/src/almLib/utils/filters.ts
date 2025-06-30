@@ -192,6 +192,7 @@ export interface FilterType {
   list?: Array<FilterListObject>;
   isListDynamic?: boolean;
   maxPrice?: number;
+  id?: string;
 }
 
 // export interface PriceFilterType {
@@ -247,7 +248,7 @@ export const updateFilterList = (
     : [];
 
   list?.forEach((item: any) => {
-    if (filtersFromUrlTypeSplitArray?.includes(item.value)) {
+    if (filtersFromUrlTypeSplitArray?.includes(item.value) || filtersFromUrlTypeSplitArray?.includes(item.id)) {
       item.checked = true;
     }
   });

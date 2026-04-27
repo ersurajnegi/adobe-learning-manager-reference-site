@@ -50,6 +50,8 @@
             document.cookie = ACCESS_TOKEN_COOKIE_NAME + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
             document.cookie = COMMERCE_TOKEN_COOKIE_NAME + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
             ["user", "CART_ID", "PRIME_CATALOG_FILTER", "COMMERCE_FILTERS"].forEach(param => window.ALM.storage.removeItem(param));
+            window.ALM.isAlmLoggedIn = false;
+            window.ALM.almAccessToken = "";
         }
 
         showPopup(errorMsg, variant, header) {
@@ -265,6 +267,7 @@
         }
 
         async handleLogIn() {
+            await super.cleanUpUserData();
             await super.handlePrimeLogIn();
         }
 
@@ -351,6 +354,7 @@
         }
 
         async handleLogIn() {
+            await super.cleanUpUserData();
             await super.handlePrimeLogIn();
         }
 
@@ -418,20 +422,16 @@
             window.ALM.isAlmLoggedIn = isALMLoggedIn;
 
             let isCommerceLoggedIn;
-            if (window.ALM.isProxyEnabled()) {
-                try {
-                    const resp = await super.makeAjaxRequest(PROXY_ALM_COMMERCE_LOGIN_URL, "POST", {});
-                    if (resp && resp.response && resp.status === 200)  {
-                        isCommerceLoggedIn = true;
-                        window.ALM.almCommerceToken = resp.response.access_token;
-                    }
-                } catch (error) {
-                    console.error("Error in checking logged in");
-                    isCommerceLoggedIn = false;
-                    window.ALM.almCommerceToken = "";
+            try {
+                const resp = await super.makeAjaxRequest(PROXY_ALM_COMMERCE_LOGIN_URL, "POST", {});
+                if (resp && resp.response && resp.status === 200)  {
+                    isCommerceLoggedIn = true;
+                    window.ALM.almCommerceToken = resp.response.access_token;
                 }
-            } else {
-                isCommerceLoggedIn = this.isCommerceLoggedIn();
+            } catch (error) {
+                console.error("Error in checking logged in");
+                isCommerceLoggedIn = false;
+                window.ALM.almCommerceToken = "";
             }
             window.ALM.isCommerceLoggedIn = isCommerceLoggedIn;
 

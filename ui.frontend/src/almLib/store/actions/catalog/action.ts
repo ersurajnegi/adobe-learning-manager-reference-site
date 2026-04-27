@@ -9,8 +9,8 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { AnyAction } from "redux";
-import { PrimeLearningObject } from "../../../models/PrimeModels";
+import { AnyAction } from 'redux';
+import { PrimeLearningObject } from '../../../models/PrimeModels';
 import {
   LOAD_TRAININGS,
   PAGINATE_TRAININGS,
@@ -20,24 +20,44 @@ import {
   UPDATE_SKILLNAME_FILTERS,
   UPDATE_TAGS_FILTERS,
   UPDATE_CITIES_FILTERS,
+  UPDATE_SELECTED_CATALOGS,
   UPDATE_SEARCH_TEXT,
   UPDATE_FILTERS_ON_LOAD,
   RESET_SEARCH_TEXT,
   UPDATE_SKILLLEVEL_FILTERS,
   UPDATE_DURATION_FILTERS,
   UPDATE_CATALOGS_FILTERS,
+  UPDATE_PRICE_RANGE_FILTERS,
   UPDATE_PRICE_FILTERS,
   UPDATE_SNIPPET_TYPE,
   UPDATE_SNIPPET_ON_LOAD,
   OPEN_SNIPPET_TYPE_DIALOG,
   CLOSE_SNIPPET_TYPE_DIALOG,
-} from "./actionTypes";
+  UPDATE_PRODUCTS_FILTERS,
+  UPDATE_ROLES_FILTERS,
+  UPDATE_LEVELS_FILTERS,
+  UPDATE_ANNOUNCED_GROUPS_FILTERS,
+  CLEAR_LEVELS,
+  UPDATE_SORT,
+  CLEAR_ALL,
+  UPDATE_TRAININGS,
+  LOAD_USER_SKILLS,
+  UPDATE_SHOW_FILTER_LISTS,
+  UPDATE_ALL_FILTERS,
+} from './actionTypes';
 
 export const loadTrainings = (payload: any): AnyAction => ({
   type: LOAD_TRAININGS,
   payload,
 });
-
+export const updateTrainings = (payload: any): AnyAction => ({
+  type: UPDATE_TRAININGS,
+  payload,
+});
+export const loadUserSkills = (payload: any): AnyAction => ({
+  type: LOAD_USER_SKILLS,
+  payload,
+});
 export const updateLoTypesFilter = (payload: string): AnyAction => ({
   type: UPDATE_LOTYPES_FILTERS,
   payload,
@@ -48,7 +68,7 @@ export const updateLearnerStateFilter = (payload: string): AnyAction => ({
   payload,
 });
 
-export const updateSkillNameFilter = (payload: string): AnyAction => ({
+export const updateSkillNameFilter = (payload: { [key: string]: string }): AnyAction => ({
   type: UPDATE_SKILLNAME_FILTERS,
   payload,
 });
@@ -73,6 +93,30 @@ export const updateCitiesFilter = (payload: string): AnyAction => ({
   payload,
 });
 
+export const updateProductsFilter = (payload: string): AnyAction => ({
+  type: UPDATE_PRODUCTS_FILTERS,
+  payload,
+});
+
+export const updateRolesFilter = (payload: string): AnyAction => ({
+  type: UPDATE_ROLES_FILTERS,
+  payload,
+});
+
+export const updateLevelsFilter = (payload: string): AnyAction => ({
+  type: UPDATE_LEVELS_FILTERS,
+  payload,
+});
+
+export const updateAnnouncedGroupsFilter = (payload: string): AnyAction => ({
+  type: UPDATE_ANNOUNCED_GROUPS_FILTERS,
+  payload,
+});
+
+export const clearLevelsFilter = (): AnyAction => ({
+  type: CLEAR_LEVELS,
+});
+
 export const updateDurationFilter = (payload: any): AnyAction => ({
   type: UPDATE_DURATION_FILTERS,
   payload,
@@ -83,19 +127,35 @@ export const updateCatalogsFilter = (payload: any): AnyAction => ({
   payload,
 });
 
-export const updateSearchText = (payload: string): AnyAction => ({
+export const updateSelectedCatalogs = (payload: {
+  [id: string]: { id: string; name?: string };
+}): AnyAction => ({
+  type: UPDATE_SELECTED_CATALOGS,
+  payload,
+});
+
+export const updateSearchText = (payload: any): AnyAction => ({
   type: UPDATE_SEARCH_TEXT,
   payload,
 });
 
 export const resetSearchText = (): AnyAction => ({
   type: RESET_SEARCH_TEXT,
-  payload: "",
+  payload: '',
 });
 
 export const updateFiltersOnLoad = (payload: any): AnyAction => ({
   type: UPDATE_FILTERS_ON_LOAD,
   payload,
+});
+
+export const updateAllFilters = (payload: any): AnyAction => ({
+  type: UPDATE_ALL_FILTERS,
+  payload,
+});
+
+export const clearAllFilters = (): AnyAction => ({
+  type: CLEAR_ALL,
 });
 
 export const paginateTrainings = (payload: {
@@ -106,7 +166,12 @@ export const paginateTrainings = (payload: {
   payload,
 });
 
-export const updatePriceFilter = (payload: any): AnyAction => ({
+export const updatePriceRangeFilter = (payload: any): AnyAction => ({
+  type: UPDATE_PRICE_RANGE_FILTERS,
+  payload,
+});
+
+export const updatePriceFilter = (payload: string): AnyAction => ({
   type: UPDATE_PRICE_FILTERS,
   payload,
 });
@@ -128,4 +193,14 @@ export const onOpenSearchInList = (payload: any): AnyAction => ({
 
 export const onCloseSearchInList = (): AnyAction => ({
   type: CLOSE_SNIPPET_TYPE_DIALOG,
+});
+
+export const updateSortOrder = (payload: any): AnyAction => ({
+  type: UPDATE_SORT,
+  payload,
+});
+
+export const updateShowFilterLists = (payload: any): AnyAction => ({
+  type: UPDATE_SHOW_FILTER_LISTS,
+  payload,
 });

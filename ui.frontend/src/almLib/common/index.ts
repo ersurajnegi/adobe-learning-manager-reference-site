@@ -9,9 +9,9 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-export * from "./AkamaiCustomHooks";
-export * from "./ALMCustomHooks";
-export * from "./APIService";
-export * from "./CommerceCustomHooks";
-export * from "./ESCustomHooks";
-export * from "./ICustomHooks";
+export * from './AkamaiCustomHooks';
+export * from './ALMCustomHooks';
+export * from './APIService';
+export * from './CommerceCustomHooks';
+export * from './ESCustomHooks';
+export * from './ICustomHooks';

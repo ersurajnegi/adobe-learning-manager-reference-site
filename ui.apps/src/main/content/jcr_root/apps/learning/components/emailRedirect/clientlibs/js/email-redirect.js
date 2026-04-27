@@ -23,11 +23,7 @@ governing permissions and limitations under the License.
             if (params && params.length >= 3)
             {
                 foundRedirect = true;
-                if(params[1] === "boardId") {
-                    window.ALM.navigateToBoardDetailsPage(params[2]);
-                } else {
-                    window.ALM.navigateToTrainingOverviewPage(params[1] + ":" + params[2]);
-                }
+                window.ALM.navigateToTrainingOverviewPage(params[1] + ":" + params[2]);
             }
         }
         if (!foundRedirect) {

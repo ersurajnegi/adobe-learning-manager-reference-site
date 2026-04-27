@@ -9,7 +9,7 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-@import "../../../styles/variables.css";
+@import '../../../styles/variables.css';
 
 .listItem {
   /* margin-bottom: 40px;
@@ -21,11 +21,11 @@ governing permissions and limitations under the License.
 a {
   color: inherit;
   text-decoration: inherit;
-  display:block;
+  display: block;
 }
 
 .jobAidAction:hover {
-  background-color:   var(--prime-color-nc2);
+  background-color: var(--prime-color-nc2);
 }
 
 .card {
@@ -164,7 +164,7 @@ a {
   color: var(--prime-color-black);
 }
 .lillsLabel::after {
-  content: ":";
+  content: ':';
 }
 .lillsValue {
   font-size: var(--prime-font-size-12);
@@ -180,11 +180,7 @@ a {
   position: absolute;
   top: 0;
   left: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.75) 100%
-  );
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.75) 100%);
 }
 .extra {
   width: 100%;
@@ -220,7 +216,7 @@ a {
   font-size: var(--prime-font-size-12);
 }
 .extraLabel span:first-child:after {
-  content: ":";
+  content: ':';
 }
 .progressBarContainer {
   width: 100%;
@@ -228,7 +224,7 @@ a {
   background: var(--prime-color-nc4);
   border-radius: 0.5rem;
 }
-.progressBar div[class^="spectrum-BarLoader-fill"] {
+.progressBar div[class^='spectrum-BarLoader-fill'] {
   /* width: 0;
   height: 100%;
   border-radius: 0.5rem; */
@@ -281,7 +277,7 @@ a {
   color: var(--prime-color-black);
 }
 .skiillsLabel::after {
-  content: ":";
+  content: ':';
 }
 .skillsValue {
   font-size: var(--prime-font-size-12);

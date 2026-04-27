@@ -9,17 +9,17 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { Button, lightTheme, Provider } from "@adobe/react-spectrum";
-import { useIntl } from "react-intl";
-import { PrimePost } from "../../../models/PrimeModels";
-import { PrimeCommunityPost } from "../PrimeCommunityPost";
-import styles from "./PrimeCommunityPostsContainer.module.css";
+import { Button, lightTheme, Provider } from '@adobe/react-spectrum';
+import { useIntl } from 'react-intl';
+import { PrimePost } from '../../../models/PrimeModels';
+import { PrimeCommunityPost } from '../PrimeCommunityPost';
+import styles from './PrimeCommunityPostsContainer.module.css';
 const PrimeCommunityPostsContainer: React.FC<{
   posts: PrimePost[] | null;
   loadMorePosts: () => void;
   hasMoreItems: boolean;
 }> = ({ posts, loadMorePosts, hasMoreItems }) => {
-  const listHtml = posts?.map((post) => (
+  const listHtml = posts?.map(post => (
     <PrimeCommunityPost post={post} key={post.id}></PrimeCommunityPost>
   ));
   const { formatMessage } = useIntl();
@@ -29,7 +29,7 @@ const PrimeCommunityPostsContainer: React.FC<{
       {listHtml}
       <div id="load-more-posts" className={styles.loadMoreContainer}>
         {hasMoreItems ? (
-          <Provider theme={lightTheme} colorScheme={"light"}>
+          <Provider theme={lightTheme} colorScheme={'light'}>
             <Button
               variant="cta"
               isQuiet
@@ -37,13 +37,13 @@ const PrimeCommunityPostsContainer: React.FC<{
               UNSAFE_className={styles.loadMoreButton}
             >
               {formatMessage({
-                id: "alm.community.loadMore",
-                defaultMessage: "Load more",
+                id: 'alm.community.loadMore',
+                defaultMessage: 'Load more',
               })}
             </Button>
           </Provider>
         ) : (
-          ""
+          ''
         )}
       </div>
     </div>

@@ -10,10 +10,10 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 // import { useBoardOptions } from "../../../hooks/community";
-import { useIntl } from "react-intl";
-import styles from "./PrimeCommunityBoardOptions.module.css";
-import { useRef, useEffect } from "react";
-import { getALMConfig } from "../../../utils/global";
+import { useIntl } from 'react-intl';
+import styles from './PrimeCommunityBoardOptions.module.css';
+import { useRef, useEffect } from 'react';
+import { getALMConfig } from '../../../utils/global';
 
 const PrimeCommunityBoardOptions = (props: any) => {
   const ref = useRef<any>();
@@ -29,9 +29,9 @@ const PrimeCommunityBoardOptions = (props: any) => {
         props.boardOptionsHandler && props.boardOptionsHandler();
       }
     };
-    document.addEventListener("click", handleClickOutside, true);
+    document.addEventListener('click', handleClickOutside, true);
     return () => {
-      document.removeEventListener("click", handleClickOutside, true);
+      document.removeEventListener('click', handleClickOutside, true);
     };
   });
 
@@ -51,18 +51,23 @@ const PrimeCommunityBoardOptions = (props: any) => {
   };
 
   const copyBoardUrlHandler = () => {
-    let { communityBoardDetailsPath } = getALMConfig()
-    let domain = (new URL(window.location.href));
-    let hostUrl = domain.protocol + "//" + domain.hostname + (domain.port ? ":" + domain.port : "") + communityBoardDetailsPath;
-    const boardUrl = hostUrl + "/boardId/" + boardId;
+    let { communityBoardDetailsPath } = getALMConfig();
+    let domain = new URL(window.location.href);
+    let hostUrl =
+      domain.protocol +
+      '//' +
+      domain.hostname +
+      (domain.port ? ':' + domain.port : '') +
+      communityBoardDetailsPath;
+    const boardUrl = hostUrl + '/boardId/' + boardId;
     copyUrl(boardUrl);
-    if (typeof props.copyBoardUrlHandler === "function") {
+    if (typeof props.copyBoardUrlHandler === 'function') {
       props.copyBoardUrlHandler();
     }
   };
 
   const reportBoardHandler = () => {
-    if (typeof props.reportBoardHandler === "function") {
+    if (typeof props.reportBoardHandler === 'function') {
       props.reportBoardHandler();
     }
   };
@@ -93,8 +98,8 @@ const PrimeCommunityBoardOptions = (props: any) => {
         )} */}
         <div className={styles.primeBoardOption} onClick={copyBoardUrlHandler}>
           {formatMessage({
-            id: "alm.community.board.copyUrl",
-            defaultMessage: "Copy URL",
+            id: 'alm.community.board.copyUrl',
+            defaultMessage: 'Copy URL',
           })}
         </div>
         <div className={styles.primeSeperator}></div>
@@ -106,13 +111,10 @@ const PrimeCommunityBoardOptions = (props: any) => {
                     })
                 }
             </div> */}
-        <div
-          className={styles.primeBoardCriticalOption}
-          onClick={reportBoardHandler}
-        >
+        <div className={styles.primeBoardCriticalOption} onClick={reportBoardHandler}>
           {formatMessage({
-            id: "alm.community.board.report",
-            defaultMessage: "Report",
+            id: 'alm.community.board.report',
+            defaultMessage: 'Report',
           })}
         </div>
       </div>

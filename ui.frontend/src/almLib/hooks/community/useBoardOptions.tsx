@@ -9,26 +9,26 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   addBoardToFavourites,
   deleteBoard,
   removeBoardFromFavourites,
-} from "../../store/actions/social/action";
-import { State } from "../../store/state";
-import { getALMConfig } from "../../utils/global";
-import { RestAdapter } from "../../utils/restAdapter";
+} from '../../store/actions/social/action';
+import { State } from '../../store/state';
+import { getALMConfig } from '../../utils/global';
+import { RestAdapter } from '../../utils/restAdapter';
 
 export const useBoardOptions = () => {
   const { item } = useSelector((state: State) => state.social.board);
   const dispatch = useDispatch();
   const addBoardToFavourite = useCallback(
-    async (boardId) => {
+    async boardId => {
       const baseApiUrl = getALMConfig().primeApiURL;
       await RestAdapter.ajax({
         url: `${baseApiUrl}/boards/${boardId}/favorite`,
-        method: "POST",
+        method: 'POST',
       });
       dispatch(addBoardToFavourites({ id: boardId }));
     },
@@ -36,11 +36,11 @@ export const useBoardOptions = () => {
   );
 
   const removeBoardFromFavourite = useCallback(
-    async (boardId) => {
+    async boardId => {
       const baseApiUrl = getALMConfig().primeApiURL;
       await RestAdapter.ajax({
         url: `${baseApiUrl}/boards/${boardId}/favorite`,
-        method: "DELETE",
+        method: 'DELETE',
       });
       dispatch(removeBoardFromFavourites({ id: boardId }));
     },
@@ -52,18 +52,18 @@ export const useBoardOptions = () => {
       const baseApiUrl = getALMConfig().primeApiURL;
       await RestAdapter.ajax({
         url: `${baseApiUrl}/account/${accountId}/board/${boardId}`,
-        method: "DELETE",
+        method: 'DELETE',
       });
       dispatch(deleteBoard({ id: boardId }));
     },
     [dispatch]
   );
 
-  const reportBoard = useCallback(async (boardId) => {
+  const reportBoard = useCallback(async boardId => {
     const baseApiUrl = getALMConfig().primeApiURL;
     await RestAdapter.ajax({
       url: `${baseApiUrl}/boards/${boardId}/reportAbuse`,
-      method: "POST",
+      method: 'POST',
     });
   }, []);
 

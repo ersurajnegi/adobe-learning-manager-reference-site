@@ -1,13 +1,21 @@
-import React, { useState, useEffect } from "react";
-import styles from "./StarRatingSubmitDialog.module.css";
-import { ALMStarRating } from "../ALMRatings";
-import {
-  PrimeLearningObject,
-  PrimeLearningObjectInstance,
-} from "../../models/PrimeModels";
-import { GetTranslation } from "../../utils/translationService";
-import { ADDED_TICK_SVG } from "../../utils/inline_svg";
-import { useIntl } from "react-intl";
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+import React, { useState, useEffect } from 'react';
+import styles from './StarRatingSubmitDialog.module.css';
+import { ALMStarRating } from '../ALMRatings';
+import { PrimeLearningObject, PrimeLearningObjectInstance } from '../../models/PrimeModels';
+import { GetTranslation } from '../../utils/translationService';
+import { ADDED_TICK_SVG } from '../../utils/inline_svg';
+import { useIntl } from 'react-intl';
 
 interface rating {
   ratingGiven: number;
@@ -18,8 +26,7 @@ interface rating {
 }
 
 const StarRatingSubmitDialog = (props: rating) => {
-  const { ratingGiven, updateRating, trainingInstance, training, loType } =
-    props;
+  const { ratingGiven, updateRating, trainingInstance, training, loType } = props;
   const [submittedSuccessfully, setSubmittedSuccessfully] = useState(false);
   const [showElement, setShowElement] = useState(false);
   const [errorOnSubmit, setErrorOnSubmit] = useState(false);
@@ -54,42 +61,54 @@ const StarRatingSubmitDialog = (props: rating) => {
     try {
       await handleSubmitHelper();
     } catch (err) {
-      console.log("error", err);
+      console.log('error', err);
       setSubmittedSuccessfully(false);
       setErrorOnSubmit(true);
     }
   };
 
-  return showElement ? (
-    <div className={styles.ratingSubmittedSuccessfullyDialog}>
-      <div className={styles.ratingSuccessfullySubmittedSvg}>
-        {ADDED_TICK_SVG()}
+  return (
+    <>
+      <div
+        className={styles.srOnly}
+        aria-live="polite"
+        role="region"
+        aria-atomic="false"
+        aria-relevant="additions"
+      >
+        {showElement ? GetTranslation('alm.text.ratingSuccess') : ''}
       </div>
-      <h3>{GetTranslation("alm.text.ratingSuccess")}</h3>
-    </div>
-  ) : (
-    <div className={[styles.commonContainer, styles.submitRating].join(" ")}>
-      <div className={styles.rateTheTrainingBlock}>
-        <h3 className={styles.ratingHeading}>
-          {formatMessage(
-            {
-              id: "alm.text.provideRating",
-            },
-            { training: GetTranslation(`alm.training.${props.loType}`, true) }
-          )}
-        </h3>
-        <ALMStarRating ratingGiven={rating} submitRating={setRating} />
-      </div>
-      <div className={styles.ratingSubmitButton}>
-        <button
-          className={`almButton secondary ${styles.ratingSubmitButton}`}
-          type="submit"
-          onClick={handleSubmit}
-        >
-          {GetTranslation("alm.text.submit")}
-        </button>
-      </div>
-    </div>
+      {showElement ? (
+        <div className={styles.ratingSubmittedSuccessfullyDialog}>
+          <div className={styles.ratingSuccessfullySubmittedSvg}>{ADDED_TICK_SVG()}</div>
+          <h3>{GetTranslation('alm.text.ratingSuccess')}</h3>
+        </div>
+      ) : (
+        <div className={[styles.commonContainer, styles.submitRating].join(' ')}>
+          <div className={styles.rateTheTrainingBlock}>
+            <h3 className={styles.ratingHeading}>
+              {formatMessage(
+                {
+                  id: 'alm.text.provideRating',
+                },
+                { training: GetTranslation(`alm.training.${props.loType}`, true) }
+              )}
+            </h3>
+            <ALMStarRating ratingGiven={rating} submitRating={setRating} />
+          </div>
+          <div className={` ${styles.ratingSubmitButton} ${styles.submitButton}`}>
+            <button
+              className={`almButton secondary ${styles.ratingSubmitButton}`}
+              type="submit"
+              onClick={handleSubmit}
+              {...(rating === ratingGiven && { disabled: true })}
+            >
+              {GetTranslation('alm.text.submit')}
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

@@ -9,25 +9,25 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useIntl } from "react-intl";
-import styles from "./PrimeCommunityMobileBackBanner.module.css";
-import ChevronLeft from "@spectrum-icons/workflow/ChevronLeft";
+import { useIntl } from 'react-intl';
+import styles from './PrimeCommunityMobileBackBanner.module.css';
+import ChevronLeft from '@spectrum-icons/workflow/ChevronLeft';
 
 const PrimeCommunityMobileBackBanner = (props: any) => {
-    const { formatMessage } = useIntl();
-    return (
-        <>
-            <div className={styles.primeCommunityTopRow}>
-                <div className={styles.primeCommunityTopBack} onClick={() => window.history.back()}>
-                    <div className={styles.primeCommunityChevronLeftSvg}>
-                        <ChevronLeft></ChevronLeft>
-                    </div>
-                    <button className={styles.primeCommunityBackButton}>
-                        {formatMessage({id: "alm.community.back.label", defaultMessage: "Back",})}    
-                    </button>
-                </div>
-            </div>
-        </>
-    );
+  const { formatMessage } = useIntl();
+  return (
+    <>
+      <div className={styles.primeCommunityTopRow}>
+        <div className={styles.primeCommunityTopBack} onClick={() => window.history.back()}>
+          <div className={styles.primeCommunityChevronLeftSvg}>
+            <ChevronLeft></ChevronLeft>
+          </div>
+          <button className={styles.primeCommunityBackButton}>
+            {formatMessage({ id: 'alm.community.back.label', defaultMessage: 'Back' })}
+          </button>
+        </div>
+      </div>
+    </>
+  );
 };
 export default PrimeCommunityMobileBackBanner;

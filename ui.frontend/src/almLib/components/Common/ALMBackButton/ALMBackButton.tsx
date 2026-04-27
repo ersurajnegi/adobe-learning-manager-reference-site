@@ -9,29 +9,29 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useIntl } from "react-intl";
-import ChevronLeft from "@spectrum-icons/workflow/ChevronLeft";
-import { Button } from "@adobe/react-spectrum";
+import { useIntl } from 'react-intl';
+import ChevronLeft from '@spectrum-icons/workflow/ChevronLeft';
+import { ActionButton } from '@adobe/react-spectrum';
 
-import styles from "./ALMBackButton.module.css";
+import styles from './ALMBackButton.module.css';
 
 const ALMBackButton = () => {
   const { formatMessage } = useIntl();
   return (
     <div className={styles.backContainer}>
-      <Button
-        variant="primary"
+      <ActionButton
         isQuiet
         UNSAFE_className={styles.backButton}
-        onPress={() => window.history.back()}>
+        onPress={() => window.history.back()}
+      >
         <ChevronLeft></ChevronLeft>
         <span className={styles.buttonLabel}>
           {formatMessage({
-            id: "alm.community.back.label",
-            defaultMessage: "Back",
+            id: 'alm.community.back.label',
+            defaultMessage: 'Back',
           })}
         </span>
-      </Button>
+      </ActionButton>
     </div>
   );
 };

@@ -9,91 +9,202 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { lightTheme, Provider } from "@adobe/react-spectrum";
-import { useEffect, useRef, useState } from "react";
-import { useIntl } from "react-intl";
-import { ALMErrorBoundary } from "../Common/ALMErrorBoundary";
-import ChevronLeft from "@spectrum-icons/workflow/ChevronLeft";
-import ChevronRight from "@spectrum-icons/workflow/ChevronRight";
-import styles from "./ALMMasthead.module.css";
-import { PrimeMastHeadContentData, PrimeMastHeadData } from "../../models";
-import { getPreferredLocalizedMetadata } from "../../utils/translationService";
+import { lightTheme, Provider } from '@adobe/react-spectrum';
+import { useEffect, useRef, useState } from 'react';
+import { useIntl } from 'react-intl';
+import { ALMErrorBoundary } from '../Common/ALMErrorBoundary';
+import ChevronLeft from '@spectrum-icons/workflow/ChevronLeft';
+import ChevronRight from '@spectrum-icons/workflow/ChevronRight';
+import styles from './ALMMasthead.module.css';
+import { PrimeMastHeadContentData, PrimeMastHeadData } from '../../models';
+import { getPreferredLocalizedMetadata, GetTranslation } from '../../utils/translationService';
+import { useMasthead } from '../../hooks/widgets/masthead/useMasthead';
+import { JsonApiParse } from '../../utils/jsonAPIAdapter';
+import { IsAnyUrl, LoadScript } from '../../utils/widgets/utils';
+import {
+  GetBrightCoveAccountId,
+  GetBrightCovePlayerId,
+  GetPrimeWindow,
+} from '../../utils/widgets/windowWrapper';
+import { swipeEvents } from '../../utils/swipeDetector';
+import { useDeviceTypeContext } from '../../contextProviders/DeviceContextProvider';
 
 type MastHeadData = {
   actionUrl?: string;
   contentUrl?: string;
   sourceUrl?: string;
   contentType?: string;
+  contentSources?: string[];
+  altText: string;
 };
 type Dimensions = {
   width?: string;
   height?: string;
 };
 
+const IMAGE = 'IMAGE';
+const VIDEO = 'VIDEO';
+const MIN_HEIGHT = 187;
+const MAX_HEIGHT = 360;
+const speed = 5000;
+const LEFT = 'left';
+const RIGHT = 'right';
 const ALMMasthead = (props: any) => {
   const { formatMessage, locale } = useIntl();
+  const { getAnnouncements, mastheadImageMap } = useMasthead();
+  const { isMobile, isTablet } = useDeviceTypeContext();
   let mastHeads = props.mastHeads;
+  const widget = props.widget;
+  type DIRECTION = typeof LEFT | typeof RIGHT;
   // const MIN_WIDTH = 300;
-  const MIN_HEIGHT = 187;
-  const MAX_HEIGHT = 360;
-  let translate = 0;
-  const speed = 5000;
+
+  const slidesRef = useRef<HTMLDivElement>(null);
   let [mastHeadDimensions, setMastHeadDimensions] = useState<Dimensions>({});
   let [mastHeadsArray, setMastHeadsArray] = useState<MastHeadData[]>([]);
   let [mastHeadInitialized, setMastHeadInitialized] = useState(false);
-  let rightArrowDisabled = false;
-  let leftArrowDisabled = false;
-  let hideDots = false;
+  const [videoMap, setVideoMap] = useState<any>(new Map());
+  const mastHeadActionUrl = mastHeadsArray?.[0]?.actionUrl;
+
+  const [rightArrowDisabled, setRightArrowDisabled] = useState(false);
+  const [leftArrowDisabled, setLeftArrowDisabled] = useState(false);
+  const [hideDots, setHideDots] = useState(false);
+  const [announcementsRes, setAnnouncementsRes] = useState<any>();
+
+  const translateRef = useRef<number>(0);
+  const intervalRef = useRef<NodeJS.Timer | undefined>();
+
+  const defaultMastHead: MastHeadData = {
+    contentUrl: mastheadImageMap[locale as keyof typeof mastheadImageMap] || '',
+    contentType: IMAGE,
+    contentSources: [],
+    altText: GetTranslation('alm.text.mastHeadImageAltText'),
+  };
 
   const getMastHeadDimensions = (size: string | undefined) => {
     const dimensions: Dimensions = {};
-    let height = MAX_HEIGHT + "px";
+    let height = MAX_HEIGHT + 'px';
     switch (size) {
-      case "small":
-        height = MIN_HEIGHT + "px";
+      case 'small':
+        height = MIN_HEIGHT + 'px';
         break;
-      case "medium":
-        height = "273px";
+      case 'medium':
+        height = '273px';
+        break;
+      case 'moderate':
+        height = '240px';
         break;
     }
-    dimensions.width = "1280px";
+    dimensions.width = '1280px';
     dimensions.height = height;
     return dimensions;
   };
 
   const isFirstRender = useRef(true);
   useEffect(() => {
-    if (!mastHeadInitialized && mastHeads) {
-      getMastHeads();
-    }
-  }, [mastHeads, mastHeadInitialized]);
+    widget.attributes!.heading = GetTranslation('text.skipToMastHead');
+    getMastHeads(announcementsRes);
+  }, [mastHeadInitialized]);
 
   useEffect(() => {
-    if (isFirstRender && mastHeadsArray.length > 1) {
+    if (isFirstRender) {
       isFirstRender.current = false;
       animateMastHead();
     }
   }, [mastHeadsArray]);
 
-  const getMastHeads = async () => {
-    setMastHeadDimensions(getMastHeadDimensions("medium"));
-    // const resourceTemplate = "banner_${locale}.png";
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      const res = await getAnnouncements();
+      setAnnouncementsRes(res);
+      getMastHeads(res);
+    };
+
+    fetchAnnouncements();
+
+    return () => {
+      clear();
+    };
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      '--prime-mh-height',
+      mastHeadDimensions.height || '240px'
+    );
+  }, [mastHeadDimensions]);
+
+  const getMastHeadArray = async (announcementsRes: any) => {
+    if (!announcementsRes) {
+      return [];
+    }
+    const parsedResponse = JsonApiParse(announcementsRes);
+    const announcements = parsedResponse.adminAnnouncementList || [];
+    const mastHeads = [];
+    for (let i = 0; i < announcements.length; i++) {
+      let actionUrl = announcements[i].actionUrl;
+      if (actionUrl && !IsAnyUrl(actionUrl)) {
+        actionUrl = `http://${actionUrl}`;
+      }
+
+      const contentMetaData = getPreferredLocalizedMetadata(
+        announcements[i].contentMetaData,
+        locale
+      );
+      const mastHead: MastHeadData = {
+        actionUrl: actionUrl,
+        contentUrl: contentMetaData.contentUrl,
+        contentType: contentMetaData.contentType,
+        contentSources: contentMetaData.contentSources,
+        altText: contentMetaData.altText || GetTranslation('alm.text.mastHeadImageAltText'),
+      };
+      mastHeads.push(mastHead);
+    }
+    const newVideoMap = new Map(); // Make a copy of the current state map
+    const newImageMap = new Map();
+    mastHeads.forEach((mastHead, index) => {
+      const contentType = mastHead.contentType;
+      const value = `${contentType}-${index}`;
+      contentType === VIDEO ? newVideoMap.set(index, value) : newImageMap.set(index, value);
+    });
+    if (mastHeads.length === 0) {
+      mastHeads.push(defaultMastHead);
+    }
+    setVideoMap(newVideoMap);
+    if (newVideoMap.size > 0) {
+      const brightCoveAccountId = GetBrightCoveAccountId();
+      const brightCovePlayerId = GetBrightCovePlayerId();
+      await LoadScript(
+        document.head || document.body,
+        `//players.brightcove.net/${brightCoveAccountId}/${brightCovePlayerId}_default/index.min.js`,
+        true
+      );
+    }
+    return mastHeads;
+  };
+
+  const getMastHeads = async (announcements: any) => {
+    setMastHeadDimensions(getMastHeadDimensions(widget.attributes?.size));
     const mastHeadDataArray: MastHeadData[] = [];
     mastHeads?.forEach((mastHead: PrimeMastHeadData) => {
       let mastHeadForCurrentLocale: MastHeadData = {} as MastHeadData;
-      let mastHeadContent: PrimeMastHeadContentData =
-        getPreferredLocalizedMetadata(
-          mastHead.contentMetaData,
-          locale
-        ) as PrimeMastHeadContentData;
+      let mastHeadContent: PrimeMastHeadContentData = getPreferredLocalizedMetadata(
+        mastHead.contentMetaData,
+        locale
+      ) as PrimeMastHeadContentData;
       mastHeadForCurrentLocale.actionUrl = mastHead.actionUrl;
       mastHeadForCurrentLocale.contentUrl = mastHeadContent?.contentUrl;
       mastHeadForCurrentLocale.sourceUrl = mastHeadContent?.sourceUrl;
-      mastHeadForCurrentLocale.contentType = "IMAGE";
+      mastHeadForCurrentLocale.contentType = IMAGE;
+      mastHeadForCurrentLocale.altText =
+        mastHeadContent.altText || GetTranslation('alm.text.mastHeadImageAltText');
       mastHeadDataArray.push(mastHeadForCurrentLocale);
     });
-    setMastHeadsArray(mastHeadDataArray);
-    setMastHeadInitialized(true);
+    const mastHeadsRes = await getMastHeadArray(announcements);
+    const mastHeadsData = mastHeadDataArray.length ? mastHeadDataArray : mastHeadsRes;
+    if (mastHeadsData.length) {
+      setMastHeadsArray(mastHeadsData);
+      setMastHeadInitialized(true);
+    }
   };
 
   const getElement = (ele: string) => {
@@ -105,45 +216,42 @@ const ALMMasthead = (props: any) => {
   };
 
   const getTabListHighLight = () => {
-    return getElement("#tablist-highlight");
+    return getElement('#tablist-highlight');
   };
 
   const showTablist = () => {
     const tabListHighLight = getTabListHighLight();
     if (tabListHighLight) {
-      tabListHighLight.style.display = "block";
+      tabListHighLight.style.display = 'block';
     }
   };
 
   const hideTablist = () => {
     const tabListHighLight = getTabListHighLight();
     if (tabListHighLight) {
-      tabListHighLight.style.display = "none";
+      tabListHighLight.style.display = 'none';
     }
   };
 
   const getContinueButton = () => {
-    return getElement("#continue");
+    return getElement('#continue');
   };
 
-  const addOrRemoveFocusOnDot = (
-    identifier: string,
-    removeFocus?: boolean,
-    highLight = false
-  ) => {
+  const addOrRemoveFocusOnDot = (identifier: string, removeFocus?: boolean, highLight = false) => {
     const element = getElement(identifier);
-    const color = removeFocus ? "hsla(0,0%,100%,.3)" : "#fff";
-    const buttonElement = element?.getElementsByTagName("b")[0];
-    if (buttonElement) {
-      buttonElement.style.backgroundColor = color;
-    }
+
+    const classSelected = styles.primeMastheadSelectedDot;
+    const buttonElement = element?.getElementsByTagName('b')[0];
+
     if (removeFocus) {
-      buttonElement?.setAttribute("tabindex", "-1");
-      element?.setAttribute("aria-selected", "false");
+      buttonElement?.setAttribute('tabindex', '-1');
+      element?.setAttribute('aria-selected', 'false');
       //buttonElement.style.outline = "0";
+      buttonElement?.classList.remove(classSelected);
     } else {
-      buttonElement?.setAttribute("tabindex", "0");
-      element?.setAttribute("aria-selected", "true");
+      buttonElement?.classList.add(classSelected);
+      buttonElement?.setAttribute('tabindex', '0');
+      element?.setAttribute('aria-selected', 'true');
       if (highLight && buttonElement) {
         buttonElement?.focus();
       }
@@ -152,25 +260,21 @@ const ALMMasthead = (props: any) => {
 
   const showElement = (element: HTMLElement) => {
     if (element) {
-      element.style.visibility = "visible";
+      element.style.visibility = 'visible';
     }
   };
 
   const hideElement = (element: HTMLElement) => {
     if (element) {
-      element.style.visibility = "hidden";
+      element.style.visibility = 'hidden';
     }
   };
 
-  const updateUI = (
-    currIndex: number,
-    nextIndex: number,
-    highLight: boolean
-  ) => {
+  const updateUI = (currIndex: number, nextIndex: number, highLight: boolean) => {
     const numElements = getNumElements();
     const continueButton = getContinueButton();
-    leftArrowDisabled = nextIndex === 0 ? true : false;
-    rightArrowDisabled = nextIndex === numElements - 1 ? true : false;
+    setLeftArrowDisabled(nextIndex === 0);
+    setRightArrowDisabled(nextIndex === numElements - 1);
     mastHeadsArray[nextIndex]?.actionUrl
       ? showElement(continueButton as HTMLElement)
       : hideElement(continueButton as HTMLElement);
@@ -178,69 +282,118 @@ const ALMMasthead = (props: any) => {
     addOrRemoveFocusOnDot(currDotId, true, highLight);
     const nextDotId = `#index-${nextIndex}`;
     addOrRemoveFocusOnDot(nextDotId, false, highLight);
+    if (videoMap.has(currIndex)) {
+      pausePlayer(videoMap.get(currIndex));
+    }
+    if (videoMap.has(nextIndex)) {
+      videoPlayer(videoMap.get(nextIndex), resetInterval);
+    }
   };
 
   const getNumElements = () => {
-    return mastHeads?.length;
+    return (mastHeads || mastHeadsArray).length;
   };
 
   const continueButtonClickHandler = () => {
-    const currIndex = -translate / 100;
+    const currIndex = -translateRef.current / 100;
     const curMastHead = mastHeadsArray[currIndex];
     const actionUrl = curMastHead.actionUrl;
     if (actionUrl) {
-      const win = window.open(actionUrl, "_blank");
+      const win = window.open(actionUrl, '_blank');
       win?.focus();
     }
   };
 
   const rotate = (index?: number, direction?: string, highLight = false) => {
     const numElements = getNumElements();
-    const mastHead = getElement("#mastHead");
-    const currIndex = -translate / 100;
+    const mastHead = getElement('#mastHead');
+    const currIndex = -translateRef.current / 100;
     if (index === currIndex) {
       return;
-    } else if (direction === "right") {
-      translate = translate === 0 ? (numElements - 1) * -100 : translate + 100;
+    } else if (direction === RIGHT) {
+      translateRef.current =
+        translateRef.current === 0 ? (numElements - 1) * -100 : translateRef.current + 100;
     } else {
-      translate =
+      translateRef.current =
         index !== undefined
           ? -index * 100
-          : translate === (numElements - 1) * -100
-          ? 0
-          : translate - 100;
+          : translateRef.current === (numElements - 1) * -100
+            ? 0
+            : translateRef.current - 100;
     }
-    const nextIndex = -translate / 100;
+    const nextIndex = -translateRef.current / 100;
     updateUI(currIndex, nextIndex, highLight);
     if (mastHead) {
-      mastHead.style.transform = `translate(${translate}%)`;
+      mastHead.style.transform = `translate(${translateRef.current}%)`;
     }
     if (highLight) {
       showTablist();
     }
   };
 
+  const videoPlayer = (id: string, resetInterval: any, shouldResetInterval = false) => {
+    const player = GetPrimeWindow().videojs(id);
+    player.ready(() => {
+      if (player.error()) {
+        console.log(player.error());
+        player.error(null);
+        //player.errorDisplay!.el_!.classList!.add("vjs-hidden");
+        player.errors.timeout(300 * 1000);
+      }
+
+      player.controls(false);
+      player.muted(true);
+
+      const playVideo = () => {
+        if (shouldResetInterval && typeof resetInterval === 'function') {
+          resetInterval();
+        }
+        player.currentTime(0);
+        const playPromise = player.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+          playPromise.catch((error: Error) => {
+            console.error('Error while playing video:', error);
+          });
+        }
+      };
+
+      if (player.readyState() >= 3) {
+        playVideo();
+      } else {
+        player.one('canplay', playVideo);
+      }
+
+      player.on('timeupdate', function () {
+        if (player.currentTime() >= speed / 1000) {
+          player.currentTime(0);
+          try {
+            player.play();
+          } catch (e) {
+            console.log(e);
+          }
+        }
+      });
+    });
+  };
+
+  const pausePlayer = (id: string) => {
+    const player = GetPrimeWindow().videojs(id);
+    player.pause();
+  };
+
   const swipe = (direction: string) => {
     clear();
     rotate(undefined, direction, true);
-    interval = setInterval(rotate, speed);
+    resetInterval();
   };
 
-  let interval = setInterval(rotate, speed);
-
-  useEffect(() => {
-    return () => {
-      clear();
-    };
-  }, [interval]);
-
   const clear = () => {
-    clearInterval(interval);
+    clearInterval(intervalRef.current);
   };
 
   const resetInterval = () => {
     clear();
-    interval = setInterval(rotate, speed);
+    intervalRef.current = setInterval(rotate, speed);
   };
 
   const displaySelectedDot = (eventTarget: HTMLElement) => {
@@ -249,8 +402,7 @@ const ALMMasthead = (props: any) => {
       if (!isNaN(index)) {
         clear();
         rotate(index, undefined, true);
-        clear();
-        interval = setInterval(rotate, speed);
+        resetInterval();
       }
     }
   };
@@ -261,13 +413,13 @@ const ALMMasthead = (props: any) => {
   };
 
   const animateMastHead = () => {
-    const firstDot = getElement("#index-0");
+    const firstDot = getElement('#index-0');
     if (!firstDot || !mastHeadInitialized) {
       return;
     }
     const continueButton = getContinueButton();
-    const primeDots = getElement("#prime-dots");
-    const tabListHighLight = getElement("#tablist-highlight"); //self.root$("#tablist-highlight");
+    const primeDots = getElement('#prime-dots');
+    const tabListHighLight = getElement('#tablist-highlight'); //self.root$("#tablist-highlight");
 
     const setTablistHighlightBox = () => {
       const dots = primeDots?.children || [];
@@ -300,65 +452,76 @@ const ALMMasthead = (props: any) => {
       }
 
       if (tabListHighLight) {
-        tabListHighLight.style.top = highlightBox.top - 4 + "px";
-        tabListHighLight.style.left = highlightBox.left - 8 + "px";
-        tabListHighLight.style.height = highlightBox.height + 7 + "px";
-        tabListHighLight.style.width = highlightBox.width + 8 + "px";
+        tabListHighLight.style.top = highlightBox.top - 4 + 'px';
+        tabListHighLight.style.left = highlightBox.left - 8 + 'px';
+        tabListHighLight.style.height = highlightBox.height + 7 + 'px';
+        tabListHighLight.style.width = highlightBox.width + 8 + 'px';
       }
     }; // end function
 
     setTablistHighlightBox();
-    leftArrowDisabled = true;
+    setLeftArrowDisabled(true);
 
     if (!mastHeadsArray[0].actionUrl) {
       hideElement(continueButton as HTMLElement);
     }
 
     if (mastHeadsArray.length === 1) {
-      rightArrowDisabled = true;
-      hideDots = true;
+      setRightArrowDisabled(true);
+      setHideDots(true);
+      if (videoMap.has(0)) {
+        videoPlayer(videoMap.get(0), resetInterval);
+      }
       //no need to add event listeners if there is only one element
       return;
     }
 
-    addOrRemoveFocusOnDot("#index-0");
+    addOrRemoveFocusOnDot('#index-0');
 
-    // const focusEventsList = ["mouseenter", "focusin", "activate"];
-    // const focusoutEventList = ["focusout", "mouseleave", "onblur"];
-    // focusEventsList.forEach((event) => {
-    //   slides?.addEventListener(event, clear, true);
-    // });
-    // focusoutEventList.forEach((event) => {
-    //   slides?.addEventListener(event, resetInterval, true);
-    // });
+    if (!intervalRef.current) {
+      intervalRef.current = setInterval(rotate, speed);
+    }
 
-    // slides?.addEventListener("keyup", (e) => {
-    //   const activeElement = getActiveElement();
-    //   if (
-    //     (activeElement && activeElement == primeDots) ||
-    //     primeDots?.contains(activeElement)
-    //   ) {
-    //     let direction = "";
-    //     const key = e.which || e.keyCode || 0;
-    //     if (key === 39) {
-    //       direction = "left";
-    //     } else if (key === 37) {
-    //       direction = "right";
-    //     }
-    //     showTablist();
-    //     if (direction) {
-    //       clear();
-    //       rotate(undefined, direction, true);
-    //       //interval = setInterval(<any>rotate, speed);
-    //     }
-    //   } else {
-    //     hideTablist();
-    //   }
-    // });
+    if (videoMap.has(0)) {
+      videoPlayer(videoMap.get(0), resetInterval, true);
+    }
+    const slides = slidesRef.current;
+    const focusEventsList = ['mouseenter', 'focusin', 'activate'];
+    const focusoutEventList = ['focusout', 'mouseleave', 'onblur'];
+    focusEventsList.forEach(event => {
+      slides?.addEventListener(event, clear, true);
+    });
+    focusoutEventList.forEach(event => {
+      slides?.addEventListener(event, resetInterval, true);
+    });
 
-    // const excludedElements = [continueButton, primeDots];
+    slides?.addEventListener('keyup', (e: any) => {
+      const activeElement = getActiveElement();
+      if ((activeElement && activeElement === primeDots) || primeDots?.contains(activeElement)) {
+        let direction = '';
+        const key = e.which || e.keyCode || 0;
+        if (key === 39) {
+          direction = LEFT;
+        } else if (key === 37) {
+          direction = RIGHT;
+        }
+        showTablist();
+        if (direction) {
+          clear();
+          rotate(undefined, direction, true);
+          //interval = setInterval(<any>rotate, speed);
+        }
+      } else {
+        hideTablist();
+      }
+    });
 
-    // swipeEven(
+    const excludedElements = [continueButton, primeDots] as HTMLElement[];
+    if (slides) {
+      swipeEvents(slides, excludedElements, swipe);
+    }
+
+    // swipeEvents(
     //   slides as HTMLElement,
     //   excludedElements as HTMLElement[],
     //   swipe
@@ -372,10 +535,10 @@ const ALMMasthead = (props: any) => {
           tabIndex={-1}
           aria-label={formatMessage(
             {
-              id: "alm.text.mastHeadDot",
+              id: 'alm.text.mastHeadDot',
             },
             {
-              "0": (index + 1).toString(),
+              '0': (index + 1).toString(),
             }
           )}
         >
@@ -385,33 +548,106 @@ const ALMMasthead = (props: any) => {
     );
   };
 
-  const getMastHeadImage = (
-    imageName: string,
-    contentUrl: string,
-    id: string
-  ) => {
+  const isValidHttpsUrl = (url: string): boolean => {
+    try {
+      const parsedUrl = new URL(url);
+      return parsedUrl.protocol === 'https:';
+    } catch (ex) {
+      console.log('Exception while validating URL:', ex);
+      return false;
+    }
+  };
+
+  const getMastHeadVideo = (mastHead: any, id: any) => {
     return (
       <li aria-roledescription="slide" key={id}>
         <div className={styles.primeMastheadMedia} aria-hidden="true">
-          <img
-            alt={imageName}
-            style={{
-              objectFit: "cover",
-              maxWidth: mastHeadDimensions.width,
-              height: mastHeadDimensions.height,
-            }}
-            src={contentUrl}
-            loading="eager"
+          <video
             id={id}
-          />{" "}
+            data-automationid={id}
+            data-account={GetBrightCoveAccountId()}
+            data-player={GetBrightCovePlayerId()}
+            data-embed="default"
+            data-application-id
+            className="video-js"
+            preload="auto"
+            muted={true}
+            playsInline={true}
+            autoPlay={true}
+            aria-hidden="true"
+            controls={false}
+            ref={(videoElement: any) => {
+              if (videoElement) {
+                videoElement.muted = true;
+                videoElement.defaultMuted = true;
+              }
+            }}
+          >
+            {mastHead.contentSources?.map((contentSource: any, index: number) => {
+              const urlStr = contentSource['src'];
+              if (urlStr && isValidHttpsUrl(urlStr)) {
+                return <source key={index} src={urlStr} type={contentSource['type']} />;
+              }
+              return null; // Return null for the case where no <source> element is rendered
+            })}
+          </video>
         </div>
       </li>
     );
   };
 
+  const getMastHeadImage = (
+    imageName: string,
+    contentUrl: string,
+    id: string,
+    imageAltDescription: string
+  ) => {
+    return (
+      <li aria-roledescription="slide" key={id}>
+        <div className={styles.primeMastheadMedia}>
+          <img
+            alt={imageAltDescription}
+            style={{
+              objectFit: isMobile || isTablet ? 'contain' : 'cover',
+              maxWidth: mastHeadDimensions.width,
+              ...(mastHeads ? { height: mastHeadDimensions.height } : {}),
+            }}
+            src={contentUrl}
+            loading="eager"
+            id={id}
+            data-automationid={`mastheadImg-${imageName}`}
+          />
+        </div>
+      </li>
+    );
+  };
+
+  const renderArrowButton = (direction: DIRECTION): JSX.Element => {
+    const id = direction === LEFT ? 'rotateLeft' : 'rotateRight';
+    const disabled = direction === LEFT ? leftArrowDisabled : rightArrowDisabled;
+    const onClick = () => swipe(direction === LEFT ? RIGHT : LEFT);
+    const ariaLabelId = direction === LEFT ? 'alm.text.previousSlide' : 'alm.text.nextSlide';
+    const icon = direction === LEFT ? <ChevronLeft /> : <ChevronRight />;
+
+    return (
+      <button
+        id={id}
+        disabled={disabled}
+        className={disabled ? styles.primeMastheadNavIconDisabled : styles.primeMastheadIcon}
+        aria-label={formatMessage({
+          id: ariaLabelId,
+        })}
+        onClick={onClick}
+        data-automationid={id}
+      >
+        {icon}
+      </button>
+    );
+  };
+
   return (
     <ALMErrorBoundary>
-      <Provider theme={lightTheme} colorScheme={"light"}>
+      <Provider theme={lightTheme} colorScheme={'light'}>
         <div className={styles.pageContainer}>
           <div
             id="carousel"
@@ -420,118 +656,94 @@ const ALMMasthead = (props: any) => {
             role="complementary"
             aria-labelledby="masthead_title"
             aria-describedby="masthead_desc"
+            data-skip-link-target={widget.layoutAttributes?.id}
           >
             <h2 id="masthead_title" className={styles.primeMastheadSrOnly}>
               {mastHeadsArray.length > 1
                 ? formatMessage(
                     {
-                      id: "alm.text.mastHeadHeading",
+                      id: 'alm.text.mastHeadHeading',
                     },
                     {
-                      "0": mastHeadsArray.length.toString(),
+                      '0': mastHeadsArray.length.toString(),
                     }
                   )
                 : formatMessage({
-                    id: "alm.text.mastHeadHeadingWithOneSlide",
+                    id: 'alm.text.mastHeadHeadingWithOneSlide',
                   })}
             </h2>
             <p id="masthead_desc" className={styles.primeMastheadSrOnly}>
               {mastHeadsArray.length > 1
                 ? formatMessage({
-                    id: "alm.text.masthead.sr.description",
+                    id: 'alm.text.masthead.sr.description',
                   })
-                : ""}
+                : ''}
             </p>
             <div
-              id="slides"
+              ref={slidesRef}
               className={styles.primeSlides}
               style={{
                 maxWidth: mastHeadDimensions.width,
+                height: mastHeadDimensions.height,
               }}
               aria-live="off"
             >
               <ul id="mastHead" className={styles.primeMasthead}>
                 {mastHeadsArray.map((mastHead, index) => {
                   const id = `${mastHead.contentType}-${index}`;
-                  const contentUrl = mastHead.contentUrl || "";
-                  let imageName = "";
+                  const contentUrl = mastHead.contentUrl || '';
+                  let imageName = '';
 
-                  if (mastHead.contentType === "IMAGE") {
-                    const contentUrlSplitted = contentUrl?.split("/") || [];
+                  if (mastHead.contentType === IMAGE) {
+                    const contentUrlSplitted = contentUrl?.split('/') || [];
                     if (contentUrlSplitted.length > 0) {
-                      imageName =
-                        contentUrlSplitted[contentUrlSplitted.length - 1].split(
-                          "?"
-                        )[0];
+                      imageName = contentUrlSplitted[contentUrlSplitted.length - 1].split('?')[0];
                     }
+                    return getMastHeadImage(imageName, contentUrl, id, mastHead.altText);
                   }
-                  return getMastHeadImage(imageName, contentUrl, id);
+                  return getMastHeadVideo(mastHead, id);
                 })}
               </ul>
               <div className={styles.primeMastheadDots}>
                 <div className={styles.primeMastheadActions}>
-                  <button
-                    className={styles.primeMastheadContinue}
-                    id="continue"
-                    onClick={continueButtonClickHandler}
+                  <ul
+                    id="prime-dots"
+                    role="tablist"
+                    onClick={(event: any) => primeDotsClickHandler(event)}
+                    onBlur={hideTablist}
+                    className={styles.primeDots}
                   >
-                    {formatMessage({
-                      id: "alm.text.learnMore",
-                    })}
-                  </button>
+                    {hideDots
+                      ? ''
+                      : mastHeadsArray.map((_mastHead, index) => {
+                          const dotId = `index-${index}`;
+                          return getDot(dotId, index);
+                        })}
+                  </ul>
+                  <div className={styles.primeLearnMore}>
+                    <button
+                      className={styles.primeMastheadContinue}
+                      id="continue"
+                      onClick={continueButtonClickHandler}
+                      style={{ visibility: mastHeadActionUrl ? 'visible' : 'hidden' }}
+                    >
+                      {formatMessage({
+                        id: 'alm.text.learnMore',
+                      })}
+                    </button>
+                  </div>
+                  <div className={styles.primeMastheadNavIcons}>
+                    <div className={styles.primeMastheadIconsContainer}>
+                      {renderArrowButton(LEFT)}
+                      {renderArrowButton(RIGHT)}
+                    </div>
+                  </div>
                 </div>
+                {/* to check - */}
                 {/* <div
                   id="tablist-highlight"
                   className="primeMasthead-carousel-tablist-highlight"
                 ></div> */}
-                <ul
-                  id="prime-dots"
-                  role="tablist"
-                  onClick={(event: any) => primeDotsClickHandler(event)}
-                  onBlur={hideTablist}
-                  className={styles.primeDots}
-                >
-                  {mastHeadsArray.map((_mastHead, index) => {
-                    const dotId = `index-${index}`;
-                    return hideDots ? "" : getDot(dotId, index);
-                  })}
-                </ul>
-              </div>
-              <div className={styles.primeMastheadNavIcons}>
-                <div className={styles.primeMastheadIconsContainer}>
-                  <button
-                    id="rotateLeft"
-                    disabled={leftArrowDisabled}
-                    tabIndex={leftArrowDisabled ? -1 : 0}
-                    className={
-                      leftArrowDisabled
-                        ? styles.primeMastheadNavIconDisabled
-                        : styles.primeMastheadIcon
-                    }
-                    aria-label={formatMessage({
-                      id: "alm.text.previousSlide",
-                    })}
-                    onClick={() => swipe("right")}
-                  >
-                    {<ChevronLeft />}
-                  </button>
-                  <button
-                    id="rotateRight"
-                    disabled={rightArrowDisabled}
-                    tabIndex={rightArrowDisabled ? -1 : 0}
-                    className={
-                      rightArrowDisabled
-                        ? styles.primeMastheadNavIconDisabled
-                        : styles.primeMastheadIcon
-                    }
-                    aria-label={formatMessage({
-                      id: "alm.text.nextSlide",
-                    })}
-                    onClick={() => swipe("left")}
-                  >
-                    {<ChevronRight />}
-                  </button>
-                </div>
               </div>
             </div>
           </div>

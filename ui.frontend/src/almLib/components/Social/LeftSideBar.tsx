@@ -1,21 +1,32 @@
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
 /***
  *
  * Please Do not use this Component.
  */
-import styles from "./styles/SideBar.module.css";
-import Globe from "@spectrum-icons/workflow/Globe";
-import Article from "@spectrum-icons/workflow/Article";
-import SectionLine from "./SectionLine";
-import { LEADERBOARD, SKILLS, FAVOURITES, FOLLOW } from "../../utils/constants";
-import { getALMObject } from "../../utils/global";
-import { useIntl } from "react-intl";
-import { Grid, View } from "@adobe/react-spectrum";
-import { useEffect } from "react";
+import styles from './styles/SideBar.module.css';
+import Globe from '@spectrum-icons/workflow/Globe';
+import Article from '@spectrum-icons/workflow/Article';
+import SectionLine from './SectionLine';
+import { LEADERBOARD, SKILLS, FAVOURITES, FOLLOW } from '../../utils/constants';
+import { getALMObject } from '../../utils/global';
+import { useIntl } from 'react-intl';
+import { Grid, View } from '@adobe/react-spectrum';
+import { useEffect } from 'react';
 const BoardHtml = (props: any) => {
   const { formatMessage } = useIntl();
   const loadMyBoardsPage = (status: boolean) => {
-    const ele1 = document.getElementById("gridElement1") as HTMLDivElement;
-    const ele2 = document.getElementById("gridElement2") as HTMLDivElement;
+    const ele1 = document.getElementById('gridElement1') as HTMLDivElement;
+    const ele2 = document.getElementById('gridElement2') as HTMLDivElement;
 
     if (status) {
       ele1.classList.add(styles.hovered);
@@ -32,63 +43,57 @@ const BoardHtml = (props: any) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const keyPressHandle = (e: any, status: boolean) => {
-    if (e.code === "Enter") {
+    if (e.code === 'Enter') {
       loadMyBoardsPage(status);
     }
   };
   return (
     <>
-      <Grid areas={["header", "left", "right"]}>
+      <Grid areas={['header', 'left', 'right']}>
         <View gridArea="header">
           <div className={styles.title2}>
             {formatMessage({
-              id: "alm.text.boards",
-              defaultMessage: "BOARDS",
-            })}{" "}
+              id: 'alm.text.boards',
+              defaultMessage: 'BOARDS',
+            })}{' '}
           </div>
         </View>
 
         <View gridArea="left">
           <Grid
-            areas={["header header"]}
-            columns={[".35fr", "1fr"]}
+            areas={['header header']}
+            columns={['.35fr', '1fr']}
             UNSAFE_className={`${styles.pointer}`}
             id="gridElement1"
           >
-            <div
-              className={`${styles.primeBoardIcon}`}
-              onClick={() => loadMyBoardsPage(true)}
-            >
-              {" "}
-              <Article />{" "}
+            <div className={`${styles.primeBoardIcon}`} onClick={() => loadMyBoardsPage(true)}>
+              {' '}
+              <Article />{' '}
             </div>
 
             <div onClick={() => loadMyBoardsPage(true)} tabIndex={0}>
               {formatMessage({
-                id: "alm.text.myBoards",
-                defaultMessage: "My Boards",
-              })}{" "}
+                id: 'alm.text.myBoards',
+                defaultMessage: 'My Boards',
+              })}{' '}
             </div>
           </Grid>
         </View>
         <View gridArea="right">
           <Grid
-            areas={["header header"]}
-            columns={[".35fr", "1fr"]}
+            areas={['header header']}
+            columns={['.35fr', '1fr']}
             UNSAFE_className={`${styles.pointer} `}
             id="gridElement2"
           >
-            <div
-              className={`${styles.primeBoardIcon}`}
-              onClick={() => loadMyBoardsPage(false)}
-            >
-              {" "}
-              <Globe />{" "}
+            <div className={`${styles.primeBoardIcon}`} onClick={() => loadMyBoardsPage(false)}>
+              {' '}
+              <Globe />{' '}
             </div>
             <div onClick={() => loadMyBoardsPage(false)} tabIndex={0}>
               {formatMessage({
-                id: "alm.text.allBoards",
-                defaultMessage: "all Boards",
+                id: 'alm.text.allBoards',
+                defaultMessage: 'all Boards',
               })}
             </div>
           </Grid>
@@ -105,13 +110,13 @@ const LeftSideBar = (props: any) => {
     const alm = getALMObject();
     return (
       <>
-        <Grid areas={["header"]}>
+        <Grid areas={['header']}>
           <View gridArea="header">
             <div className={styles.title}>
-              {" "}
+              {' '}
               {formatMessage({
-                id: "alm.text.favourites",
-                defaultMessage: "Favorites",
+                id: 'alm.text.favourites',
+                defaultMessage: 'Favorites',
               })}
             </div>
           </View>

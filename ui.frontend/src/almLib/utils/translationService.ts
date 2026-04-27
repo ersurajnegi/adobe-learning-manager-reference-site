@@ -10,8 +10,10 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-import { PrimeAccountTerminology } from "../models/PrimeModels";
-import { ENGLISH_LOCALE } from "./constants";
+import { CustomPageConfig, Translations } from '../models';
+import { PrimeAccountTerminology, PrimePage } from '../models/PrimeModels';
+import { ENGLISH_LOCALE, AI_COACH } from './constants';
+import { getALMConfig } from './global';
 interface AccountTerminology {
   name_lxpv: string;
   pluralName_lxpv: string;
@@ -27,42 +29,46 @@ const singularPrefix = /\|\|/g;
 let accountTerminologyMap: { [key: string]: AccountTerminology };
 
 export const langMap: { [key: string]: string } = {
-  de: "de-DE",
-  en: "en-US",
-  es: "es-ES",
-  fr: "fr-FR",
-  id: "id-ID",
-  it: "it-IT",
-  ja: "ja-JP",
-  ko: "ko-KR",
-  nb: "nb-NO",
-  nl: "nl-NL",
-  pl: "pl-PL",
-  pt: "pt-BR",
-  ru: "ru-RU",
-  sv: "sv-SE",
-  tr: "tr-TR",
-  zh: "zh-CN",
-  zz: "zz-ZZ",
+  de: 'de-DE',
+  en: 'en-US',
+  es: 'es-ES',
+  fr: 'fr-FR',
+  hi: 'hi-IN',
+  id: 'id-ID',
+  it: 'it-IT',
+  ja: 'ja-JP',
+  ko: 'ko-KR',
+  nb: 'nb-NO',
+  nl: 'nl-NL',
+  pl: 'pl-PL',
+  pt: 'pt-BR',
+  ru: 'ru-RU',
+  sv: 'sv-SE',
+  tr: 'tr-TR',
+  zh: 'zh-CN',
+  zz: 'zz-ZZ',
+  ca: 'fr-CA',
 };
 export const availableLanguages = [
-  "de",
-  "en",
-  "es",
-  "fr",
-  "id",
-  "it",
-  "ja",
-  "ko",
-  "nb",
-  "nl",
-  "pl",
-  "pt",
-  "ru",
-  "sv",
-  "tr",
-  "zh",
-  "zz",
+  'de',
+  'en',
+  'es',
+  'fr',
+  'hi',
+  'id',
+  'it',
+  'ja',
+  'ko',
+  'nb',
+  'nl',
+  'pl',
+  'pt',
+  'ru',
+  'sv',
+  'tr',
+  'zh',
+  'zz',
+  'ca',
 ];
 
 export function getLocale(locale: string): string | undefined {
@@ -70,36 +76,46 @@ export function getLocale(locale: string): string | undefined {
     if (locale.length == 2) {
       return langMap[locale];
     }
-    if (
-      locale.length > 2 &&
-      availableLanguages.includes(locale.slice(0, 2).toLowerCase())
-    ) {
+    if (locale.length > 2 && availableLanguages.includes(locale.slice(0, 2).toLowerCase())) {
       return langMap[locale.slice(0, 2)];
     }
   }
   return undefined;
 }
 
-export function getPreferredLocalizedMetadata<T>(
-  localizedMetadata: T[],
-  locale: string
-): T {
+export function getPreferredLocalizedMetadata<T>(localizedMetadata: T[], locale: string): T {
   if (!localizedMetadata) {
     return {} as T;
   }
-  if (locale) {
-    locale = locale.replace("-", "_");
-  }
+
+  const formattedLocale = locale?.replace('-', '_');
+  const alternativeLocale = formattedLocale?.replace('_', '-');
+
   let data = localizedMetadata.find(
-    (item: any) =>
-      item.locale === locale || item.locale === locale.replace("_", "-")
+    (item: any) => item.locale === formattedLocale || item.locale === alternativeLocale
   );
 
-  return (
+  const localizedData =
     data ||
     localizedMetadata.find((item: any) => item.locale === ENGLISH_LOCALE)! ||
-    localizedMetadata[0]
-  );
+    localizedMetadata[0];
+
+  // By default, HTML collapses consecutive whitespace characters (including newlines) into a single space.
+  // To preserve newlines for plain text content, we replace \n with <br> tags.
+  // If the string already contains HTML tags (i.e., is HTML content), we skip this replacement.
+  if ((localizedData as any).richTextOverview) {
+    const richTextOverview = (localizedData as any).richTextOverview;
+    const containsHtmlTags = /<\/?[a-z][\s\S]*>/i.test(richTextOverview);
+
+    if (!containsHtmlTags) {
+      (localizedData as any).richTextOverview = richTextOverview.replace(
+        /\n/g,
+        `<br style="display: block; content: ''; margin-top: 0;"/>`
+      );
+    }
+  }
+
+  return localizedData;
 }
 
 export function SetupTranslations(translations: string): void {
@@ -110,10 +126,7 @@ export function isTranslated(val: string): boolean {
   return !pluralPrefix.test(val) && !singularPrefix.test(val);
 }
 
-export function GetTranslation(
-  key: string,
-  replaceAccountTerminology = false
-): string {
+export function GetTranslation(key: string, replaceAccountTerminology = false): string {
   let val = _translations[key];
   if (replaceAccountTerminology) {
     val = ReplaceAccountTerminology(val);
@@ -130,6 +143,23 @@ export function GetTranslationReplaced(
     val = ReplaceAccountTerminology(val);
   }
   return val.replace(/\{{(.+)\}}/g, repVal);
+}
+
+export function GetTranslationForStrings(
+  key: string,
+  translations: string,
+  params: Record<string, string | number | boolean>,
+  replaceAccountTerminology = false
+): string {
+  const translationsJson = JSON.parse(translations);
+  let val = translationsJson[key];
+  if (!val) {
+    return '';
+  }
+  if (replaceAccountTerminology) {
+    val = ReplaceAccountTerminology(val);
+  }
+  return interpolateTemplateAndMap(val, params);
 }
 
 export function interpolateTemplateAndMap(
@@ -163,7 +193,7 @@ export function ReplaceAccountTerminology(translation: string): string {
     pluralTokens.forEach(function (token) {
       translation = translation.replace(
         token,
-        accountTerminologyMap[token.replace(pluralPrefix, "")]?.pluralName_lxpv
+        accountTerminologyMap[token.replace(pluralPrefix, '')]?.pluralName_lxpv
       );
     });
   }
@@ -172,7 +202,7 @@ export function ReplaceAccountTerminology(translation: string): string {
     singularTokens.forEach(function (token) {
       translation = translation.replace(
         token,
-        accountTerminologyMap[token.replace(singularPrefix, "")]?.name_lxpv
+        accountTerminologyMap[token.replace(singularPrefix, '')]?.name_lxpv
       );
     });
   }
@@ -183,7 +213,7 @@ export function getBrowserLocale(): string {
   let i = 0;
   let language = undefined;
   // support for other well known properties in browsers
-  console.log("Languages: " + window.navigator.languages);
+  console.log('Languages: ' + window.navigator.languages);
   for (i = 0; i < window.navigator.languages.length; i++) {
     const navLocale = window.navigator.languages[i];
     language = getLocale(navLocale);
@@ -192,7 +222,7 @@ export function getBrowserLocale(): string {
     }
   }
 
-  console.log("Selected lang " + language);
+  console.log('Selected lang ' + language);
   return language || ENGLISH_LOCALE;
 }
 
@@ -200,7 +230,7 @@ export function SetupAccountTerminologies(
   accountTerminologies: PrimeAccountTerminology[] = defaultAccountTerminologies
 ): void {
   accountTerminologyMap = {};
-  accountTerminologies.forEach((item) => {
+  accountTerminologies.forEach(item => {
     accountTerminologyMap[item.entityType] = {
       name_lxpv: item.name,
       pluralName_lxpv: item.pluralName,
@@ -210,187 +240,230 @@ export function SetupAccountTerminologies(
 
 export function ReplaceLoTypeWithAccountTerminology(term: string): string {
   const terminologiesLoType =
-    term === "learningProgram"
-      ? "LEARNING_PATH"
-      : term === "jobAid"
-      ? "JOB_AID"
-      : term === "certification"
-      ? "CERTIFICATION"
-      : term === "MODULES"
-      ? "MODULES"
-      : term === "MODULE"
-      ? "MODULE"
-      : "COURSE";
+    term === 'learningProgram'
+      ? 'LEARNING_PATH'
+      : term === 'jobAid'
+        ? 'JOB_AID'
+        : term === 'certification'
+          ? 'CERTIFICATION'
+          : term === 'MODULES'
+            ? 'MODULES'
+            : term === 'MODULE'
+              ? 'MODULE'
+              : 'COURSE';
   return accountTerminologyMap[terminologiesLoType]
-    ? accountTerminologyMap[terminologiesLoType]["name_lxpv"]
+    ? accountTerminologyMap[terminologiesLoType]['name_lxpv']
     : term;
 }
 
 const defaultAccountTerminologies = [
   {
-    entityType: "MODULE",
-    locale: "en-US",
-    name: "Module",
-    pluralName: "Modules",
+    entityType: 'MODULE',
+    locale: 'en-US',
+    name: 'Module',
+    pluralName: 'Modules',
   },
   {
-    entityType: "COURSE",
-    locale: "en-US",
-    name: "Course",
-    pluralName: "Courses",
+    entityType: 'COURSE',
+    locale: 'en-US',
+    name: 'Course',
+    pluralName: 'Courses',
   },
   {
-    entityType: "LEARNING_PATH",
-    locale: "en-US",
-    name: "Learning Path",
-    pluralName: "Learning Paths",
+    entityType: 'LEARNING_PATH',
+    locale: 'en-US',
+    name: 'Learning Path',
+    pluralName: 'Learning Paths',
   },
   {
-    entityType: "CERTIFICATION",
-    locale: "en-US",
-    name: "Certification",
-    pluralName: "Certifications",
+    entityType: 'CERTIFICATION',
+    locale: 'en-US',
+    name: 'Certification',
+    pluralName: 'Certifications',
   },
   {
-    entityType: "LEARNING_PLAN",
-    locale: "en-US",
-    name: "Learning Plan",
-    pluralName: "Learning Plans",
+    entityType: 'LEARNING_PLAN',
+    locale: 'en-US',
+    name: 'Learning Plan',
+    pluralName: 'Learning Plans',
   },
   {
-    entityType: "JOB_AID",
-    locale: "en-US",
-    name: "Job Aid",
-    pluralName: "Job Aids",
+    entityType: 'JOB_AID',
+    locale: 'en-US',
+    name: 'Job Aid',
+    pluralName: 'Job Aids',
   },
   {
-    entityType: "CATALOG",
-    locale: "en-US",
-    name: "Catalog",
-    pluralName: "Catalogs",
+    entityType: 'CATALOG',
+    locale: 'en-US',
+    name: 'Catalog',
+    pluralName: 'Catalogs',
   },
   {
-    entityType: "SKILL",
-    locale: "en-US",
-    name: "Skill",
-    pluralName: "Skills",
+    entityType: 'SKILL',
+    locale: 'en-US',
+    name: 'Skill',
+    pluralName: 'Skills',
   },
   {
-    entityType: "BADGE",
-    locale: "en-US",
-    name: "Badge",
-    pluralName: "Badges",
+    entityType: 'BADGE',
+    locale: 'en-US',
+    name: 'Badge',
+    pluralName: 'Badges',
   },
   {
-    entityType: "ANNOUNCEMENT",
-    locale: "en-US",
-    name: "Announcement",
-    pluralName: "Announcements",
+    entityType: 'ANNOUNCEMENT',
+    locale: 'en-US',
+    name: 'Announcement',
+    pluralName: 'Announcements',
   },
   {
-    entityType: "MY_LEARNING",
-    locale: "en-US",
-    name: "My Learning",
-    pluralName: "My Learning",
+    entityType: 'MY_LEARNING',
+    locale: 'en-US',
+    name: 'My Learning',
+    pluralName: 'My Learning',
   },
   {
-    entityType: "LEADERBOARD",
-    locale: "en-US",
-    name: "Leaderboard",
-    pluralName: "Leaderboard",
+    entityType: 'LEADERBOARD',
+    locale: 'en-US',
+    name: 'Leaderboard',
+    pluralName: 'Leaderboard',
   },
   {
-    entityType: "EFFECTIVENESS",
-    locale: "en-US",
-    name: "Effectiveness",
-    pluralName: "Effectiveness",
+    entityType: 'EFFECTIVENESS',
+    locale: 'en-US',
+    name: 'Effectiveness',
+    pluralName: 'Effectiveness',
   },
   {
-    entityType: "PREREQUISITE",
-    locale: "en-US",
-    name: "Prerequisite",
-    pluralName: "Prerequisites",
+    entityType: 'PREREQUISITE',
+    locale: 'en-US',
+    name: 'Prerequisite',
+    pluralName: 'Prerequisites',
   },
   {
-    entityType: "PREWORK",
-    locale: "en-US",
-    name: "Prework",
-    pluralName: "Prework",
+    entityType: 'PREWORK',
+    locale: 'en-US',
+    name: 'Prework',
+    pluralName: 'Prework',
   },
   {
-    entityType: "CORE_CONTENT",
-    locale: "en-US",
-    name: "Core Content",
-    pluralName: "Core Content",
+    entityType: 'CORE_CONTENT',
+    locale: 'en-US',
+    name: 'Core Content',
+    pluralName: 'Core Content',
   },
   {
-    entityType: "TESTOUT",
-    locale: "en-US",
-    name: "Testout",
-    pluralName: "Testout",
+    entityType: 'TESTOUT',
+    locale: 'en-US',
+    name: 'Testout',
+    pluralName: 'Testout',
   },
   {
-    entityType: "SELF_PACED",
-    locale: "en-US",
-    name: "Self Paced",
-    pluralName: "Self Paced",
+    entityType: 'SELF_PACED',
+    locale: 'en-US',
+    name: 'Self Paced',
+    pluralName: 'Self Paced',
   },
   {
-    entityType: "BLENDED",
-    locale: "en-US",
-    name: "Blended",
-    pluralName: "Blended",
+    entityType: 'BLENDED',
+    locale: 'en-US',
+    name: 'Blended',
+    pluralName: 'Blended',
   },
   {
-    entityType: "CLASSROOM",
-    locale: "en-US",
-    name: "Classroom",
-    pluralName: "Classrooms",
+    entityType: 'CLASSROOM',
+    locale: 'en-US',
+    name: 'Classroom',
+    pluralName: 'Classrooms',
   },
   {
-    entityType: "VIRTUAL_CLASSROOM",
-    locale: "en-US",
-    name: "Virtual Classroom",
-    pluralName: "Virtual Classroom",
+    entityType: 'VIRTUAL_CLASSROOM',
+    locale: 'en-US',
+    name: 'Virtual Classroom',
+    pluralName: 'Virtual Classroom',
   },
   {
-    entityType: "ACTIVITY",
-    locale: "en-US",
-    name: "Activity",
-    pluralName: "Activities",
+    entityType: 'ACTIVITY',
+    locale: 'en-US',
+    name: 'Activity',
+    pluralName: 'Activities',
   },
   {
-    entityType: "PATH",
-    locale: "en-US",
-    name: "Path",
-    pluralName: "Paths",
+    entityType: 'PATH',
+    locale: 'en-US',
+    name: 'Path',
+    pluralName: 'Paths',
   },
   {
-    entityType: "SKILL_LEVEL",
-    locale: "en-US",
-    name: "Skill Level",
-    pluralName: "Skill Levels",
+    entityType: 'SKILL_LEVEL',
+    locale: 'en-US',
+    name: 'Skill Level',
+    pluralName: 'Skill Levels',
   },
   {
-    entityType: "SOCIAL_LEARNING",
-    locale: "en-US",
-    name: "Social Learning",
-    pluralName: "Social Learning",
+    entityType: 'SOCIAL_LEARNING',
+    locale: 'en-US',
+    name: 'Social Learning',
+    pluralName: 'Social Learning',
   },
   {
-    entityType: "SOCIAL",
-    locale: "en-US",
-    name: "Social",
-    pluralName: "Social",
+    entityType: 'SOCIAL',
+    locale: 'en-US',
+    name: 'Social',
+    pluralName: 'Social',
   },
 ] as PrimeAccountTerminology[];
 
 export const formatMap: any = {
-  Elearning: "alm.catalog.card.self.paced",
-  Activity: "alm.catalog.card.activity",
-  Blended: "alm.catalog.card.blended",
-  "Virtual Classroom": "alm.catalog.card.virtual.classroom",
-  Classroom: "alm.catalog.card.classroom",
-  "Self Paced": "alm.catalog.card.self.paced",
-  Checklist: "alm.catalog.card.checklistActivity"
+  Elearning: 'alm.catalog.card.self.paced',
+  Activity: 'alm.catalog.card.activity',
+  Blended: 'alm.catalog.card.blended',
+  'Virtual Classroom': 'alm.catalog.card.virtual.classroom',
+  Classroom: 'alm.catalog.card.classroom',
+  'Self Paced': 'alm.catalog.card.self.paced',
+  Checklist: 'alm.catalog.card.checklistActivity',
+  [AI_COACH]: 'alm.training.jobAid',
 };
+
+export function setupCustomPageTranslations(
+  pageData: PrimePage,
+  pageConfig: CustomPageConfig
+): void {
+  const widgetIds = Object.keys(pageConfig.widgets || {});
+  // Order of locales (lowest to highest priority): page default locale, browser locale, interface (config) locale
+  // Later locales override earlier ones if the same translation key exists.
+  const locales: string[] = [];
+  if (pageData.defaultLocale) {
+    locales.push(pageData.defaultLocale);
+  }
+  const browserLocale = getBrowserLocale();
+  locales.push(browserLocale);
+
+  const configLocale = getALMConfig().locale;
+  locales.push(configLocale);
+
+  const pageTranslations = flattenTranslations(pageConfig.translations || {}, widgetIds, locales);
+  _translations = { ..._translations, ...pageTranslations };
+}
+
+function flattenTranslations(
+  translations: Translations,
+  widgetIds: string[],
+  languages: string[]
+): Record<string, string> {
+  const result: Record<string, string> = {};
+  widgetIds.forEach(widgetId => {
+    for (const lang of languages) {
+      const normalizedLang = lang.replace('-', '_');
+      const widgetTranslations = translations[normalizedLang]?.[widgetId];
+      if (widgetTranslations) {
+        for (const [key, value] of Object.entries(widgetTranslations)) {
+          result[`${widgetId}.${key}`] = value || result[`${widgetId}.${key}`] || '';
+        }
+      }
+    }
+  });
+
+  return result;
+}

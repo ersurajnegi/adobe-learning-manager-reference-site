@@ -9,28 +9,35 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-// import { useAccountContext } from "../../contextProviders";
-// export const useAccount = () => {
-//   const { account } = useAccountContext();
 
-//   return {
-//     account
-//   };
-// };
-
-import { useEffect, useState } from "react";
-import { PrimeAccount } from "../../models";
-import { getALMAccount } from "../../utils/global";
+import { useEffect, useState } from 'react';
+import { PrimeAccount } from '../../models';
+import { getALMAccount } from '../../utils/global';
 
 export const useAccount = () => {
   const [account, setAccount] = useState({} as PrimeAccount);
-  const getAccount = async () => {
-    const accountInfo = await getALMAccount();
-    setAccount(accountInfo);
-  };
 
   useEffect(() => {
+    const abortController = new AbortController();
+
+    const getAccount = async () => {
+      try {
+        const accountInfo = await getALMAccount();
+        setAccount(accountInfo);
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          return;
+        } else {
+          throw error;
+        }
+      }
+    };
+
     getAccount();
+    return () => {
+      abortController.abort();
+      setAccount({} as PrimeAccount); // Clearing the account state to avoid setting state on an unmounted component
+    };
   }, []);
 
   return {

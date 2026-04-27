@@ -9,6 +9,9 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
+
+import { PrimeLearningObjectInstanceEnrollment, PrimeLocalizationMetadata } from './PrimeModels';
+
 export interface Skill {
   name: string;
   levelName: string;
@@ -33,6 +36,7 @@ export interface CardBgStyle {
   backgroundRepeat?: string;
   backgroundPosition?: string;
   background?: string;
+  backgroundColor?: string;
 }
 
 export interface AccountActiveFields {
@@ -66,6 +70,7 @@ export interface ESPrimeLearningObject {
   publishDate: string;
   ratingsCount: number;
   description: string;
+  briefDescription: string;
   tags: string[];
   loInstances: ESPrimeLearningObjectInstance[];
   thumbnailImageUrl: string;
@@ -109,6 +114,7 @@ export interface JNLConfig {
   almCdnBaseUrl: string;
   esBaseUrl: string;
   accountConfig: JNLAccountConfig;
+  experienceBuilderConfig: JNLExperienceBuilderConfig;
 }
 
 export interface JNLAccountConfig {
@@ -124,6 +130,20 @@ export interface PrimeCatalogConfig {
   showFilterPanel: boolean;
   showSearchBar: boolean;
   heading: PrimeHeadingConfig[];
+}
+
+export interface NLRegistrationProfile {
+  signUpURL: string;
+  signInURL: string;
+}
+
+export interface JNLExperienceBuilderConfig {
+  isEBNLEnabled: boolean;
+  isLegacyNLEnabled: boolean;
+  EBNLRegistrationProfile: NLRegistrationProfile;
+  menuJson: string;
+  templatesConfig: string;
+  templateResources: string;
 }
 
 export interface PrimeHeadingConfig {
@@ -160,6 +180,131 @@ export interface PrimeMastHeadContentData {
   contentUrl: string;
   sourceUrl: string;
   locale: string;
+  altText: string;
+}
+
+export interface PrimeComplianceData {
+  name: string;
+  index: number;
+  count: number;
+  enrollmentIds: string[];
+  enrollmentList: {
+    learningObjectInstanceEnrollmentList: PrimeLearningObjectInstanceEnrollment[];
+  };
+}
+
+export interface PrimeComplianceDonutStyles {
+  color: string;
+  pathData: string;
+  lineStart: { x: number; y: number };
+  lineEnd: { x: number; y: number };
+  slantingLineStart: { x: number; y: number };
+  slantingLineEnd: { x: number; y: number };
+  annotationPosition: { x: number; y: number };
+  tranformDirection: { x: number | null; y: number | null };
+  isLeftSlice: boolean;
+}
+
+export interface PrimeComplianceEnrollmentData extends PrimeComplianceData {
+  donutStyles: PrimeComplianceDonutStyles;
+}
+
+export interface CatalogLabelValueId {
+  id: string;
+  name: string;
+}
+
+export interface CatalogLabel {
+  name: string;
+  type: string;
+  catalogLabelValueIds: CatalogLabelValueId[];
+  values: string[];
+}
+
+export interface LearningObjectItem {
+  id: string;
+  type: string;
+  attributes: {
+    localizedMetadata: PrimeLocalizationMetadata[];
+    catalogLabels: CatalogLabel[];
+  };
+}
+
+export interface ComplianceLabelResponse {
+  data: LearningObjectItem[];
+  links: string;
+}
+
+export interface ComplianceLabelDetails {
+  name: string;
+  type: string;
+  values: LabelValueDetails[];
+}
+
+export interface LabelValueDetails {
+  _transient: any;
+  id: string;
+  name: string;
+  loIds: string[];
+}
+
+export interface DownloadProgress {
+  loId: string;
+  downloadProgressValue?: number;
+  downloadStatus?: string;
+}
+
+export interface ContentToBeUpdated {
+  loId: string;
+  loName: string;
+  update: boolean;
+}
+export interface OfflineResource {
+  id: string;
+  resourceLink: string;
+  contentType: string;
+  contentZipUrl?: string;
+  contentStructureInfoUrl?: string;
+}
+export interface OfflineLink {
+  id: string;
+  overviewLink?: string;
+  playerLinks?: Array<string>;
+  loLinks?: Array<string>;
+  resources?: Array<OfflineResource>;
+  imageLinks?: Array<string>;
+}
+
+export interface NativeAppEventBody {
+  url?: string;
+  progressText?: string;
+  completedText?: string;
+  extraText?: string;
+  userLocales?: {
+    uiLocale: string;
+    contentLocale: string;
+    accountLocale: string;
+  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  downloadLinks?: any;
+  offlineLinks?: Array<OfflineLink>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  offlinePlayerUrl?: any;
+  loadDownloadsPage?: boolean;
+  networkStatus?: string;
+  offlineSyncLinks?: Array<string>;
+  resourcesWithAuth?: Array<string>;
+  resourcesWithoutAuth?: Array<string>;
+  urlsWithAuth?: Array<string>;
+  urlsWithoutAuth?: Array<string>;
+  loOverviewLink?: string;
+  subLoOverviewLinks?: Array<string>;
+  // TODO: appRating
+  //   appRatingInfo?: AppRatingInfo;
+  currentUrl?: string;
+  playerUrl?: string;
+  initialHeight?: number;
+  initialWidth?: number;
 }
 
 // export interface CatalogLearningObject {

@@ -1,3 +1,14 @@
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
 export function swipeEvents(
   element: HTMLElement,
   excludedElements: HTMLElement[],
@@ -11,12 +22,12 @@ export function swipeEvents(
     eY: 0,
   };
   const directions = Object.freeze({
-    RIGHT: "right",
-    LEFT: "left",
+    RIGHT: 'right',
+    LEFT: 'left',
   });
   let direction: string | null = null;
   element.addEventListener(
-    "touchstart",
+    'touchstart',
     function (e) {
       const t = e.touches[0];
       swipe_det.sX = t.screenX;
@@ -25,7 +36,7 @@ export function swipeEvents(
     false
   );
   element.addEventListener(
-    "touchmove",
+    'touchmove',
     function (e) {
       const t = e.touches[0];
       swipe_det.eX = t.screenX;
@@ -34,7 +45,7 @@ export function swipeEvents(
     false
   );
   element.addEventListener(
-    "touchend",
+    'touchend',
     function (e) {
       const clickedElement = <HTMLElement>e.target;
       for (let i = 0; i < excludedElements.length; i++) {
@@ -55,7 +66,7 @@ export function swipeEvents(
         direction = deltaX > 0 ? directions.RIGHT : directions.LEFT;
       else return;
 
-      if (direction && typeof func === "function") {
+      if (direction && typeof func === 'function') {
         func(direction);
       }
       direction = null;

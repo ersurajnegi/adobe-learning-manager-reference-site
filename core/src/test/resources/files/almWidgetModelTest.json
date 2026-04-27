@@ -1,0 +1,18 @@
+{
+  "widgetModel": {
+    "jcr:primaryType": "nt:unstructured",
+    "sling:resourceType": "learning/components/ALMWidget",
+    "widgetRefSelected": "com.adobe.learning.mylearning",
+    "widgetConfig.attributes.title": "My Learning",
+    "widgetConfig.attributes.disableLinks": "{Boolean}true"
+  },
+  "widgetModelNoSelection": {
+    "jcr:primaryType": "nt:unstructured",
+    "sling:resourceType": "learning/components/ALMWidget"
+  },
+  "widgetModelWithId": {
+    "jcr:primaryType": "nt:unstructured",
+    "sling:resourceType": "learning/components/ALMWidget",
+    "widgetId": "alm-widget-123456"
+  }
+}

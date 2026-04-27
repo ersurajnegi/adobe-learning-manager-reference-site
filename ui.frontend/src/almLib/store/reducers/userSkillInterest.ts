@@ -9,13 +9,13 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { AnyAction, combineReducers, Reducer } from "redux";
+import { AnyAction, combineReducers, Reducer } from 'redux';
 import {
   GET_USER_SKILL_INTEREST,
   PAGINATE_USER_SKILL_INTEREST,
   DELETE_USER_SKILL_INTEREST,
-} from "../actions/user/actionTypes";
-import { PrimeUserSkillInterest } from "../../models/PrimeModels";
+} from '../actions/user/actionTypes';
+import { PrimeUserSkillInterest } from '../../models/PrimeModels';
 
 export interface UserSkillInterestState {
   items: PrimeUserSkillInterest[];
@@ -31,22 +31,16 @@ const items: Reducer<PrimeUserSkillInterest[], AnyAction> = (
       return action?.payload.items;
     case DELETE_USER_SKILL_INTEREST:
       return state?.filter(
-        (item: PrimeUserSkillInterest) =>
-          item.skill.id !== action.payload.skillId
+        (item: PrimeUserSkillInterest) => item.skill.id !== action.payload.skillId
       );
     case PAGINATE_USER_SKILL_INTEREST:
-      return action.payload.items
-        ? [...state!, ...action.payload.items]
-        : state;
+      return action.payload.items ? [...state!, ...action.payload.items] : state;
     default:
       return state || {};
   }
 };
 
-const next: Reducer<string, AnyAction> = (
-  state: string | undefined,
-  action: AnyAction
-) => {
+const next: Reducer<string, AnyAction> = (state: string | undefined, action: AnyAction) => {
   switch (action.type) {
     case GET_USER_SKILL_INTEREST:
     case PAGINATE_USER_SKILL_INTEREST:
@@ -56,10 +50,9 @@ const next: Reducer<string, AnyAction> = (
   }
 };
 
-const userSkillInterest: Reducer<UserSkillInterestState, AnyAction> =
-  combineReducers({
-    items,
-    next,
-  });
+const userSkillInterest: Reducer<UserSkillInterestState, AnyAction> = combineReducers({
+  items,
+  next,
+});
 
 export default userSkillInterest;

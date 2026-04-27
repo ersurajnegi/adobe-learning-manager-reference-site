@@ -1,0 +1,553 @@
+[
+  {
+    "name": "nomenclature.MY_LEARNING.singular",
+    "ref": "com.adobe.captivateprime.lostrip.mylearning",
+    "widgetRef": "learning/components/mylearning",
+    "description": "User's enrolled courses and learning progress",
+    "type": "widget",
+    "options": [
+      {
+        "name": "Widget title",
+        "ref": "widgetConfig.attributes.title",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": true
+      },
+      {
+        "name": "Widget description",
+        "ref": "widgetConfig.attributes.description",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": false
+      }
+    ]
+  },
+  {
+    "name": "nomenclature.LEADERBOARD.singular",
+    "ref": "com.adobe.captivateprime.leaderboard",
+    "widgetRef": "learning/components/leaderboard",
+    "description": "User rankings and gamification elements",
+    "type": "widget",
+    "options": [
+      {
+        "name": "Widget title",
+        "ref": "widgetConfig.attributes.title",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": true
+      },
+      {
+        "name": "Widget description",
+        "ref": "widgetConfig.attributes.description",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": false
+      },
+      {
+        "name": "Disable links",
+        "ref": "widgetConfig.attributes.disableLinks",
+        "description": "Disable navigation links in the widget",
+        "type": "boolean",
+        "default": true,
+        "mandatory": false,
+        "hidden": true
+      }
+    ]
+  },
+  {
+    "name": "Calendar",
+    "ref": "com.adobe.captivateprime.calendar",
+    "widgetRef": "learning/components/calendar",
+    "description": "Classroom sessions and scheduled learning events",
+    "type": "widget",
+    "options": [
+      {
+        "name": "Widget title",
+        "ref": "widgetConfig.attributes.title",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": true
+      },
+      {
+        "name": "Widget description",
+        "ref": "widgetConfig.attributes.description",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": false
+      }
+    ]
+  },
+  {
+    "name": "Compliance",
+    "ref": "com.adobe.captivateprime.compliance",
+    "widgetRef": "learning/components/compliance",
+    "description": "Compliance training with deadlines and requirements",
+    "type": "widget",
+    "options": [
+      {
+        "name": "Widget title",
+        "ref": "widgetConfig.attributes.title",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": true
+      },
+      {
+        "name": "Widget description",
+        "ref": "widgetConfig.attributes.description",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": false
+      }
+    ]
+  },
+  {
+    "name": "nomenclature.SOCIAL_LEARNING.singular",
+    "ref": "com.adobe.captivateprime.social",
+    "widgetRef": "learning/components/socialLearning",
+    "description": "Social learning features and community interactions",
+    "type": "widget",
+    "options": [
+      {
+        "name": "Widget title",
+        "ref": "widgetConfig.attributes.title",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": true
+      },
+      {
+        "name": "Widget description",
+        "ref": "widgetConfig.attributes.description",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": false
+      },
+      {
+        "name": "Disable links",
+        "ref": "widgetConfig.attributes.disableLinks",
+        "description": "Disable navigation links in the widget",
+        "type": "boolean",
+        "default": true,
+        "mandatory": false,
+        "hidden": true
+      }
+    ]
+  },
+  {
+    "name": "Category",
+    "ref": "com.adobe.captivateprime.category",
+    "widgetRef": "learning/components/category",
+    "description": "Use this widget to display learning content from Catalogs, Products or Roles as categories.",
+    "type": "widget",
+    "options": [
+      {
+        "name": "Widget title",
+        "ref": "widgetConfig.attributes.title",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": true
+      },
+      {
+        "name": "Widget description",
+        "ref": "widgetConfig.attributes.description",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": false
+      },
+      {
+        "name": "Display category image",
+        "ref": "widgetConfig.attributes.showImage",
+        "description": "",
+        "type": "boolean",
+        "default": false,
+        "mandatory": false
+      },
+      {
+        "name": "Display category description",
+        "ref": "widgetConfig.attributes.showDescription",
+        "description": "",
+        "type": "boolean",
+        "default": false,
+        "mandatory": false
+      },
+      {
+        "name": "Category source",
+        "ref": "widgetConfig.attributes.source",
+        "description": "Type of category to display",
+        "type": "select",
+        "options": [
+          {
+            "label": "nomenclature.CATALOG.plural",
+            "value": "CATALOGS"
+          },
+          {
+            "label": "nomenclature.PRODUCT.plural",
+            "value": "PRODUCTS",
+            "requiresFeature": "prlProductsEnabled"
+          },
+          {
+            "label": "nomenclature.ROLE.plural",
+            "value": "ROLES",
+            "requiresFeature": "prlRolesEnabled"
+          }
+        ],
+        "default": "CATALOGS",
+        "mandatory": true
+      },
+      {
+        "name": "Selection mode",
+        "ref": "widgetConfig.attributes.selectionMode",
+        "description": "",
+        "type": "radio",
+        "options": [
+          {
+            "label": "All",
+            "value": "all"
+          },
+          {
+            "label": "Select",
+            "value": "select"
+          }
+        ],
+        "default": "all",
+        "_comment": "JavaScript dynamically updates labels based on source (e.g., 'All Catalogs', 'Select Catalogs')",
+        "mandatory": false
+      },
+      {
+        "name": "Selected items",
+        "ref": "widgetConfig.attributes.sourceIds",
+        "description": "",
+        "type": "autocomplete",
+        "dataSource": "category",
+        "emptyText": "Select items (up to 25)",
+        "_comment": "JavaScript dynamically updates labels, placeholder, and datasource based on source",
+        "multiSelect": true,
+        "mandatory": false
+      }
+    ]
+  },
+  {
+    "name": "nomenclature.COURSE.plural & nomenclature.PATH.plural",
+    "ref": "com.adobe.captivateprime.courses.and.paths",
+    "widgetRef": "learning/components/coursesAndPaths",
+    "description": "Display selected courses and learning paths",
+    "type": "widget",
+    "options": [
+      {
+        "name": "Widget title",
+        "ref": "widgetConfig.attributes.title",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": true
+      },
+      {
+        "name": "Widget description",
+        "ref": "widgetConfig.attributes.description",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": false
+      },
+      {
+        "name": "nomenclature.COURSE.plural & nomenclature.PATH.plural to be shown in the widget",
+        "ref": "widgetConfig.attributes.isSourceSelected",
+        "description": "Choose how to select courses and paths",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Select source",
+            "value": "true"
+          },
+          {
+            "label": "Add manually (up to 25)",
+            "value": "false"
+          }
+        ],
+        "default": "true",
+        "mandatory": true
+      },
+      {
+        "name": "Source",
+        "ref": "widgetConfig.attributes.coursesAndPaths.source",
+        "description": "Type of source to display",
+        "type": "select",
+        "options": [
+          {
+            "label": "nomenclature.CATALOG.plural",
+            "value": "CATALOGS"
+          },
+          {
+            "label": "nomenclature.PRODUCT.plural",
+            "value": "PRODUCTS",
+            "requiresFeature": "prlProductsEnabled"
+          },
+          {
+            "label": "nomenclature.ROLE.plural",
+            "value": "ROLES",
+            "requiresFeature": "prlRolesEnabled"
+          },
+          {
+            "label": "nomenclature.SKILL.plural",
+            "value": "SKILLS"
+          }
+        ],
+        "default": "CATALOGS",
+        "mandatory": false
+      },
+      {
+        "name": "Source details",
+        "ref": "widgetConfig.attributes.sourceDetails",
+        "description": "Select source item",
+        "type": "autocomplete",
+        "dataSource": "coursesandpaths-source",
+        "emptyText": "Select item",
+        "multiSelect": false,
+        "mandatory": false
+      },
+      {
+        "name": "Selected nomenclature.COURSE.plural & nomenclature.PATH.plural",
+        "ref": "widgetConfig.attributes.loIds",
+        "description": "Select courses and learning paths",
+        "type": "autocomplete",
+        "dataSource": "lo",
+        "emptyText": "Add manually (up to 25)",
+        "multiSelect": true,
+        "mandatory": false
+      }
+    ]
+  },
+  {
+    "name": "Admin recommendation",
+    "ref": "com.adobe.captivateprime.lostrip.adminreco",
+    "widgetRef": "learning/components/adminRecommendation",
+    "description": "Display admin recommended courses and learning paths",
+    "type": "widget",
+    "options": [
+      {
+        "name": "Widget title",
+        "ref": "widgetConfig.attributes.title",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": true
+      },
+      {
+        "name": "Widget description",
+        "ref": "widgetConfig.attributes.description",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": false
+      },
+      {
+        "name": "Disable links",
+        "ref": "widgetConfig.attributes.disableLinks",
+        "description": "Disable navigation links in the widget",
+        "type": "boolean",
+        "default": false,
+        "mandatory": false
+      }
+    ]
+  },
+  {
+    "name": "Trending recommendations",
+    "ref": "com.adobe.captivateprime.lostrip.trending",
+    "widgetRef": "learning/components/trendingRecommendation",
+    "description": "Display trending courses and learning paths from your peer group",
+    "type": "widget",
+    "allowedAccountTypes": ["CPE"],
+    "options": [
+      {
+        "name": "Widget title",
+        "ref": "widgetConfig.attributes.title",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": true
+      },
+      {
+        "name": "Widget description",
+        "ref": "widgetConfig.attributes.description",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": false
+      },
+      {
+        "name": "Disable links",
+        "ref": "widgetConfig.attributes.disableLinks",
+        "description": "Disable navigation links in the widget",
+        "type": "boolean",
+        "default": false,
+        "mandatory": false
+      }
+    ]
+  },
+  {
+    "name": "Bookmarks",
+    "ref": "com.adobe.captivateprime.lostrip.mybookmarks",
+    "widgetRef": "learning/components/bookmarks",
+    "description": "Display your bookmarked courses and learning paths",
+    "type": "widget",
+    "options": [
+      {
+        "name": "Widget title",
+        "ref": "widgetConfig.attributes.title",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": true
+      },
+      {
+        "name": "Widget description",
+        "ref": "widgetConfig.attributes.description",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": false
+      },
+      {
+        "name": "Disable links",
+        "ref": "widgetConfig.attributes.disableLinks",
+        "description": "Disable navigation links in the widget",
+        "type": "boolean",
+        "default": false,
+        "mandatory": false
+      }
+    ]
+  },
+  {
+    "name": "Area of Interest recommendations",
+    "ref": "com.adobe.captivateprime.lostrip.myinterest",
+    "widgetRef": "learning/components/aoiRecommendation",
+    "description": "Display recommendations based on your areas of interest and skills",
+    "type": "widget",
+    "allowedAccountTypes": ["CPE"],
+    "options": [
+      {
+        "name": "Widget title",
+        "ref": "widgetConfig.attributes.title",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": true
+      },
+      {
+        "name": "Widget description",
+        "ref": "widgetConfig.attributes.description",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": false
+      },
+      {
+        "name": "View",
+        "ref": "widgetConfig.attributes.view",
+        "description": "Display view for recommendations",
+        "type": "select",
+        "options": [
+          {
+            "label": "Individual",
+            "value": "individual"
+          },
+          {
+            "label": "Consolidated",
+            "value": "consolidated"
+          }
+        ],
+        "default": "individual",
+        "mandatory": true
+      },
+      {
+        "name": "Disable links",
+        "ref": "widgetConfig.attributes.disableLinks",
+        "description": "Disable navigation links in the widget",
+        "type": "boolean",
+        "default": false,
+        "mandatory": false
+      }
+    ]
+  },
+  {
+    "name": "Discovery recommendations",
+    "ref": "com.adobe.captivateprime.lostrip.discovery",
+    "widgetRef": "learning/components/discoveryRecommendation",
+    "description": "Display personalized content discovery recommendations",
+    "type": "widget",
+    "allowedAccountTypes": ["CPENEW"],
+    "options": [
+      {
+        "name": "Widget title",
+        "ref": "widgetConfig.attributes.title",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": true
+      },
+      {
+        "name": "Widget description",
+        "ref": "widgetConfig.attributes.description",
+        "description": "",
+        "type": "string",
+        "default": "",
+        "mandatory": false
+      },
+      {
+        "name": "Disable links",
+        "ref": "widgetConfig.attributes.disableLinks",
+        "description": "Disable navigation links in the widget",
+        "type": "boolean",
+        "default": false,
+        "mandatory": false
+      }
+    ]
+  },
+  {
+    "name": "Recommendations",
+    "ref": "com.adobe.captivateprime.recommendations",
+    "widgetRef": "learning/components/recommendations",
+    "description": "Display personalized learning recommendations",
+    "type": "widget",
+    "allowedAccountTypes": ["LMS", "CPENEW", "PRL"],
+    "options": [
+      {
+        "name": "View",
+        "ref": "widgetConfig.attributes.view",
+        "description": "Display view for recommendations",
+        "type": "select",
+        "options": [
+          {
+            "label": "Individual",
+            "value": "individual"
+          },
+          {
+            "label": "Consolidated",
+            "value": "consolidated"
+          }
+        ],
+        "default": "individual",
+        "mandatory": true
+      },
+      {
+        "name": "Disable links",
+        "ref": "widgetConfig.attributes.disableLinks",
+        "description": "Disable navigation links in the widget",
+        "type": "boolean",
+        "default": false,
+        "mandatory": false
+      }
+    ]
+  }
+]

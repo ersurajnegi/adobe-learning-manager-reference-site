@@ -1,24 +1,31 @@
-import { AnyAction, combineReducers, Reducer } from "redux";
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+import { AnyAction, combineReducers, Reducer } from 'redux';
 import {
   CLOSE_AUTOCOMPLETE,
   CLOSE_SEARCH,
   OPEN_SEARCH,
   SET_SEARCH_SUGGESTIONS,
   SET_SEARCH_TERM,
-} from "../actions/search/actionTypes";
+} from '../actions/search/actionTypes';
 
 export interface SearchState {
   searching: boolean;
   autocomplete: boolean;
   userSearchHistory: string[] | null;
   popularSearches: string[] | null;
-  searchTerm: string;
 }
 
-const searching: Reducer<boolean, AnyAction> = (
-  state: boolean | undefined,
-  action: AnyAction
-) => {
+const searching: Reducer<boolean, AnyAction> = (state: boolean | undefined, action: AnyAction) => {
   switch (action.type) {
     case OPEN_SEARCH:
       return true;
@@ -81,25 +88,9 @@ const popularSearches: Reducer<string[] | null, AnyAction> = (
   }
 };
 
-const searchTerm: Reducer<string, AnyAction> = (
-  state: string | undefined,
-  action: AnyAction
-) => {
-  switch (action.type) {
-    case SET_SEARCH_TERM:
-      return action.payload;
-    case CLOSE_SEARCH:
-    case OPEN_SEARCH:
-      return "";
-    default:
-      return state ? state : "";
-  }
-};
-
 const search: Reducer<SearchState, AnyAction> = combineReducers({
   searching,
   autocomplete,
-  searchTerm,
   userSearchHistory,
   popularSearches,
 });

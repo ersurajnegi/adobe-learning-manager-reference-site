@@ -9,13 +9,14 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { AnyAction } from "redux";
-import { PrimeUserNotification } from "../../../models/PrimeModels";
+import { AnyAction } from 'redux';
+import { PrimeUserNotification } from '../../../models/PrimeModels';
 import {
   LOAD_NOTIFICATIONS,
   LOAD_ANNOUNCEMENT,
-  PAGINATE_NOTIFICATIONS
-} from "./actionTypes";
+  PAGINATE_NOTIFICATIONS,
+  UPDATE_NOTIFICATION,
+} from './actionTypes';
 
 export const loadNotifications = (payload: any): AnyAction => ({
   type: LOAD_NOTIFICATIONS,
@@ -26,11 +27,21 @@ export const loadAnnouncements = (payload: any): AnyAction => ({
   payload,
 });
 
-
 export const paginateNotifications = (payload: {
-    notifications: PrimeUserNotification[];
-    next: string;
-  }): AnyAction => ({
-    type: PAGINATE_NOTIFICATIONS,
-    payload,
-  });
+  notifications: PrimeUserNotification[];
+  next: string;
+}): AnyAction => ({
+  type: PAGINATE_NOTIFICATIONS,
+  payload,
+});
+
+export const updateNotification = (
+  notificationId: string,
+  updates: Partial<PrimeUserNotification>
+): AnyAction => ({
+  type: UPDATE_NOTIFICATION,
+  payload: {
+    id: notificationId,
+    updates,
+  },
+});

@@ -1,0 +1,81 @@
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+@import '../../../styles/variables.css';
+
+.cardContainer {
+  max-width: 288px;
+  max-height: 286px;
+  margin-left: auto;
+  margin-right: auto;
+  cursor: pointer;
+}
+
+.card {
+  overflow: hidden;
+  border-radius: 10px;
+}
+.centeredImage {
+  display: block;
+  margin: 0 auto;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+.header {
+  height: 160px;
+  background-color: var(--prime-icon-color);
+}
+
+.content {
+  background-color: var(--prime-background);
+  padding: 20px;
+  padding-top: 16px;
+  max-height: 126px;
+}
+
+.title {
+  font-size: var(--prime-font-size-18);
+  font-weight: var(--prime-font-weight-700);
+  color: var(--prime-color-black);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.description {
+  margin-top: 4px;
+  font-size: var(--prime-font-size-14);
+  font-weight: var(--prime-font-weight-400);
+  color: var(--prime-color-black);
+  line-height: 150%;
+  word-wrap: break-word;
+  white-space: normal;
+  height: 63px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.container {
+  text-decoration: none;
+  color: inherit;
+  border-radius: 10px;
+  border: 1px solid var(--prime-color-neutral-3);
+}
+.container:hover,
+.container:focus,
+.container:focus-visible {
+  border: 1px solid var(--prime-icon-color);
+  transition: border 0.3s ease;
+  outline-offset: inherit;
+}

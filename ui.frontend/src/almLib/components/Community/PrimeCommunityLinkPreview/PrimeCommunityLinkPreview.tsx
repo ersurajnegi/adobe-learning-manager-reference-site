@@ -9,23 +9,23 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import styles from "./PrimeCommunityLinkPreview.module.css";
-import { getALMConfig } from "../../../utils/global";
-import { RestAdapter } from "../../../utils/restAdapter";
-import { useEffect, useState } from "react";
-import { SOCIAL_NO_PREVIEW } from "../../../utils/inline_svg";
-import { GetTranslation } from "../../../utils/translationService";
-import { JsonApiParse } from "../../../utils/jsonAPIAdapter";
-import { themesMap } from "../../../utils/themes";
-import { getLocalizedData, setHttp } from "../../../utils/hooks";
+import styles from './PrimeCommunityLinkPreview.module.css';
+import { getALMConfig } from '../../../utils/global';
+import { RestAdapter } from '../../../utils/restAdapter';
+import { useEffect, useState } from 'react';
+import { SOCIAL_NO_PREVIEW } from '../../../utils/inline_svg';
+import { GetTranslation } from '../../../utils/translationService';
+import { JsonApiParse } from '../../../utils/jsonAPIAdapter';
+import { themesMap } from '../../../utils/themes';
+import { getLocalizedData, setHttp } from '../../../utils/hooks';
 import * as linkify from 'linkifyjs';
 
 const PrimeCommunityLinkPreview = (props: any) => {
-  const [postPreviewThumbnail, setPostPreviewThumbnail] = useState("");
-  const [postPreviewUrl, setPostPreviewUrl] = useState("");
-  const [postPreviewTitle, setPostPreviewTitle] = useState("");
-  const [postPreviewDescription, setPostPreviewDescription] = useState("");
-  const [postLoType, setPostLoType] = useState("");
+  const [postPreviewThumbnail, setPostPreviewThumbnail] = useState('');
+  const [postPreviewUrl, setPostPreviewUrl] = useState('');
+  const [postPreviewTitle, setPostPreviewTitle] = useState('');
+  const [postPreviewDescription, setPostPreviewDescription] = useState('');
+  const [postLoType, setPostLoType] = useState('');
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [backgroundPropObj, setBackgroundPropObj] = useState({});
   let timers: any[] = [];
@@ -40,52 +40,37 @@ const PrimeCommunityLinkPreview = (props: any) => {
     }
   };
 
-  const setPreviewData = (
-    response?: any,
-    url: string = "",
-    loId?: string,
-    sharedUrl = false
-  ) => {
+  const setPreviewData = (response?: any, url: string = '', loId?: string, sharedUrl = false) => {
     if (sharedUrl) {
       const lo = JsonApiParse(response).learningObject;
 
       // Training description
       const descriptionData = lo.localizedMetadata[0].description;
       const description =
-        descriptionData &&
-        descriptionData !== "" &&
-        lo.localizedMetadata.length != 0
-          ? getLocalizedData(lo.localizedMetadata, getALMConfig().locale)
-              .description
-          : GetTranslation("alm.no.description.available", true);
+        descriptionData && descriptionData !== '' && lo.localizedMetadata.length != 0
+          ? getLocalizedData(lo.localizedMetadata, getALMConfig().locale).description
+          : GetTranslation('alm.no.description.available', true);
 
       // Training title
-      const title = getLocalizedData(
-        lo.localizedMetadata,
-        getALMConfig().locale
-      ).name;
+      const title = getLocalizedData(lo.localizedMetadata, getALMConfig().locale).name;
 
       // Training Thumbnail
       if (lo.imageUrl) {
         setBackgroundPropObj({
-          "backgroundImage": `url(${lo.imageUrl})`,
+          backgroundImage: `url("${lo.imageUrl}")`,
         });
       } else {
         const theme = getALMConfig().themeData;
-        const themeColors = theme
-          ? themesMap[theme.name]
-          : themesMap["Prime Default"];
+        const themeColors = theme ? themesMap[theme.name] : themesMap['Prime Default'];
 
-        const id = loId!.split(":")[1];
+        const id = loId!.split(':')[1];
         const colorCode = parseInt(id, 10) % 12;
 
         setBackgroundPropObj({
           background: `${themeColors[colorCode]} url(${
-            "https://cpcontentsdev.adobe.com/public/images/default_card_icons/" +
-            colorCode +
-            ".svg"
+            'https://cpcontentsdev.adobe.com/public/images/default_card_icons/' + colorCode + '.svg'
           }) center center no-repeat`,
-          "backgroundSize": "80%",
+          backgroundSize: '80%',
         });
       }
 
@@ -95,30 +80,22 @@ const PrimeCommunityLinkPreview = (props: any) => {
       setPostLoType(lo.loType);
     } else {
       setPostPreviewThumbnail(
-        response && JSON.parse(response).thumbnail_url
-          ? JSON.parse(response).thumbnail_url
-          : ""
+        response && JSON.parse(response).thumbnail_url ? JSON.parse(response).thumbnail_url : ''
       );
-      setPostPreviewUrl(
-        response && JSON.parse(response).url ? JSON.parse(response).url : ""
-      );
-      setPostPreviewTitle(
-        response && JSON.parse(response).title ? JSON.parse(response).title : ""
-      );
+      setPostPreviewUrl(response && JSON.parse(response).url ? JSON.parse(response).url : '');
+      setPostPreviewTitle(response && JSON.parse(response).title ? JSON.parse(response).title : '');
       setPostPreviewDescription(
-        response && JSON.parse(response).description
-          ? JSON.parse(response).description
-          : ""
+        response && JSON.parse(response).description ? JSON.parse(response).description : ''
       );
     }
   };
 
   const clearPreviewData = () => {
-    setPostPreviewThumbnail("");
-    setPostPreviewUrl("");
-    setPostPreviewTitle("");
-    setPostPreviewDescription("");
-    setPostLoType("");
+    setPostPreviewThumbnail('');
+    setPostPreviewUrl('');
+    setPostPreviewTitle('');
+    setPostPreviewDescription('');
+    setPostLoType('');
     setCopiedUrl(false);
     setBackgroundPropObj({});
     setPreviewData();
@@ -126,12 +103,12 @@ const PrimeCommunityLinkPreview = (props: any) => {
 
   const checkPreview = async () => {
     const currentInput = props.currentInput;
-  
-    if (!currentInput || currentInput === "") {
+
+    if (!currentInput || currentInput === '') {
       clearPreviewData();
       return;
     }
-  
+
     let links = linkify.find(currentInput, 'url');
     links = links.map(link => {
       const value = link.value;
@@ -144,15 +121,15 @@ const PrimeCommunityLinkPreview = (props: any) => {
       }
       return link;
     });
-  
+
     if (!links || links.length === 0) {
       clearPreviewData();
       return;
     }
-  
+
     const firstLink = new URL(setHttp(links[0].value));
-  
-    let url = "";
+
+    let url = '';
     if (props.viewMode && currentInput.indexOf('href="') > -1) {
       url = currentInput
         .split('href="')[1]
@@ -160,46 +137,46 @@ const PrimeCommunityLinkPreview = (props: any) => {
     } else {
       url = firstLink.href;
     }
-  
-    if (url === "") {
+
+    if (url === '') {
       clearPreviewData();
       return;
     }
-  
-    if (postPreviewUrl !== "" && url === postPreviewUrl) return;
-  
+
+    if (postPreviewUrl !== '' && url === postPreviewUrl) return;
+
     let iframelyApi;
-    let loId = "";
+    let loId = '';
     let sharedUrl = false;
     const endPoint = new URL(getALMConfig().primeApiURL);
-  
+
     if (endPoint.host.indexOf(firstLink.host) == 0 && firstLink.href.indexOf('app/learner')) {
-          // For certification link
-      if (url.indexOf("certificationId") !== -1) {
-        const regex = "/certificationId=(\d+)/";
-        const match = url.match(regex); 
+      // For certification link
+      if (url.indexOf('certificationId') !== -1) {
+        const regex = '/certificationId=(d+)/';
+        const match = url.match(regex);
         loId = `certification:${match![1]}`;
       } else {
         // For Course and LP link
-        const index = url.indexOf("#");
+        const index = url.indexOf('#');
         const idString = url.substring(index + 1);
-        loId = `${idString.split("/")[1]}:${idString.split("/")[2]}`;
+        loId = `${idString.split('/')[1]}:${idString.split('/')[2]}`;
       }
       iframelyApi = `${getALMConfig().primeApiURL}/learningObjects/${loId}`;
       sharedUrl = true;
     } else if (url.indexOf(getALMConfig().trainingOverviewPath) !== -1) {
       // For AEM training links
-      loId = url.split("trainingId/")[1];
+      loId = url.split('trainingId/')[1];
       iframelyApi = `${getALMConfig().primeApiURL}/learningObjects/${loId}`;
       sharedUrl = true;
     } else {
       iframelyApi = `${getALMConfig().almBaseURL}/api/iframely/oembed?url=${url}`;
     }
-  
+
     try {
       const response = await RestAdapter.ajax({
         url: iframelyApi,
-        method: "GET",
+        method: 'GET',
       });
       setPreviewData(response, url, loId, sharedUrl);
       setCopiedUrl(sharedUrl);
@@ -207,7 +184,6 @@ const PrimeCommunityLinkPreview = (props: any) => {
       setPreviewData();
     }
   };
-  
 
   useEffect(() => {
     if (!props.showLinkPreview) {
@@ -236,34 +212,26 @@ const PrimeCommunityLinkPreview = (props: any) => {
                 className={styles.primeCommunityTrainingThumbnailPreview}
                 style={backgroundPropObj}
               >
-                <div
-                  className={styles.primeCommunityTrainingThumbnailDescription}
-                >
+                <div className={styles.primeCommunityTrainingThumbnailDescription}>
                   <span>{postPreviewTitle}</span>
                   <span>
-                    {GetTranslation(
-                      `alm.community.post.thumbnail.description.${postLoType}`,
-                      true
-                    )}
+                    {GetTranslation(`alm.community.post.thumbnail.description.${postLoType}`, true)}
                   </span>
                 </div>
               </div>
               <div className={styles.primeCommunityTrainingDescription}>
                 <span>
-                  {postPreviewTitle} -{" "}
-                  {GetTranslation(
-                    `alm.community.post.thumbnail.description.${postLoType}`,
-                    true
-                  )}
+                  {postPreviewTitle} -{' '}
+                  {GetTranslation(`alm.community.post.thumbnail.description.${postLoType}`, true)}
                 </span>
                 <span>{postPreviewDescription}</span>
               </div>
             </a>
-          ) : postPreviewThumbnail !== "" ? (
+          ) : postPreviewThumbnail !== '' ? (
             <a href={postPreviewUrl} target="_blank" rel="noreferrer">
               <div
                 className={styles.primeCommunityThumbnailPreview}
-                style={{ backgroundImage: `url(${postPreviewThumbnail})` }}
+                style={{ backgroundImage: `url("${postPreviewThumbnail}")` }}
               >
                 <span className={styles.primeCommunityThumbnailDescription}>
                   {postPreviewTitle}
@@ -273,8 +241,8 @@ const PrimeCommunityLinkPreview = (props: any) => {
               </div>
             </a>
           ) : (
-            postPreviewThumbnail === "" &&
-            (postPreviewDescription !== "" || postPreviewUrl !== "") && (
+            postPreviewThumbnail === '' &&
+            (postPreviewDescription !== '' || postPreviewUrl !== '') && (
               <a href={postPreviewUrl} target="_blank" rel="noreferrer">
                 <div className={styles.primeCommunityThumbnailPreview}>
                   <div className={styles.primeCommunityThumbnailNoPreview}>
@@ -282,15 +250,12 @@ const PrimeCommunityLinkPreview = (props: any) => {
                     <span className={styles.primeCommunityThumbnailDescription}>
                       {postPreviewTitle}
                       <br />
-                      {postPreviewDescription !== "" ? (
+                      {postPreviewDescription !== '' ? (
                         postPreviewDescription
                       ) : (
                         <div
                           dangerouslySetInnerHTML={{
-                            __html: GetTranslation(
-                              "alm.no.preview.available",
-                              true
-                            ),
+                            __html: GetTranslation('alm.no.preview.available', true),
                           }}
                         />
                       )}

@@ -9,34 +9,30 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { PrimeCommunityPostsContainer } from "../PrimeCommunityPostsContainer";
-import { PrimeCommunityPostFilters } from "../PrimeCommunityPostFilters";
-import { PrimeCommunityAddPost } from "../PrimeCommunityAddPost";
-import { PrimeCommunitySearch } from "../PrimeCommunitySearch";
-import { ALMLoader } from "../../Common/ALMLoader";
+import { PrimeCommunityPostsContainer } from '../PrimeCommunityPostsContainer';
+import { PrimeCommunityPostFilters } from '../PrimeCommunityPostFilters';
+import { PrimeCommunityAddPost } from '../PrimeCommunityAddPost';
+import { PrimeCommunitySearch } from '../PrimeCommunitySearch';
+import { ALMLoader } from '../../Common/ALMLoader';
 
-import { usePosts } from "../../../hooks/community";
-import { useState, useEffect } from "react";
-import { useIntl } from "react-intl";
-import styles from "./PrimeCommunityPosts.module.css";
-import { BOARD, PUBLIC } from "../../../utils/constants";
-import { getALMUser } from "../../../utils/global";
-import { PrimeUser } from "../../../models";
+import { usePosts } from '../../../hooks/community';
+import { useState, useEffect } from 'react';
+import { useIntl } from 'react-intl';
+import styles from './PrimeCommunityPosts.module.css';
+import { BOARD, PUBLIC } from '../../../utils/constants';
+import { getALMUser } from '../../../utils/global';
+import { PrimeUser } from '../../../models';
 
 const PrimeCommunityPosts = (props: any) => {
   const board = props.board;
-  const {
-    posts,
-    fetchPosts,
-    loadMorePosts,
-    hasMoreItems,
-    fetchBoardModerators,
-  } = usePosts(board.id);
+  const { posts, fetchPosts, loadMorePosts, hasMoreItems, fetchBoardModerators } = usePosts(
+    board.id
+  );
   const { formatMessage } = useIntl();
   const [showLoader, setShowLoader] = useState(false);
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [searchResult, setSearchResult] = useState(0);
-  const [searchString, setSearchString] = useState("");
+  const [searchString, setSearchString] = useState('');
   const [clearSortFilter, setClearSortFilter] = useState(false);
   const [user, setUser] = useState({} as PrimeUser);
   const [boardModerators, setBoardModerators] = useState([] as string[]);
@@ -49,8 +45,8 @@ const PrimeCommunityPosts = (props: any) => {
       results
         ? results.length
         : formatMessage({
-            id: "alm.community.search.no.label",
-            defaultMessage: "No",
+            id: 'alm.community.search.no.label',
+            defaultMessage: 'No',
           })
     );
     setSearchString(queryString);
@@ -68,11 +64,11 @@ const PrimeCommunityPosts = (props: any) => {
   };
   const sortFilterChangeHandler = async (sortValue: any) => {
     setClearSortFilter(false);
-    const ids = posts.map((post) => post.id).join(',');
-    getPosts(sortValue,ids);
+    const ids = posts.map(post => post.id).join(',');
+    getPosts(sortValue, ids);
   };
 
-  const getPosts = async (sortValue?: any, ids="") => {
+  const getPosts = async (sortValue?: any, ids = '') => {
     setShowLoader(true);
     await fetchPosts(board.id, sortValue, ids);
     setShowLoader(false);
@@ -84,7 +80,7 @@ const PrimeCommunityPosts = (props: any) => {
       setUser(response?.user || ({} as PrimeUser));
       const moderators = await fetchBoardModerators(board.id);
       let moderatorIds = [] as string[];
-      moderators.userList?.forEach((element) => {
+      moderators.userList.forEach(element => {
         moderatorIds.push(element.id);
       });
       setBoardModerators(moderatorIds);
@@ -92,11 +88,7 @@ const PrimeCommunityPosts = (props: any) => {
   }, []);
 
   const isNewPostAllowed = () => {
-    if (
-      board.visibility === PUBLIC ||
-      boardModerators?.includes(user.id) ||
-      board.postingAllowed
-    ) {
+    if (board.visibility === PUBLIC || boardModerators?.includes(user.id) || board.postingAllowed) {
       return true;
     }
     return false;
@@ -129,8 +121,8 @@ const PrimeCommunityPosts = (props: any) => {
               searchModeHandler={searchModeHandler}
               resetSearchHandler={resetSearchHandler}
               placeHolderText={formatMessage({
-                id: "alm.community.searchInBoard.placeholder",
-                defaultMessage: "Search within board",
+                id: 'alm.community.searchInBoard.placeholder',
+                defaultMessage: 'Search within board',
               })}
             ></PrimeCommunitySearch>
           </div>
@@ -145,21 +137,18 @@ const PrimeCommunityPosts = (props: any) => {
         <div className={styles.primeCommunitySearchStatusWrapper}>
           <div className={styles.primeCommunitySearchStatus}>
             <div className={styles.primeCommunitySearchCount}>
-              {searchResult}{" "}
+              {searchResult}{' '}
               {formatMessage({
-                id: "alm.community.search.resultFound",
-                defaultMessage: "result(s) found for",
-              })}{" "}
+                id: 'alm.community.search.resultFound',
+                defaultMessage: 'result(s) found for',
+              })}{' '}
               '{searchString}'
             </div>
-            <button
-              className={styles.primeCommunitySearchClear}
-              onClick={resetSearchHandler}
-            >
+            <button className={styles.primeCommunitySearchClear} onClick={resetSearchHandler}>
               (
               {formatMessage({
-                id: "alm.community.search.clear.label",
-                defaultMessage: "Clear",
+                id: 'alm.community.search.clear.label',
+                defaultMessage: 'Clear',
               })}
               )
             </button>
@@ -178,8 +167,8 @@ const PrimeCommunityPosts = (props: any) => {
           {posts.length === 0 && (
             <div className={styles.primeCommunityNoPostFound}>
               {formatMessage({
-                id: "alm.community.noPostMessage",
-                defaultMessage: "No post found",
+                id: 'alm.community.noPostMessage',
+                defaultMessage: 'No post found',
               })}
             </div>
           )}

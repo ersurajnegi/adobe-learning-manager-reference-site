@@ -9,11 +9,11 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import React, { useRef } from "react";
-import { usePosts } from "../../../hooks/community";
-import { ENTER } from "../../../utils/constants";
-import { SEARCH_SVG } from "../../../utils/inline_svg";
-import styles from "./PrimeCommunitySearch.module.css";
+import React, { useRef } from 'react';
+import { usePosts } from '../../../hooks/community';
+import { ENTER } from '../../../utils/constants';
+import { SEARCH_SVG } from '../../../utils/inline_svg';
+import styles from './PrimeCommunitySearch.module.css';
 
 const PrimeCommunitySearch = (props: any) => {
   // const { formatMessage } = useIntl();
@@ -21,7 +21,7 @@ const PrimeCommunitySearch = (props: any) => {
   const type = props.type;
   const { searchPostResult } = usePosts();
   const ref = useRef<any>();
-  const emptyString = "";
+  const emptyString = '';
   const MIN_CHAR_LENGTH = 3;
   let searchTimer: any = null;
 

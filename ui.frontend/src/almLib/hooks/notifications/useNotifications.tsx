@@ -9,76 +9,87 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useCallback, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import APIServiceInstance from "../../common/APIService";
-import { PrimeUserNotification } from "../../models";
+import { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import APIServiceInstance from '../../common/APIService';
+import { PrimeUserNotification } from '../../models';
 import {
   loadNotifications,
   paginateNotifications,
   loadAnnouncements,
-} from "../../store/actions/notification/action";
-import { State } from "../../store/state";
-import { getALMConfig, getALMObject, getALMUser } from "../../utils/global";
-import { clearParentLoDetails } from "../../utils/hooks";
-import { JsonApiParse } from "../../utils/jsonAPIAdapter";
-import { LaunchPlayer } from "../../utils/playback-utils";
-import { QueryParams, RestAdapter } from "../../utils/restAdapter";
-const channels = [
-  "jobAid::adminEnrollment",
-  "certification::adminEnrollment",
-  "certification::autoEnrollment",
-  "certification::completed",
-  "certification::badgeIssued",
-  "certification::completionReminder",
-  "certification::expired",
-  "certification::recurrenceEnrollment",
-  "certification::republished",
-  "certification::learnerCertificationApprovalRequestApproved",
-  "certification::learnerCertificationApprovalRequestDenied",
-  "certification::deadlineMissed",
-  "course::adminEnrollment",
-  "course::autoEnrollment",
-  "course::badgeIssued",
-  "course::l1FeedbackPrompt",
-  "course::deadlineMissed",
-  "course::completed",
-  "course::completionReminder",
-  "course::sessionReminder",
-  "course::republished",
-  "course::courseOpenForEnrollment",
-  "course::learnerEnrollmentRequestApproved",
-  "course::learnerEnrollmentRequestDenied",
-  "course::waitListCleared",
-  "course::learnerNominationRequest",
-  "learningProgram::adminEnrollment",
-  "learningProgram::autoEnrollment",
-  "learningProgram::badgeIssued",
-  "learningProgram::republished",
-  "learningProgram::deadlineMissed",
-  "learningProgram::completionReminder",
-  "learningProgram::completed",
-  "learningProgram::l1Feedback",
-  "competency::assigned",
-  "competency::badgeIssued",
-  "competency::achieved",
-  "manager::added",
-  "admin::added",
-  "author::added",
-  "integrationAdmin::added",
+} from '../../store/actions/notification/action';
+import { State } from '../../store/state';
+import { getALMConfig, getALMObject, getALMUser } from '../../utils/global';
+import { JsonApiParse } from '../../utils/jsonAPIAdapter';
+import { LaunchPlayer } from '../../utils/playback-utils';
+import { QueryParams, RestAdapter } from '../../utils/restAdapter';
+import { clearBreadcrumbPathDetails } from '../../utils/breadcrumbUtils';
+import { MOBILE_IMMERSIVE_NOTIFICATION_CHANNELS } from '../../utils/constants';
+
+// Default channels for non-mobile apps
+const defaultChannels = [
+  'jobAid::adminEnrollment',
+  'certification::adminEnrollment',
+  'certification::autoEnrollment',
+  'certification::completed',
+  'certification::badgeIssued',
+  'certification::completionReminder',
+  'certification::expired',
+  'certification::recurrenceEnrollment',
+  'certification::republished',
+  'certification::learnerCertificationApprovalRequestApproved',
+  'certification::learnerCertificationApprovalRequestDenied',
+  'certification::deadlineMissed',
+  'course::adminEnrollment',
+  'course::autoEnrollment',
+  'course::badgeIssued',
+  'course::l1FeedbackPrompt',
+  'course::deadlineMissed',
+  'course::completed',
+  'course::completionReminder',
+  'course::sessionReminder',
+  'course::republished',
+  'course::courseOpenForEnrollment',
+  'course::learnerEnrollmentRequestApproved',
+  'course::learnerEnrollmentRequestDenied',
+  'course::waitListCleared',
+  'course::learnerNominationRequest',
+  'learningProgram::adminEnrollment',
+  'learningProgram::autoEnrollment',
+  'learningProgram::badgeIssued',
+  'learningProgram::republished',
+  'learningProgram::deadlineMissed',
+  'learningProgram::completionReminder',
+  'learningProgram::completed',
+  'learningProgram::l1Feedback',
+  'competency::assigned',
+  'competency::badgeIssued',
+  'competency::achieved',
+  'manager::added',
+  'admin::added',
+  'author::added',
+  'integrationAdmin::added',
   'social::addedAsModerator',
   'social::postLive',
   'social::postRejected',
   'social::commentedOnPost',
   'social::commentedOnComment',
-  'social::userTaggedOnPostCommentReply',
 ];
+
+// Get channels based on mobile app configuration
+const getChannels = () => {
+  const config = getALMConfig();
+  return config.learnerMobileApp ? MOBILE_IMMERSIVE_NOTIFICATION_CHANNELS : defaultChannels;
+};
+
 export const useNotifications = () => {
-  const { notifications, next , announcements } = useSelector(
-    (state: State) => state.notification
-  );
-  const [isLoading, setIsLoading] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const {
+    notifications,
+    next,
+    announcements,
+    unreadCount: storeUnreadCount,
+  } = useSelector((state: State) => state.notification);
+  const [isLoading, setIsLoading] = useState(true);
   const dispatch = useDispatch();
   const config = getALMConfig();
   const getUserId = async () => {
@@ -89,8 +100,7 @@ export const useNotifications = () => {
     return userResponse?.user?.id;
   };
 
-  const pageLimit = 6;
-
+  const pageLimit = 10;
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -100,27 +110,32 @@ export const useNotifications = () => {
       }
       setIsLoading(true);
       const params: QueryParams = {};
-      params["page[limit]"] = pageLimit;
-      params["announcementsOnly"] = false;
-      params["userSelectedChannels"] = channels;
+      params['page[limit]'] = pageLimit;
+      params['announcementsOnly'] = false;
+      params['userSelectedChannels'] = getChannels();
+      params['language'] = (config.locale || 'en-US').replace('-', '_');
       const response = await RestAdapter.get({
         url: `${config.primeApiURL}/users/${userId}/userNotifications`,
         params: params,
       });
       const parsedResponse = JsonApiParse(response);
-      const notificationData: any = {};
-      notificationData["notifications"] =
-        parsedResponse.userNotificationList || [];
-      notificationData["next"] = parsedResponse.links?.next || "";
-      setUnreadCount(0);
-      dispatch(loadNotifications(notificationData));
-      setIsLoading(false);
-    } catch (e) {
-      dispatch(loadNotifications([] as PrimeUserNotification[]));
-      console.log("Error while loading notifications " + e);
+      const notifications = parsedResponse.userNotificationList || [];
+      const unreadCount = notifications.filter((n: any) => !n.read).length;
+
+      dispatch(
+        loadNotifications({
+          notifications,
+          next: parsedResponse.links?.next || '',
+          unreadCount,
+        })
+      );
+    } catch (error) {
+      console.error('Error while loading notifications:', error);
+      dispatch(loadNotifications({ notifications: [], next: '', unreadCount: 0 }));
+    } finally {
       setIsLoading(false);
     }
-  }, [config.primeApiURL, dispatch]);
+  }, [config.primeApiURL, config.locale, dispatch]);
 
   const pollUnreadNotificationCount = useCallback(async () => {
     try {
@@ -129,39 +144,45 @@ export const useNotifications = () => {
         return;
       }
       const params: QueryParams = {};
-      params["page[limit]"] = pageLimit;
-      params["announcementsOnly"] = false;
-      params["userSelectedChannels"] = channels;
-      params["read"] = false;
+      params['page[limit]'] = pageLimit;
+      params['announcementsOnly'] = false;
+      params['userSelectedChannels'] = getChannels();
+      params['read'] = false;
       const response = await RestAdapter.get({
         url: `${config.primeApiURL}/users/${userId}/userNotifications`,
         params: params,
       });
       const parsedResponse = JsonApiParse(response);
-      let count = 0;
-      if (parsedResponse && parsedResponse.userNotificationList)
-        count = parsedResponse.userNotificationList.length;
-
-      setUnreadCount(count);
-    } catch (e) {
-      console.log("Error while loading notifications " + e);
+      const unreadCount = parsedResponse?.userNotificationList?.length || 0;
+      // Update Redux store with new unread count
+      dispatch(
+        loadNotifications({
+          notifications: notifications || [],
+          next,
+          unreadCount,
+          isUpdate: true,
+        })
+      );
+    } catch (error) {
+      console.error('Error while polling unread notifications:', error);
     }
-  }, [config.primeApiURL]);
+  }, [config.primeApiURL, dispatch, notifications, next]);
 
-  useEffect(() => {
-    pollUnreadNotificationCount();
-  }, [pollUnreadNotificationCount]);
-
-  //for pagination
   const loadMoreNotifications = useCallback(async () => {
-    if (!next) return;
-    const parsedResponse = await APIServiceInstance.loadMore(next);
-    dispatch(
-      paginateNotifications({
-        notifications: parsedResponse!.userNotificationList || [],
-        next: parsedResponse!.links?.next || "",
-      })
-    );
+    if (!next) {
+      return;
+    }
+    try {
+      const parsedResponse = await APIServiceInstance.loadMore(next);
+      dispatch(
+        paginateNotifications({
+          notifications: parsedResponse?.userNotificationList || [],
+          next: parsedResponse?.links?.next || '',
+        })
+      );
+    } catch (error) {
+      console.error('Error while loading more notifications:', error);
+    }
   }, [dispatch, next]);
 
   const markReadNotification = useCallback(
@@ -179,9 +200,9 @@ export const useNotifications = () => {
         if (unreadNotificationIds.length > 0) {
           await RestAdapter.put({
             url: `${config.primeApiURL}/users/${userId}/userNotificationsMarkRead`,
-            method: "PUT",
+            method: 'PUT',
             headers: {
-              "content-type": "application/json;charset=UTF-8",
+              'content-type': 'application/json;charset=UTF-8',
             },
             body: JSON.stringify(unreadNotificationIds),
           });
@@ -191,50 +212,247 @@ export const useNotifications = () => {
     [config.primeApiURL, notifications]
   );
 
-  const redirectOverviewPage = useCallback((notif) => {
-    let alm = getALMObject();
-    let trainingId = notif.modelIds[0];
-    let trainingInstanceId = (notif.metadata ? notif.metadata[0].id : "");
-    let isJobAid = false;
-    if (notif.modelTypes[0] === "learningObject") {
-      notif.modelIds!.forEach((item: string) => {
-        if (item.toLowerCase().includes("jobaid")) {
-          LaunchPlayer({ trainingId: trainingId });
-          isJobAid = true;
-        }
-      });
-    }
-    if (isJobAid) return;
+  const markReadSingleNotification = useCallback(
+    async (notificationId: string) => {
+      if (!notificationId) {
+        console.error('Invalid notification ID provided');
+        return;
+      }
 
-    clearParentLoDetails();
-    alm.navigateToTrainingOverviewPage(trainingId, trainingInstanceId);
-    return;
-  }, []);
-  const fetchAnnouncements= async (id : string)=>{
-    const userId = await getUserId();
+      const userId = await getUserId();
       if (!userId) {
         return;
       }
-      setIsLoading(true);
 
+      let notification;
+      let originalNotifications;
+      let originalUnreadCount;
+
+      try {
+        // Store original state for rollback if needed
+        originalNotifications = [...(notifications || [])];
+        originalUnreadCount = storeUnreadCount;
+
+        // Find the notification to update
+        notification = notifications?.find(n => n.id === notificationId);
+        if (!notification) {
+          throw new Error('Notification not found');
+        }
+
+        // Update notifications list and unread count immediately (Optimistic Update)
+        const updatedNotifications =
+          notifications?.map(n => (n.id === notificationId ? { ...n, read: true } : n)) || [];
+
+        const newUnreadCount = Math.max(0, storeUnreadCount - 1);
+
+        // Dispatch updated notifications to Redux store immediately
+        dispatch(
+          loadNotifications({
+            notifications: updatedNotifications,
+            next,
+            unreadCount: newUnreadCount,
+            isUpdate: true,
+          })
+        );
+
+        // Make API call to update server
+        await RestAdapter.patch({
+          url: `${config.primeApiURL}/users/${userId}/userNotifications/${notificationId}`,
+          method: 'PATCH',
+          headers: {
+            'content-type': 'application/vnd.api+json',
+            ...(config.csrfToken && { 'x-csrf-token': config.csrfToken }),
+          },
+          body: JSON.stringify({
+            data: {
+              type: 'userNotification',
+              id: notificationId,
+              attributes: {
+                channel: notification.channel,
+                dateCreated: notification.dateCreated,
+                message: notification.message,
+                modelIds: notification.modelIds,
+                modelNames: notification.modelNames,
+                modelTypes: notification.modelTypes,
+                role: notification.role,
+                type: notification.type,
+                read: true,
+                actionTaken: true,
+              },
+            },
+          }),
+        }).catch(error => {
+          console.error('Error in background API call:', error);
+        });
+      } catch (error) {
+        console.error('Error marking notification as read:', error);
+
+        // Revert optimistic updates on error
+        if (originalNotifications && originalUnreadCount !== undefined) {
+          dispatch(
+            loadNotifications({
+              notifications: originalNotifications,
+              next,
+              unreadCount: originalUnreadCount,
+              isUpdate: true,
+            })
+          );
+        }
+      }
+    },
+    [config.primeApiURL, config.csrfToken, dispatch, next, notifications, storeUnreadCount]
+  );
+
+  const redirectOverviewPage = useCallback(notif => {
+    const alm = getALMObject();
+    const trainingId = notif.modelIds[0];
+    const trainingInstanceId = notif.metadata ? notif.metadata[0].id : '';
+
+    if (
+      notif.modelTypes[0] === 'learningObject' &&
+      notif.modelIds.some((id: string) => id.toLowerCase().includes('jobaid'))
+    ) {
+      LaunchPlayer({ trainingId });
+      return;
+    }
+
+    clearBreadcrumbPathDetails(trainingId);
+    alm.navigateToTrainingOverviewPage(trainingId, trainingInstanceId);
+  }, []);
+
+  const fetchAnnouncements = async (id: string) => {
+    if (!id) {
+      console.error('Invalid announcement ID provided');
+      return;
+    }
+
+    const userId = await getUserId();
+    if (!userId) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
       const response = await RestAdapter.get({
-        url: `${config.primeApiURL}//announcements/${id}`,
+        url: `${config.primeApiURL}/announcements/${id}`,
       });
+
+      if (!response) {
+        throw new Error('Invalid announcement response');
+      }
+
       const parsedResponse = JsonApiParse(response)?.adminAnnouncement;
-      
+      if (!parsedResponse) {
+        throw new Error('Failed to parse announcement data');
+      }
+
       dispatch(loadAnnouncements(parsedResponse));
+    } catch (error) {
+      console.error('Error while fetching announcements:', error);
+      dispatch(loadAnnouncements(null));
+    } finally {
       setIsLoading(false);
-  }
+    }
+  };
+
+  const updateNotification = useCallback(
+    async (
+      userId: string,
+      userNotificationId: string,
+      requestBody: PrimeUserNotification,
+      retryCount = 0
+    ): Promise<any> => {
+      if (!userId || !userNotificationId) {
+        console.error('Invalid user ID or notification ID provided');
+        return;
+      }
+
+      try {
+        const body = (requestBody as any).data
+          ? requestBody
+          : {
+              data: {
+                type: 'userNotification',
+                id: userNotificationId,
+                attributes: requestBody,
+              },
+            };
+
+        const response = await RestAdapter.patch({
+          url: `${config.primeApiURL}/users/${userId}/userNotifications/${userNotificationId}`,
+          method: 'PATCH',
+          headers: {
+            'content-type': 'application/vnd.api+json',
+            ...(config.csrfToken && { 'x-csrf-token': config.csrfToken }),
+          },
+          body: JSON.stringify(body),
+        });
+
+        return response;
+      } catch (error) {
+        console.error('Error updating notification:', error);
+        if (retryCount < 2) {
+          console.log(`Retrying update notification (attempt ${retryCount + 1})`);
+          return updateNotification(userId, userNotificationId, requestBody, retryCount + 1);
+        }
+        throw error;
+      }
+    },
+    [config.primeApiURL, config.csrfToken]
+  );
+
+  const getUserNotification = useCallback(
+    async (userNotificationId: string) => {
+      if (!userNotificationId) {
+        console.error('Invalid notification ID provided');
+        return null;
+      }
+
+      try {
+        const userId = await getUserId();
+        if (!userId) {
+          return null;
+        }
+
+        const response = await RestAdapter.get({
+          url: `${config.primeApiURL}/users/userNotifications/${userNotificationId}`,
+          headers: {
+            'content-type': 'application/vnd.api+json',
+            ...(config.csrfToken && { 'x-csrf-token': config.csrfToken }),
+          },
+        });
+
+        if (!response) {
+          throw new Error('Failed to fetch notification');
+        }
+
+        const parsedNotification = JsonApiParse(response);
+        if (!parsedNotification?.userNotification) {
+          throw new Error('Invalid notification data received');
+        }
+
+        return parsedNotification.userNotification;
+      } catch (error) {
+        console.error('Error while fetching notification:', error);
+        return null;
+      }
+    },
+    [config.primeApiURL, config.csrfToken]
+  );
+
   return {
     notifications,
     announcements,
     isLoading,
-    unreadCount,
+    unreadCount: storeUnreadCount,
     fetchNotifications,
     loadMoreNotifications,
     markReadNotification,
+    markReadSingleNotification,
     redirectOverviewPage,
     pollUnreadNotificationCount,
     fetchAnnouncements,
+    updateNotification,
+    getUserNotification,
   };
 };

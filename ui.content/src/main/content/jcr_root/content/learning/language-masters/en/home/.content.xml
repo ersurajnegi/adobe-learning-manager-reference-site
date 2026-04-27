@@ -2,13 +2,13 @@
 <jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:cq="http://www.day.com/jcr/cq/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
     jcr:primaryType="cq:Page">
     <jcr:content
-        cq:lastModified="{Date}2022-04-19T18:39:04.059+05:30"
+        cq:lastModified="{Date}2026-04-21T13:34:30.472+05:30"
         cq:lastModifiedBy="admin"
         cq:template="/conf/learning/settings/wcm/templates/page-content1"
         jcr:primaryType="cq:PageContent"
-        id="learning-body"
         jcr:title="Home"
-        sling:resourceType="learning/components/page">
+        sling:resourceType="learning/components/page"
+        id="learning-body">
         <root
             jcr:primaryType="nt:unstructured"
             sling:resourceType="learning/components/container"
@@ -62,66 +62,19 @@
                                 id="categories-desc"
                                 text="&lt;p style=&quot;text-align: center;&quot;>Explore and learn from a diverse set of trainings on SecurFinancial products that empower excellence. Select among hundreds of courses that cater to your job role.&lt;/p>&#xd;&#xa;"
                                 textIsRich="true"/>
-                            <categories_151943519
-                                jcr:created="{Date}2022-04-10T23:25:19.548+05:30"
+                            <almwidget
+                                jcr:created="{Date}2026-04-21T13:34:11.282+05:30"
                                 jcr:createdBy="admin"
-                                jcr:lastModified="{Date}2022-04-11T14:50:44.483+05:30"
+                                jcr:lastModified="{Date}2026-04-21T13:34:30.469+05:30"
                                 jcr:lastModifiedBy="admin"
                                 jcr:primaryType="nt:unstructured"
-                                sling:resourceType="learning/components/categories"
-                                leftCarouselImgRef="/content/dam/learning/site/Carousel-Left.svg"
-                                rightCarouselImgRef="/content/dam/learning/site/Carousel-Right.svg">
-                                <categories jcr:primaryType="nt:unstructured">
-                                    <item0
-                                        jcr:primaryType="nt:unstructured"
-                                        catalogs="LinkedIn Learning,Digital Marketing"
-                                        description="Take advantage of strong computational tools employing unique financial management strategies that keep your accounting worries at bay."
-                                        fileReference="/content/dam/learning/site/explore/Accountant.png"
-                                        headline="SecurFinancial For Accountants"
-                                        products="Accounting,Adapt to change"
-                                        tags="tags1"/>
-                                    <item1
-                                        jcr:primaryType="nt:unstructured"
-                                        catalogs="Default Catalog"
-                                        description="Utilize state of the art administrative management tools providing unique solutions for your information management needs."
-                                        fileReference="/content/dam/learning/site/explore/Admin.png"
-                                        headline="SecurFinancial for Admins"
-                                        products="Adobe Advantage,Abstract Skill"
-                                        tags="tags1"/>
-                                    <item2
-                                        jcr:primaryType="nt:unstructured"
-                                        catalogs="Default Catalog,LinkedIn Learning,Digital Marketing"
-                                        description="Reap the benefits of award-winning auditing tools providing robust solutions for your compliance assessment and recordkeeping needs."
-                                        fileReference="/content/dam/learning/site/explore/Auditor.png"
-                                        headline="SecurFinancial for Auditors"
-                                        products="Accounting"
-                                        tags="tags1"/>
-                                    <item3
-                                        jcr:primaryType="nt:unstructured"
-                                        catalogs="catalog1,catalog2"
-                                        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-                                        fileReference="/content/dam/learning/site/explore/Accountant.png"
-                                        headline="SecurFinancial For Accountants"
-                                        products="skill1,skill2"
-                                        tags="tags1"/>
-                                    <item4
-                                        jcr:primaryType="nt:unstructured"
-                                        catalogs="catalog1"
-                                        description="Utilize state of the art administrative management tools providing unique solutions for your information management needs."
-                                        fileReference="/content/dam/learning/site/explore/Admin.png"
-                                        headline="SecurFinancial for Admins"
-                                        products="skill1,skill2"
-                                        tags="tags1"/>
-                                    <item5
-                                        jcr:primaryType="nt:unstructured"
-                                        catalogs="catalog1"
-                                        description="Reap the benefits of award-winning auditing tools providing robust solutions for your compliance assessment and recordkeeping needs."
-                                        fileReference="/content/dam/learning/site/explore/Auditor.png"
-                                        headline="SecurFinancial for Auditors"
-                                        products="skill1,skill2"
-                                        tags="tags1"/>
-                                </categories>
-                            </categories_151943519>
+                                sling:resourceType="learning/components/ALMWidget"
+                                widgetConfig.attributes.selectionMode="all"
+                                widgetConfig.attributes.showDescription="\{Boolean}true"
+                                widgetConfig.attributes.showImage="\{Boolean}true"
+                                widgetConfig.attributes.source="CATALOGS"
+                                widgetConfig.attributes.title="Explore Catalogs"
+                                widgetRefSelected="com.adobe.captivateprime.category"/>
                         </container>
                     </container_1>
                     <container_2
@@ -151,8 +104,8 @@
                             sling:resourceType="learning/components/carousel"
                             autopauseDisabled="false"
                             autoplay="false"
-                            id="home-carousel-cont"
-                            delay="5000">
+                            delay="5000"
+                            id="home-carousel-cont">
                             <teaser
                                 cq:panelTitle="1"
                                 jcr:created="{Date}2022-03-13T11:19:10.496+05:30"
@@ -204,8 +157,8 @@
                             jcr:primaryType="nt:unstructured"
                             sling:resourceType="learning/components/newssection"
                             section1Description="Videos, webinars, and educational programs to upgrade your skills and knowledge."
-                            section1Title="SecurFinancial Educational Resources"
                             section1Link="https://www.adobe.com"
+                            section1Title="SecurFinancial Educational Resources"
                             section2Description="Hundreds of courses covering every feature of SecurFinancial products ensure that you learn well and make the most of our products."
                             section2Link="https://www.adobe.com"
                             section2Title="Collection of Courses, Certificates…"
@@ -219,8 +172,8 @@
                             jcr:lastModifiedBy="admin"
                             jcr:primaryType="nt:unstructured"
                             sling:resourceType="learning/components/catalog"
+                            citiesFilter="false"
                             durationFilter="true"
-                            tagsFilter="true"
                             formatFilter="true"
                             priceFilter="false"
                             showCatalogFilter="true"
@@ -229,8 +182,8 @@
                             skillsFilter="true"
                             skillsLevelFilter="true"
                             statusFilter="false"
-                            typeFilter="true"
-                            citiesFilter="false"/>
+                            tagsFilter="true"
+                            typeFilter="true"/>
                     </container_2>
                 </container>
             </container>

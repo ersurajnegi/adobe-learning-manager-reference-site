@@ -9,22 +9,18 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { lightTheme, Provider } from "@adobe/react-spectrum";
-import { useIntl } from "react-intl";
-import { PrimeBoard } from "../../../models/PrimeModels";
-import { PrimeCommunityBoard } from "../PrimeCommunityBoard";
-import styles from "./PrimeCommunityBoardsContainer.module.css";
+import { lightTheme, Provider } from '@adobe/react-spectrum';
+import { useIntl } from 'react-intl';
+import { PrimeBoard } from '../../../models/PrimeModels';
+import { PrimeCommunityBoard } from '../PrimeCommunityBoard';
+import styles from './PrimeCommunityBoardsContainer.module.css';
 const PrimeCommunityBoardsContainer: React.FC<{
   boards: PrimeBoard[] | null;
   loadMoreBoards: () => void;
   hasMoreItems: boolean;
 }> = ({ boards, loadMoreBoards, hasMoreItems }) => {
-  const listHtml = boards?.map((board) => (
-    <PrimeCommunityBoard
-      board={board}
-      key={board.id}
-      showBorder={true}
-    ></PrimeCommunityBoard>
+  const listHtml = boards?.map(board => (
+    <PrimeCommunityBoard board={board} key={board.id} showBorder={true}></PrimeCommunityBoard>
   ));
   const { formatMessage } = useIntl();
 
@@ -33,19 +29,19 @@ const PrimeCommunityBoardsContainer: React.FC<{
       {listHtml}
       <div id="load-more-boards" className={styles.loadMoreContainer}>
         {hasMoreItems ? (
-          <Provider theme={lightTheme} colorScheme={"light"}>
+          <Provider theme={lightTheme} colorScheme={'light'}>
             <button
               onClick={loadMoreBoards}
               className={`almButton secondary ${styles.loadMoreButton}`}
             >
               {formatMessage({
-                id: "alm.community.loadMore",
-                defaultMessage: "Load more",
+                id: 'alm.community.loadMore',
+                defaultMessage: 'Load more',
               })}
             </button>
           </Provider>
         ) : (
-          ""
+          ''
         )}
       </div>
     </div>

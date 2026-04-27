@@ -9,11 +9,15 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import React from "react";
-import { Provider as ReduxProvider } from "react-redux"; //
-import store from "../store/APIStore";
-import { DialogProvider } from "../almLib/contextProviders/ALMDialogContextProvider";
-import { DeviceTypeProvider } from "../almLib/contextProviders/DeviceContextProvider";
+import React, { useContext } from 'react';
+import { Provider as ReduxProvider } from 'react-redux'; //
+import store from '../store/APIStore';
+import {
+  UserContextProvider,
+  useUserContext,
+} from '../almLib/contextProviders/userContextProvider';
+import { DeviceTypeProvider } from '../almLib/contextProviders/DeviceContextProvider';
+import { DialogProvider } from '../almLib/contextProviders/ALMDialogContextProvider';
 
 /**
  * List of context providers that are required to run Learning
@@ -25,11 +29,13 @@ import { DeviceTypeProvider } from "../almLib/contextProviders/DeviceContextProv
 export const AppContextProvider = (props: React.PropsWithChildren<{}>) => {
   return (
     <DeviceTypeProvider>
-      <ReduxProvider store={store}>
-        <DialogProvider>
-          <>{props.children}</>
-        </DialogProvider>
-      </ReduxProvider>
+      <UserContextProvider>
+        <ReduxProvider store={store}>
+          <DialogProvider>
+            <>{props.children}</>
+          </DialogProvider>
+        </ReduxProvider>
+      </UserContextProvider>
     </DeviceTypeProvider>
   );
 };

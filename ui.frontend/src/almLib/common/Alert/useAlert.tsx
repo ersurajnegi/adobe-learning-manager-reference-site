@@ -1,20 +1,26 @@
-import { useEffect, useState } from "react";
-import { render } from "react-dom";
-import { AlertDialog, AlertType } from "./AlertDialog";
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-let alertMesssage: string = "Unknown Error";
-let alertType: "success" | "error";
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+import { useEffect, useState } from 'react';
+import { render } from 'react-dom';
+import { AlertDialog, AlertType } from './AlertDialog';
+
+let alertMesssage: string = 'Unknown Error';
+let alertType: 'success' | 'error';
 
 const useAlert = (): [
-  (show: boolean, messsage: string, type: AlertType, timeOut?: number) => void
+  (show: boolean, messsage: string, type: AlertType, timeOut?: number) => void,
 ] => {
   const [showAlert, setShowAlert] = useState<boolean>(false);
-  const almAlert = (
-    show: boolean,
-    messsage: string,
-    type: AlertType,
-    timeOut: number = 3000
-  ) => {
+  const almAlert = (show: boolean, messsage: string, type: AlertType, timeOut: number = 3000) => {
     alertType = type;
     alertMesssage = messsage;
     setShowAlert(show);
@@ -23,17 +29,11 @@ const useAlert = (): [
     }, timeOut);
   };
   const alertTemplate = () => {
-    return (
-      <AlertDialog
-        type={alertType}
-        show={showAlert}
-        message={alertMesssage}
-      ></AlertDialog>
-    );
+    return <AlertDialog type={alertType} show={showAlert} message={alertMesssage}></AlertDialog>;
   };
 
   useEffect(() => {
-    render(alertTemplate(), document.getElementById("alertDialog"));
+    render(alertTemplate(), document.getElementById('alertDialog'));
   }, [showAlert]);
   return [almAlert];
 };

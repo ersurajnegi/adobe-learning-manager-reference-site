@@ -9,18 +9,18 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import styles from "./PrimeCommunityMobileScrollToTop.module.css";
-import ChevronUp from "@spectrum-icons/workflow/ChevronUp";
+import styles from './PrimeCommunityMobileScrollToTop.module.css';
+import ChevronUp from '@spectrum-icons/workflow/ChevronUp';
 
 const PrimeCommunityMobileScrollToTop = (props: any) => {
-    return (
-        <>
-            <div className={styles.primeCommunityTopBack} onClick={() => window.scrollTo(0,0)}>
-                <button className={styles.primeCommunityScrollToTopButton}>
-                    <ChevronUp></ChevronUp>
-                </button>
-            </div>
-        </>
-    );
+  return (
+    <>
+      <div className={styles.primeCommunityTopBack} onClick={() => window.scrollTo(0, 0)}>
+        <button className={styles.primeCommunityScrollToTopButton}>
+          <ChevronUp></ChevronUp>
+        </button>
+      </div>
+    </>
+  );
 };
 export default PrimeCommunityMobileScrollToTop;

@@ -424,3 +424,9 @@ governing permissions and limitations under the License.
     max-width: 100%;
   }
 }
+
+.alm-go-to-top-goToTopButton.alm-go-to-top-show {
+  visibility: hidden;
+  display: none;
+  opacity: 0;
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "name": "My Learning Widget",
+    "ref": "com.adobe.learning.mylearning",
+    "widgetRef": "com.adobe.learning.mylearning",
+    "description": "Displays learner's enrolled courses",
+    "type": "widget",
+    "options": [
+      {
+        "name": "Title",
+        "ref": "widgetConfig.attributes.title",
+        "type": "string",
+        "default": "My Learning"
+      }
+    ]
+  },
+  {
+    "name": "Catalog Widget",
+    "ref": "com.adobe.learning.catalog",
+    "widgetRef": "com.adobe.learning.catalog",
+    "description": "Displays course catalog",
+    "type": "widget",
+    "options": []
+  },
+  {
+    "name": "Common Config",
+    "ref": "com.adobe.learning.commonConfig",
+    "description": "Shared configuration",
+    "type": "acapConfig",
+    "options": []
+  }
+]

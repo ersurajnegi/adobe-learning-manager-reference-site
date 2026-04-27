@@ -10,15 +10,13 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-import outputFileMap from "../.transient/outputFileMap.json";
-import { ENGLISH_LOCALE } from "../almLib/utils/constants";
-import { getALMConfig } from "../almLib/utils/global";
-import { RestAdapter } from "../almLib/utils/restAdapter";
-import {
-  SetupTranslations,
-  getBrowserLocale,
-} from "../almLib/utils/translationService";
+import outputFileMap from '../.transient/outputFileMap.json';
+import { ENGLISH_LOCALE } from '../almLib/utils/constants';
+import { getALMConfig } from '../almLib/utils/global';
+import { RestAdapter } from '../almLib/utils/restAdapter';
+import { SetupTranslations, getBrowserLocale } from '../almLib/utils/translationService';
 
+import * as trans from '../almLib/i18n/en_US.json';
 let MANIFEST: Record<string, string> = <any>outputFileMap;
 const GetManifestFile = (key: string) => {
   return MANIFEST[key];
@@ -30,14 +28,14 @@ export const GetManifestResourcePath = (key: string): string | undefined => {
     return undefined;
   }
   if ((window as any).isAlmLocalEnv) {
-    return window.location.origin + "/" + val;
+    return window.location.origin + '/' + val;
   }
-  return window.location.origin + getALMConfig().frontendResourcesPath + "/" + val;
+  return window.location.origin + getALMConfig().frontendResourcesPath + '/' + val;
 };
 
 const computeUserLocale = (): string => {
   const almConfig = getALMConfig();
-  let locale = "";
+  let locale = '';
   if (almConfig) {
     locale = almConfig.locale;
   }
@@ -47,7 +45,7 @@ const computeUserLocale = (): string => {
 const LoadTranslationsPromise = (locale?: string): Promise<any> => {
   locale = locale || ENGLISH_LOCALE;
 
-  const translationLocaleKey = locale.replace("-", "_");
+  const translationLocaleKey = locale.replace('-', '_');
   const resourcePath = GetManifestResourcePath(`${translationLocaleKey}.json`);
   if (!resourcePath) {
     return LoadTranslationsPromise(ENGLISH_LOCALE);
@@ -73,14 +71,16 @@ export default async () => {
   const enTranslationsPromise = LoadTranslationsPromise();
 
   let translations;
-  try {
-    translations = await LoadTranslations(
-      computedLocale,
-      enTranslationsPromise
-    );
-  } catch (err) {
-    translations = await LoadTranslations(computedLocale, null);
+  if (process.env.NODE_ENV === 'development') {
+    translations = JSON.stringify(trans);
+  } else {
+    try {
+      translations = await LoadTranslations(computedLocale, enTranslationsPromise);
+    } catch (err) {
+      translations = await LoadTranslations(computedLocale, null);
+    }
   }
+
   SetupTranslations(translations);
   return { locale: computedLocale, messages: JSON.parse(translations) };
 };

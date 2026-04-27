@@ -9,7 +9,7 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-@import "../../../styles/variables.css";
+@import '../../../styles/variables.css';
 
 .primeCheckBoxLabel {
   letter-spacing: 0px;
@@ -31,19 +31,25 @@ governing permissions and limitations under the License.
   position: relative;
 }
 
-.primeChechbox {
-  min-height: 25px !important;
+.primeCheckbox {
+  align-items: center !important;
   cursor: pointer;
+  display: flex !important;
+  min-height: 25px !important;
 }
-.primeChechbox span[class^="spectrum-Checkbox-label"] {
-  margin-top: 3px;
+.primeCheckbox span[class*='spectrum-Checkbox-label'] {
+  margin-top: 0px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: var(--prime-font-size-14);
+  z-index: 1;
+}
+.primeCheckbox input[class*='spectrum-Checkbox-input'] {
+  z-index: 0;
 }
 
-.primeChechbox span:first-of-type {
+.primeCheckbox span:first-of-type {
   margin: 0;
-  margin-top: 5px;
+  /* margin-top: 5px; */
 }

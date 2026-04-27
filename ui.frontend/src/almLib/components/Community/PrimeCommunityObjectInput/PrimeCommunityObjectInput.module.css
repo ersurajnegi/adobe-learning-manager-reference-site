@@ -9,7 +9,7 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-@import "../../../styles/variables.css";
+@import '../../../styles/variables.css';
 .primePostObjectWrapper {
   margin-bottom: 15px;
   display: flex;
@@ -31,19 +31,19 @@ governing permissions and limitations under the License.
 }
 
 .primePostObjectInput::-webkit-input-placeholder {
-  font-family: "source-sans-pro" !important;
+  font-family: 'source-sans-pro' !important;
 }
 
 .primePostObjectInput:-ms-input-placeholder {
-  font-family: "source-sans-pro" !important;
+  font-family: 'source-sans-pro' !important;
 }
 
 .primePostObjectInput:-moz-placeholder {
-  font-family: "source-sans-pro" !important;
+  font-family: 'source-sans-pro' !important;
 }
 
 .primePostObjectInput::-moz-placeholder {
-  font-family: "source-sans-pro" !important;
+  font-family: 'source-sans-pro' !important;
 }
 
 textarea:placeholder-shown {

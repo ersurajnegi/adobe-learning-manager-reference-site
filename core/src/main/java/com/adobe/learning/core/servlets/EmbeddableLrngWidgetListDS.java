@@ -73,7 +73,8 @@ public class EmbeddableLrngWidgetListDS extends SlingAllMethodsServlet {
 
           List<EmbeddableLrngWidgetConfig> widgets =
               EmbeddableLrngWidgetUtils.getEmbeddableWidgetsConfig(hostName, clientBuilderFactory);
-          List<EmbeddableLrngWidgetConfig> availableWidgetsList = getAvailableWidgets(widgets);
+          List<EmbeddableLrngWidgetConfig> availableWidgetsList =
+              widgets != null ? getAvailableWidgets(widgets) : new ArrayList<>();
 
           for (EmbeddableLrngWidgetConfig widgetConfig : availableWidgetsList) {
             ValueMap vm = new ValueMapDecorator(new HashMap<String, Object>());
@@ -91,8 +92,7 @@ public class EmbeddableLrngWidgetListDS extends SlingAllMethodsServlet {
 
   private List<EmbeddableLrngWidgetConfig> getAvailableWidgets(
       List<EmbeddableLrngWidgetConfig> widgets) {
-    return widgets
-        .stream()
+    return widgets.stream()
         .filter(widget -> widget.getType().equals("widget"))
         .collect(Collectors.toList());
   }

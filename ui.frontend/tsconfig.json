@@ -1,11 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    //Changed target from es5 to es2015
+    "target": "es2015",
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -18,9 +15,26 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "types": ["jest", "node"],
+    "baseUrl": "src",
+    "paths": {
+      "@almLib/*": ["almLib/*"],
+      "@components/*": ["almLib/components/*"],
+      "@hooks/*": ["almLib/hooks/*"],
+      "@utils/*": ["almLib/utils/*"],
+      "@models/*": ["almLib/models/*"],
+      "@almStore/*": ["almLib/store/*"],
+      "@contextProviders/*": ["almLib/contextProviders/*"],
+      "@common/*": ["almLib/common/*"],
+      "@styles/*": ["almLib/styles/*"]
+    }
   },
   "include": [
     "src"
+  ],
+  "exclude": [
+    "**/test-plans/**",
+    "node_modules"
   ]
 }

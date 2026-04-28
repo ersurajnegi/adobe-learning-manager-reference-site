@@ -59,6 +59,7 @@ hs_err_pid*
 
 ### Maven ###
 target/
+OSGI-INF/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
@@ -97,3 +98,5 @@ node/
 
 # Tests
 coverage/
+.DS_Store
+**/.DS_Store

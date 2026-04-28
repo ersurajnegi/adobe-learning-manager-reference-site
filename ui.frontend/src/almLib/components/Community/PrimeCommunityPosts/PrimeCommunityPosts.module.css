@@ -9,7 +9,7 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-@import "../../../styles/variables.css";
+@import '../../../styles/variables.css';
 .primePostSectionWrapper {
   display: flex;
   justify-content: center;
@@ -43,7 +43,6 @@ governing permissions and limitations under the License.
   margin-left: auto;
   justify-content: center;
 }
-
 
 .primeLoaderWrapper {
   margin-bottom: 20px;

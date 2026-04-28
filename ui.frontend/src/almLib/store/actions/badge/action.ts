@@ -9,23 +9,16 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { AnyAction } from "redux";
-import { PrimeUserBadge } from "../../../models/PrimeModels";
-import { LOAD_BADGES, PAGINATE_BADGES } from "./actionTypes";
+import { AnyAction } from 'redux';
+import { PrimeUserBadge } from '../../../models/PrimeModels';
+import { LOAD_BADGES, PAGINATE_BADGES } from './actionTypes';
 
-
-export const loadBadges = (payload: {
-    badges: PrimeUserBadge[];
-    next: string;
-  }): AnyAction => ({
+export const loadBadges = (payload: { badges: PrimeUserBadge[]; next: string }): AnyAction => ({
   type: LOAD_BADGES,
   payload,
 });
 
-export const paginateBadges = (payload: {
-    badges: PrimeUserBadge[];
-    next: string;
-  }): AnyAction => ({
-    type: PAGINATE_BADGES,
-    payload,
-  });
+export const paginateBadges = (payload: { badges: PrimeUserBadge[]; next: string }): AnyAction => ({
+  type: PAGINATE_BADGES,
+  payload,
+});

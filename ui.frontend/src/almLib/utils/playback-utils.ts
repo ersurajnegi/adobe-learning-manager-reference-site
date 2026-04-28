@@ -9,29 +9,39 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
+import { ALM_PLAYER_CLOSE, ALM_PLAYER_CLOSE_FROM_PARENT, ALM_PLAYER_LAUNCH } from './constants';
 import {
-  getAccessToken,
   getALMConfig,
+  getALMObject,
+  getAuthKey,
+  GetPrimeEmitEventLinks,
   getWindowObject,
   redirectToLoginAndAbort,
-} from "./global";
-import { getLocale } from "./translationService";
+  sendEvent,
+} from './global';
+import { getLocale } from './translationService';
+import { PrimeDispatchEvent, SendMessageToParent } from './widgets/base/EventHandlingBase';
+import { PrimeEvent } from './widgets/common';
+import { GetTranslation } from './translationService';
+import {
+  isOfflineModeInApp,
+  launchOfflinePlayer,
+  isLoadedInsideApp,
+} from './mobileAppUtils/appUtils';
+import { generateAllOverviewLinksForLO, getOfflineSyncUrls } from './mobileAppUtils/downloadUtils';
 // let currenttrainingId = "";
+let playerIframe: HTMLIFrameElement | null = null;
+let savedScrollPosition = 0;
+const dispatchEvent = (eventDetail: any, event: PrimeEvent) => {
+  PrimeDispatchEvent(document, event, false, eventDetail);
+};
 
 export function LaunchPlayer(props: any) {
+  sendEvent(ALM_PLAYER_LAUNCH);
   if (redirectToLoginAndAbort()) {
     return;
   }
-  const ClosePlayer = (event: MessageEvent) => {
-    if (event.data === "status:close") {
-      getWindowObject().removeEventListener("message", ClosePlayer);
-      handlePlayerClose(props.trainingId);
-      props.callBackFn &&
-        typeof props.callBackFn == "function" &&
-        props.callBackFn();
-    }
-  };
-  getWindowObject().addEventListener("message", ClosePlayer, false);
+
   const playeURL: string = GetPlayerURl(
     props.trainingId,
     props.moduleId,
@@ -41,50 +51,129 @@ export function LaunchPlayer(props: any) {
     props.note_position,
     props.isResetRequired
   );
+
+  if (isOfflineModeInApp()) {
+    console.log('LaunchPlayer: Offline mode detected, launching offline player');
+
+    const lo = props.lo;
+    const instanceId = props.instanceId || '';
+
+    let overviewLinks: string[] = [];
+    let offlineSyncLinks: string[] = [];
+
+    if (lo) {
+      overviewLinks = generateAllOverviewLinksForLO(lo, instanceId);
+      offlineSyncLinks = getOfflineSyncUrls(lo, instanceId);
+    }
+
+    launchOfflinePlayer({
+      offlinePlayerUrl: playeURL,
+      loOverviewLink: overviewLinks[0] || '',
+      offlineSyncLinks: offlineSyncLinks,
+      subLoOverviewLinks: overviewLinks.slice(1),
+    });
+
+    getALMObject().playerLaunchTimeStamp = Date.now();
+    return;
+  }
+
+  const playerEventsHandler = (event: MessageEvent) => {
+    if (event.data === 'status:close' || event.data.type === ALM_PLAYER_CLOSE_FROM_PARENT) {
+      getWindowObject().removeEventListener('message', playerEventsHandler);
+      handlePlayerClose(props.trainingId);
+      props.callBackFn && typeof props.callBackFn === 'function' && props.callBackFn();
+      sendEvent(ALM_PLAYER_CLOSE);
+      dispatchEvent({ loId: props.trainingId }, PrimeEvent.PLAYER_CLOSE);
+    } else if (event.data === 'status:requiredAuth') {
+      const almObject = getALMObject();
+      if (!almObject.isPrimeUserLoggedIn()) {
+        return;
+      }
+
+      const almConfig = getALMConfig();
+      const playerAuth: { value?: string; type?: string } = {};
+      playerAuth.value = almConfig.csrfToken || almObject.getAccessToken();
+      playerAuth.type = almConfig.csrfToken ? 'authType:csrfToken' : 'authType:accessToken';
+      playerIframe?.contentWindow?.postMessage(playerAuth, '*');
+    }
+  };
+
+  getWindowObject().addEventListener('message', playerEventsHandler, false);
+
+  // Save current scroll position BEFORE cleanup (in case cleanup restores a previous position)
+  savedScrollPosition = window.scrollY;
   cleanUp();
-  const overlay = document.createElement("div");
-  overlay.id = "primePlayerOverlay";
-  overlay.style.display = "grid";
-  overlay.style.position = "fixed";
-  overlay.style.width = "100%";
-  overlay.style.height = "100%";
-  overlay.style.top = "0";
-  overlay.style.left = "0";
-  overlay.style.right = "0";
-  overlay.style.bottom = "0";
-  // overlay.style.backgroundColor = "rgba(0,0,0,0.95)";
-  overlay.style.zIndex = "100";
+  const iframeDimension = props?.playerDimension || '100%';
+  const overlay = document.createElement('div');
+  overlay.id = 'primePlayerOverlay';
+  overlay.style.display = 'grid';
+  overlay.style.position = 'fixed';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.right = '0';
+  overlay.style.bottom = '0';
+  overlay.style.backgroundColor = 'rgba(0,0,0,0.95)';
+  overlay.style.zIndex = '100';
   document.body.appendChild(overlay);
-  document.body.style.overflow = "hidden";
-  const iframe = document.createElement("iframe");
-  iframe.style.display = "flex";
-  iframe.src = playeURL;
-  iframe.id = "pplayer_iframe";
-  iframe.name = "pfplayer_frame";
-  iframe.setAttribute("allowtransparency", "true");
-  iframe.setAttribute("webkitallowfullscreen", "true");
-  iframe.setAttribute("mozallowfullscreen", "true");
-  iframe.setAttribute("msallowfullscreen", "true");
-  iframe.setAttribute("allowfullscreen", "true");
-  iframe.width = "100%";
-  iframe.height = "100%";
-  iframe.style.margin = "auto";
-  iframe.style.border = "none";
-  overlay.appendChild(iframe);
+  // Apply fixed positioning with saved scroll position
+  document.body.style.top = `-${savedScrollPosition}px`;
+  document.body.style.position = 'fixed';
+  document.body.style.width = '100%';
+  document.body.style.height = '100%';
+  document.body.style.overflow = 'hidden';
+  document.body.style.touchAction = 'none';
+  document.body.style.overscrollBehavior = 'none';
+  playerIframe = document.createElement('iframe');
+  playerIframe.style.display = 'flex';
+  playerIframe.src = playeURL;
+  playerIframe.id = 'pplayer_iframe';
+  playerIframe.name = 'pfplayer_frame';
+  playerIframe.setAttribute('allowtransparency', 'true');
+  playerIframe.setAttribute('webkitallowfullscreen', 'true');
+  playerIframe.setAttribute('mozallowfullscreen', 'true');
+  playerIframe.setAttribute('msallowfullscreen', 'true');
+  playerIframe.setAttribute('allowfullscreen', 'true');
+  playerIframe.setAttribute('title', GetTranslation('pplayer.iframe.title'));
+  playerIframe.setAttribute('aria-label', GetTranslation('pplayer.iframe.aria'));
+  playerIframe.width = iframeDimension;
+  playerIframe.height = iframeDimension;
+  playerIframe.style.margin = 'auto';
+  playerIframe.style.border = 'none';
+  overlay.appendChild(playerIframe);
+
+  SendMessageToParent(
+    { type: PrimeEvent.PLAYER_LAUNCH, loId: props.trainingId },
+    GetPrimeEmitEventLinks()
+  );
+  getALMObject().playerLaunchTimeStamp = Date.now();
 }
 
 function cleanUp() {
-  const overlay = document.getElementById("primePlayerOverlay") as HTMLElement;
-  const iframe = document.getElementById("pplayer_iframe") as HTMLIFrameElement;
-  if (iframe) {
-    iframe.src = "about:blank";
-    iframe.remove();
+  const overlay = document.getElementById('primePlayerOverlay') as HTMLElement;
+  if (playerIframe) {
+    playerIframe.src = 'about:blank';
+    playerIframe.remove();
+    playerIframe = null;
   }
   if (overlay) {
-    overlay.style.display = "none";
+    overlay.style.display = 'none';
     overlay.remove();
   }
-  document.body.style.overflow = "hidden scroll";
+  document.body.style.overflow = 'hidden scroll';
+  document.body.style.touchAction = 'auto';
+  // Restore scroll position only if we have a saved position
+  if (savedScrollPosition !== 0 || document.body.style.position === 'fixed') {
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    document.body.style.height = '';
+    document.body.style.overflow = '';
+    document.body.style.overscrollBehavior = '';
+    window.scrollTo(0, savedScrollPosition);
+  }
+  savedScrollPosition = 0;
 }
 
 function handlePlayerClose(trainingId: string) {
@@ -95,22 +184,31 @@ function handlePlayerClose(trainingId: string) {
 }
 
 export function GetPlayerURl(
-  trainingId = "",
-  moduleId = "",
-  instanceId = "",
+  trainingId = '',
+  moduleId = '',
+  instanceId = '',
   isMultienrolled: boolean,
-  note_id: "",
-  note_position: "",
-  isResetRequired= false
+  note_id: '',
+  note_position: '',
+  isResetRequired = false
 ): string {
   const primeConfig = getALMConfig();
   const hostName = primeConfig.almBaseURL;
-  const playerEndPoint = "/app/player?";
+  let parsedHostName;
+  try {
+    if (typeof hostName === 'string' && hostName.startsWith('http')) {
+      const hostUrl = new URL(hostName);
+      parsedHostName = hostUrl.hostname;
+    }
+  } catch (error) {
+    //do nothing, hostname=hostname
+  }
+  parsedHostName = parsedHostName || hostName;
+  const playerEndPoint = '/app/player?';
   const key = `lo_id=${trainingId}`;
-  const accessToken = getAccessToken();
-  const authKey = `access_token=${accessToken}`;
   //to-do handle preview/guest
-  let url = `${hostName}${playerEndPoint}${key}&${authKey}&hostname=${hostName}&trapfocus=true&is_native=true&reset_attempt=${isResetRequired}`;
+  const insideApp = isLoadedInsideApp();
+  let url = `${hostName}${playerEndPoint}${key}&hostname=${parsedHostName}&trapfocus=true&is_native=true${insideApp ? '&isInsideApp=true' : ''}&reset_attempt=${isResetRequired}`;
   if (moduleId) {
     url = `${url}&module_id=${moduleId}`;
   }
@@ -127,5 +225,12 @@ export function GetPlayerURl(
   if (note_id && note_position) {
     url = `${url}&note_position=${note_position}&note_id=${note_id}`;
   }
+  if (getWindowObject().sendAuthInHeaders) {
+    url = `${url}&send_auth_in_headers=true`;
+  } else {
+    const authKey = getAuthKey();
+    url = `${url}&${authKey}`;
+  }
+
   return url;
 }

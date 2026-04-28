@@ -9,12 +9,22 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { CatalogFilterState } from "../store/reducers/catalog";
-import { getALMConfig } from "../utils/global";
-import { QueryParams } from "../utils/restAdapter";
+import { CatalogFilterState } from '../store/reducers/catalog';
+import { getALMConfig, getItemFromStorage } from '../utils/global';
+import { QueryParams } from '../utils/restAdapter';
 // import ALMCustomHooksInstance from "./ALMCustomHooks";
-import ICustomHooks from "./ICustomHooks";
-import { PrimeUserBadge } from "../models";
+import ICustomHooks from './ICustomHooks';
+import {
+  PrimeLearningObject,
+  PrimeUserBadge,
+  WidgetTrainingFilters,
+  PaginationParams,
+  CategoryWidgetFilters,
+  WidgetRecommendationFilters,
+} from '../models';
+import { CART_DATA, ERROR_ALREADY_ADDED } from '../utils/constants';
+import { defaultCartValues } from '../utils/lo-utils';
+import { FilterListObject } from '../utils/filters';
 
 class APIService {
   customHooks: ICustomHooks | null;
@@ -22,10 +32,7 @@ class APIService {
     this.customHooks = null;
   }
 
-  public registerServiceInstance(
-    serviceType: string,
-    customHook: ICustomHooks
-  ) {
+  public registerServiceInstance(serviceType: string, customHook: ICustomHooks) {
     if (getALMConfig().usageType === serviceType) {
       this.customHooks = customHook;
     }
@@ -34,22 +41,27 @@ class APIService {
   public async getTrainings(
     filterState: CatalogFilterState,
     sort: string,
-    searchText: string
+    searchText: string,
+    autoCorrectMode: boolean
   ) {
-    return this.customHooks?.getTrainings(filterState, sort, searchText);
+    return this.customHooks?.getTrainings(filterState, sort, searchText, autoCorrectMode);
   }
   public async loadMoreTrainings(
     filterState: CatalogFilterState,
     sort: string,
     searchText: string,
-    url: string
+    url: string,
+    autoCorrectMode: boolean
   ) {
-    return this.customHooks?.loadMoreTrainings(
-      filterState,
-      sort,
-      searchText,
-      url
-    );
+    return this.customHooks?.loadMoreTrainings(filterState, sort, searchText, url, autoCorrectMode);
+  }
+  public async getTrainingsForAuthor(
+    authorId: string,
+    authorType: string,
+    sort: string,
+    url?: string
+  ) {
+    return this.customHooks?.getTrainingsForAuthor(authorId, authorType, sort, url);
   }
   public async loadMore(url: string) {
     return this.customHooks?.loadMore(url);
@@ -59,19 +71,13 @@ class APIService {
     return this.customHooks?.getTraining(id, params);
   }
 
-  public async getTrainingInstanceSummary(
-    trainingId: string,
-    instanceId: string
-  ) {
+  public async getTrainingInstanceSummary(trainingId: string, instanceId: string) {
     return this.customHooks?.getTrainingInstanceSummary(trainingId, instanceId);
   }
-  public async enrollToTraining(
-    params: QueryParams = {},
-    headers: Record<string, string> = {}
-  ) {
+  public async enrollToTraining(params: QueryParams = {}, headers: Record<string, string> = {}) {
     return this.customHooks?.enrollToTraining(params, headers);
   }
-  public async unenrollFromTraining(enrollmentId: string = "") {
+  public async unenrollFromTraining(enrollmentId: string = '') {
     return this.customHooks?.unenrollFromTraining(enrollmentId);
   }
   public async getFilters(): Promise<any> {
@@ -87,16 +93,91 @@ class APIService {
     }
     return this.customHooks.addProductToCart(sku);
   }
-  public async getUsersBadges(userId: string, params: QueryParams = {}):Promise< {
-      badgeList : PrimeUserBadge[];
-      links: {next: any}
+  public async addProductToCartNative(
+    trainingId: string
+  ): Promise<{ redirectionUrl: string; error: Array<string> }> {
+    // checking if training is already added in cart
+    const cartItems = getItemFromStorage(CART_DATA);
+    if (cartItems) {
+      const loId = trainingId.split(':')[1].split('_')[0];
+      const trainingAlreadyAdded = cartItems.find((item: any) => {
+        let trainingIdAddedInCommerceCart = item.sku.split(':')[1];
+        return trainingIdAddedInCommerceCart === loId;
+      });
+      if (trainingAlreadyAdded) {
+        return { ...defaultCartValues, error: [ERROR_ALREADY_ADDED] };
+      }
+    }
+    if (!this.customHooks) {
+      return { ...defaultCartValues };
+    }
+    return this.customHooks.addProductToCartNative(trainingId);
   }
-  | undefined
-> {
+  public async buyNowNative(
+    trainingId: string
+  ): Promise<{ redirectionUrl: string; error: Array<string> }> {
+    if (!this.customHooks) {
+      return { ...defaultCartValues };
+    }
+    return this.customHooks.buyNowNative(trainingId);
+  }
+  public async getUsersBadges(
+    userId: string,
+    params: QueryParams = {}
+  ): Promise<
+    | {
+        badgeList: PrimeUserBadge[];
+        links: { next: any };
+      }
+    | undefined
+  > {
     return this.customHooks?.getUsersBadges(userId, params);
   }
-  public async loadMoreBadges(url: string){
+  public async loadMoreBadges(url: string) {
     return this.customHooks?.loadMoreBadges(url);
+  }
+  public async getAllDiscussions(params: QueryParams, trainingId: string) {
+    return this.customHooks?.getAllDiscussions(params, trainingId);
+  }
+  public async loadMoreDiscussion(url: string) {
+    return this.customHooks?.loadMoreDiscussion(url);
+  }
+  public async postDiscussion(trainingId: string, body: Object) {
+    return this.customHooks?.postDiscussion(trainingId, body);
+  }
+  public async deleteDiscussion(loId: string, discussionPostId: string) {
+    return this.customHooks?.deleteDiscussion(loId, discussionPostId);
+  }
+  public async getCatalogsByIds(catalogIds: string[]) {
+    return this.customHooks?.getCatalogsByIds(catalogIds);
+  }
+  public async fetchCourseInstanceMapping(
+    training: PrimeLearningObject,
+    trainingInstanceId: string
+  ) {
+    return this.customHooks?.fetchCourseInstanceMapping(training, trainingInstanceId);
+  }
+  public async getCoursePathWidgetTrainings(
+    filters: WidgetTrainingFilters,
+    pagination: PaginationParams
+  ) {
+    return this.customHooks?.getCoursePathWidgetTrainings(filters, pagination);
+  }
+  public async getCoursePathWidgetRecommendations(
+    filters: WidgetRecommendationFilters,
+    pagination: PaginationParams
+  ) {
+    return this.customHooks?.getCoursePathWidgetRecommendations(filters, pagination);
+  }
+  public async getCategoryWidgetData(filters: CategoryWidgetFilters, pagination: PaginationParams) {
+    return this.customHooks?.getCategoryWidgetData(filters, pagination);
+  }
+  public async getSearchFilterList(
+    query: string,
+    type: string,
+    selectedItemsFromStore: { [key: string]: boolean }
+  ) {
+    return this.customHooks?.getSearchFilterList(query, type, selectedItemsFromStore);
   }
 }
 

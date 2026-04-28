@@ -91,8 +91,7 @@ public class EmbeddableLrngWidgetModel {
         selectedWidgetRef = availableWidgetsList.get(0).getWidgetRef();
       }
       Optional<EmbeddableLrngWidgetConfig> opSelectedWidgetConfig =
-          availableWidgetsList
-              .stream()
+          availableWidgetsList.stream()
               .filter(widget -> widget.getWidgetRef().equals(selectedWidgetRef))
               .findFirst();
       EmbeddableLrngWidgetConfig selectedWidgetConfig;
@@ -191,8 +190,7 @@ public class EmbeddableLrngWidgetModel {
 
   private List<EmbeddableLrngWidgetConfig> getAvailableWidgets(
       List<EmbeddableLrngWidgetConfig> widgets) {
-    return widgets
-        .stream()
+    return widgets.stream()
         .filter(widget -> widget.getType().equals("widget"))
         .collect(Collectors.toList());
   }

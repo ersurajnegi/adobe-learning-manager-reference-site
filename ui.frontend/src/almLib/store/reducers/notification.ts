@@ -9,20 +9,23 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { AnyAction, Reducer , combineReducers} from "redux";
-import { PrimeAdminAnnouncement, PrimeUserNotification } from "../../models";
+import { AnyAction, Reducer, combineReducers } from 'redux';
+import { PrimeAdminAnnouncement, PrimeUserNotification } from '../../models';
 
 import {
   LOAD_ANNOUNCEMENT,
-    LOAD_NOTIFICATIONS,
-    PAGINATE_NOTIFICATIONS
-  } from "../actions/notification/actionTypes";
+  LOAD_NOTIFICATIONS,
+  PAGINATE_NOTIFICATIONS,
+  UPDATE_NOTIFICATION,
+} from '../actions/notification/actionTypes';
+import { GetTranslation } from '../../utils/translationService';
 
-  export interface NotificationState {
-    notifications: PrimeUserNotification[] | null;
-    next: string;
-    announcements: PrimeAdminAnnouncement;
-  }
+export interface NotificationState {
+  notifications: PrimeUserNotification[] | null;
+  next: string;
+  announcements: PrimeAdminAnnouncement;
+  unreadCount: number;
+}
 
 const notifications: Reducer<PrimeUserNotification[] | null, AnyAction> = (
   state: PrimeUserNotification[] | null | undefined,
@@ -30,17 +33,65 @@ const notifications: Reducer<PrimeUserNotification[] | null, AnyAction> = (
 ) => {
   switch (action.type) {
     case LOAD_NOTIFICATIONS: {
-      return action?.payload.notifications;
+      // If we're updating existing notifications
+      if (state && action.payload.isUpdate) {
+        return state.map(notification => {
+          const updatedNotification = action.payload.notifications.find(
+            (n: PrimeUserNotification) => n.id === notification.id
+          );
+          return updatedNotification || notification;
+        });
+      }
+      // For initial load or refresh
+      return action.payload.notifications || [];
     }
     case PAGINATE_NOTIFICATIONS: {
-      return [...state!, ...action.payload?.notifications];
+      if (!state) return action.payload.notifications;
+      return [...state, ...(action.payload.notifications || [])];
+    }
+    case UPDATE_NOTIFICATION: {
+      return state!.map(notification =>
+        notification.id === action.payload.id
+          ? {
+              id: notification.id,
+              _transient: notification._transient,
+              actionTaken: true,
+              channel: notification.channel,
+              dateCreated: notification.dateCreated,
+              message: GetTranslation('text.feedbackForCourse', true),
+              modelIds: notification.modelIds,
+              modelNames: notification.modelNames,
+              modelTypes: notification.modelTypes,
+              read: notification.read,
+              role: notification.role,
+              type: notification.type,
+              announcement: notification.announcement,
+            }
+          : notification
+      );
     }
     default:
       return state || [];
   }
 };
-const announcements: Reducer<PrimeAdminAnnouncement  , AnyAction> = (
-  state: PrimeAdminAnnouncement  | undefined,
+
+const unreadCount: Reducer<number, AnyAction> = (state: number | undefined, action: AnyAction) => {
+  switch (action.type) {
+    case LOAD_NOTIFICATIONS: {
+      if (action.payload.unreadCount !== undefined) {
+        return action.payload.unreadCount;
+      }
+      // Calculate unread count from notifications if not provided
+      const notifications = action.payload.notifications || [];
+      return notifications.filter((n: PrimeUserNotification) => !n.read).length;
+    }
+    default:
+      return state || 0;
+  }
+};
+
+const announcements: Reducer<PrimeAdminAnnouncement, AnyAction> = (
+  state: PrimeAdminAnnouncement | undefined,
   action: AnyAction
 ) => {
   switch (action.type) {
@@ -52,24 +103,21 @@ const announcements: Reducer<PrimeAdminAnnouncement  , AnyAction> = (
   }
 };
 
-const next: Reducer<string, AnyAction> = (
-    state: string | undefined,
-    action: AnyAction
-  ) => {
-    switch (action.type) {
-      case LOAD_NOTIFICATIONS:
-      case PAGINATE_NOTIFICATIONS:
-        return action.payload?.next;
-      default:
-        return state || "";
-    }
-  };
-
+const next: Reducer<string, AnyAction> = (state: string | undefined, action: AnyAction) => {
+  switch (action.type) {
+    case LOAD_NOTIFICATIONS:
+    case PAGINATE_NOTIFICATIONS:
+      return action.payload?.next || '';
+    default:
+      return state || '';
+  }
+};
 
 const notification: Reducer<NotificationState, AnyAction> = combineReducers({
-    notifications,
-    next,
-    announcements,
-  });
-  
-export  {notification};
+  notifications,
+  next,
+  announcements,
+  unreadCount,
+});
+
+export { notification };

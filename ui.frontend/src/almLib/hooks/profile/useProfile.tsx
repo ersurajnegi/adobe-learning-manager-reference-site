@@ -9,11 +9,11 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useCallback, useEffect, useState } from "react";
-import { AlertType } from "../../common/Alert/AlertDialog";
-import { useAlert } from "../../common/Alert/useAlert";
-import { AccountActiveFields } from "../../models/custom";
-import { PrimeUser } from "../../models/PrimeModels";
+import { useCallback, useEffect, useState } from 'react';
+import { AlertType } from '../../common/Alert/AlertDialog';
+import { useAlert } from '../../common/Alert/useAlert';
+import { AccountActiveFields } from '../../models/custom';
+import { PrimeUser } from '../../models/PrimeModels';
 import {
   getAccountActiveFields,
   getALMConfig,
@@ -21,10 +21,12 @@ import {
   updateAccountActiveFieldsDetails,
   updateALMUser,
   updateUserProfileImage,
-} from "../../utils/global";
-import { RestAdapter } from "../../utils/restAdapter";
-import { GetTranslation } from "../../utils/translationService";
-import { getUploadInfo, uploadFile } from "../../utils/uploadUtils";
+} from '../../utils/global';
+import { RestAdapter } from '../../utils/restAdapter';
+import { GetTranslation } from '../../utils/translationService';
+import { getUploadInfo, uploadFile } from '../../utils/uploadUtils';
+import { PrimeDispatchEvent } from '../../utils/widgets/base/EventHandlingBase';
+import { PrimeEvent } from '../../utils/widgets/common';
 
 interface ProfileAttributes {
   user: PrimeUser;
@@ -32,14 +34,15 @@ interface ProfileAttributes {
 }
 
 export const useProfile = () => {
-  const [profileAttributes, setProfileAttributes] = useState<ProfileAttributes>(
-    { user: {}, accountActiveFields: {} } as ProfileAttributes
-  );
+  const [profileAttributes, setProfileAttributes] = useState<ProfileAttributes>({
+    user: {},
+    accountActiveFields: {},
+  } as ProfileAttributes);
 
   const [userFieldData, setUserFieldData] = useState<any>({ fields: {} });
   // const [errorMessage, setErrorMessage] = useState("");
 
-  const [errorCode, setErrorCode] = useState("");
+  const [errorCode, setErrorCode] = useState('');
   const [almAlert] = useAlert();
   useEffect(() => {
     const setupProfile = async () => {
@@ -55,10 +58,10 @@ export const useProfile = () => {
         const userFields: any = {};
         userFields.fields = userResponse?.user.fields;
         setUserFieldData(userFields);
-        setErrorCode("");
+        setErrorCode('');
       } catch (error: any) {
         setErrorCode(error.status);
-        console.error("Error fetching profile details : ", error);
+        console.error('Error fetching profile details : ', error);
       }
     };
 
@@ -72,23 +75,25 @@ export const useProfile = () => {
       const baseApiUrl = getALMConfig().primeApiURL;
       await RestAdapter.post({
         url: `${baseApiUrl}avatar`,
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({
           imageUrl,
         }),
         headers: {
-          "Content-Type": "application/vnd.api+json;charset=UTF-8",
+          'Content-Type': 'application/vnd.api+json;charset=UTF-8',
         },
       });
       const response = await updateALMUser();
-      setProfileAttributes((prevState) => ({
+      setProfileAttributes(prevState => ({
         accountActiveFields: prevState.accountActiveFields,
         user: response.user,
       }));
       await updateUserProfileImage(response.user.avatarUrl);
-      setErrorCode("");
+      setErrorCode('');
+      return response.user;
     } catch (error: any) {
       setErrorCode(error.status);
+      return null;
     }
   }, []);
 
@@ -97,39 +102,116 @@ export const useProfile = () => {
       const baseApiUrl = getALMConfig().primeApiURL;
       await RestAdapter.delete({
         url: `${baseApiUrl}avatar`,
-        method: "DELETE",
+        method: 'DELETE',
         headers: {
-          "Content-Type": "application/vnd.api+json;charset=UTF-8",
+          'Content-Type': 'application/vnd.api+json;charset=UTF-8',
         },
       });
       const response = await updateALMUser();
-      setProfileAttributes((prevState) => ({
+      setProfileAttributes(prevState => ({
         accountActiveFields: prevState.accountActiveFields,
         user: response.user,
       }));
       await updateUserProfileImage(response.user.avatarUrl);
-      setErrorCode("");
+      setErrorCode('');
+      return response.user;
     } catch (error: any) {
       setErrorCode(error.status);
+      return null;
     }
   }, []);
 
-  const updateAccountActiveFields = useCallback(
-    async (accountActiveFields: any, userId: any) => {
-      try {
-        await updateAccountActiveFieldsDetails(accountActiveFields, userId);
-        almAlert(
-          true,
-          GetTranslation("alm.text.activeFieldsSuccess"),
-          AlertType.success
-        );
-      } catch (error: any) {
-        almAlert(
-          true,
-          GetTranslation("alm.text.activeFieldsFailure"),
-          AlertType.error
-        );
+  const updateAccountActiveFields = useCallback(async (accountActiveFields: any, userId: any) => {
+    try {
+      await updateAccountActiveFieldsDetails(accountActiveFields, userId);
+      almAlert(true, GetTranslation('alm.text.activeFieldsSuccess'), AlertType.success);
+    } catch (error: any) {
+      almAlert(true, GetTranslation('alm.text.activeFieldsFailure'), AlertType.error);
+    }
+  }, []);
+
+  const updateProfileSettings = useCallback(
+    async ({ shouldEnrollOnClick }: { shouldEnrollOnClick: boolean }) => {
+      const user = profileAttributes.user;
+      const patchData = {
+        data: {
+          id: user.id,
+          type: 'user',
+          attributes: {
+            enrollOnClick: shouldEnrollOnClick || user.enrollOnClick,
+          },
+        },
+      };
+      await updateUserProfile(user.id, patchData);
+      PrimeDispatchEvent(document, PrimeEvent.ALM_USER_PROFILE_UPDATED);
+    },
+    [profileAttributes]
+  );
+
+  const updateUserProfile = async (userId: string, requestBody: any) => {
+    const headers = { 'content-type': 'application/json' };
+
+    await RestAdapter.ajax({
+      url: `${getALMConfig().primeApiURL}/users/${userId}`,
+      method: 'PATCH',
+      body: JSON.stringify(requestBody),
+      headers: headers,
+    });
+  };
+
+  const updateBio = useCallback(async (userId: string, bioData: { bio: string }) => {
+    const requestBody = {
+      data: {
+        type: 'user',
+        id: userId,
+        attributes: {
+          bio: bioData.bio,
+        },
+      },
+    };
+
+    await updateUserProfile(userId, requestBody);
+  }, []);
+
+  const updateUserPreferences = useCallback(
+    async (
+      userId: string,
+      preferencesData: {
+        uiLocale?: string;
+        contentLocale?: string;
+        timeZoneCode?: string;
+        enrollOnClick?: boolean;
       }
+    ) => {
+      const requestBody = {
+        data: {
+          type: 'user',
+          id: userId,
+          attributes: {
+            uiLocale: preferencesData.uiLocale,
+            contentLocale: preferencesData.contentLocale,
+            timeZoneCode: preferencesData.timeZoneCode,
+            enrollOnClick: preferencesData.enrollOnClick,
+          },
+        },
+      };
+
+      await updateUserProfile(userId, requestBody);
+    },
+    []
+  );
+
+  const hasUserPreferencesChanged = useCallback(
+    (originalUser: PrimeUser | null, updatedUser: PrimeUser | null) => {
+      if (!originalUser || !updatedUser) {
+        return false;
+      }
+      return (
+        updatedUser.uiLocale !== originalUser.uiLocale ||
+        updatedUser.contentLocale !== originalUser.contentLocale ||
+        updatedUser.timeZoneCode !== originalUser.timeZoneCode ||
+        updatedUser.enrollOnClick !== originalUser.enrollOnClick
+      );
     },
     []
   );
@@ -142,5 +224,9 @@ export const useProfile = () => {
     updateAccountActiveFields,
     userFieldData,
     setUserFieldData,
+    updateProfileSettings,
+    updateBio,
+    updateUserPreferences,
+    hasUserPreferencesChanged,
   };
 };

@@ -9,62 +9,50 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { PrimeCommunityObjectHeader } from "../PrimeCommunityObjectHeader";
-import { PrimeCommunityObjectBody } from "../PrimeCommunityObjectBody";
-import { PrimeCommunityObjectActions } from "../PrimeCommunityObjectActions";
-import { PrimeCommunityObjectInput } from "../PrimeCommunityObjectInput";
-import { PrimeCommunityReplies } from "../PrimeCommunityReplies";
-import { useIntl } from "react-intl";
-import { useSelector } from "react-redux";
-import { useComment, useReplies } from "../../../hooks/community";
-import { useRef, useEffect, useState } from "react";
-import { State } from "../../../store/state";
-import styles from "./PrimeCommunityComment.module.css";
-import {
-  COMMENT,
-  DOWN,
-  DOWNVOTE,
-  REPLY,
-  UP,
-  UPVOTE,
-} from "../../../utils/constants";
-import { formatMention, processMention } from "../../../utils/mentionUtils";
+import { PrimeCommunityObjectHeader } from '../PrimeCommunityObjectHeader';
+import { PrimeCommunityObjectBody } from '../PrimeCommunityObjectBody';
+import { PrimeCommunityObjectActions } from '../PrimeCommunityObjectActions';
+import { PrimeCommunityObjectInput } from '../PrimeCommunityObjectInput';
+import { PrimeCommunityReplies } from '../PrimeCommunityReplies';
+import { useIntl } from 'react-intl';
+import { useComment, useReplies } from '../../../hooks/community';
+import { useRef, useEffect, useState } from 'react';
+import styles from './PrimeCommunityComment.module.css';
+import { COMMENT, DOWN, DOWNVOTE, REPLY, UP, UPVOTE } from '../../../utils/constants';
+import { useConfirmationAlert } from '../../../common/Alert/useConfirmationAlert';
+import { getAlmConfirmationBadwordParams } from '../../../utils/social-utils';
 
 const PrimeCommunityComment = (props: any) => {
   const { formatMessage } = useIntl();
   const ref = useRef<any>();
-  let comment = useSelector((state: State) => state.social.comments.items.find((item: any) => item.id === props.comment.id)) as any;
-  if(!comment) {
-    comment = props.comment;
-  }
-  const {userMentions} = comment;
+  const comment = props.comment;
   const parentPost = props.parentPost;
+  const { updateComment: setComment } = props;
   const { voteComment, deleteCommentVote } = useComment();
   const { addReply, fetchReplies } = useReplies(comment.id);
-  const myVoteStatus = comment.myVoteStatus ? comment.myVoteStatus : "";
+  const myVoteStatus = comment.myVoteStatus ? comment.myVoteStatus : '';
   const [myUpVoteStatus, setMyUpVoteStatus] = useState(myVoteStatus === UPVOTE);
   const [upVoteCount, setUpVoteCount] = useState(comment.upVote);
-  const [myDownVoteStatus, setMyDownVoteStatus] = useState(
-    myVoteStatus === DOWNVOTE
-  );
+  const [myDownVoteStatus, setMyDownVoteStatus] = useState(myVoteStatus === DOWNVOTE);
   const [downVoteCount, setDownVoteCount] = useState(comment.downVote);
   const firstRunForUpvote = useRef(true);
   const firstRunForDownvote = useRef(true);
   const [showReplies, setShowReplies] = useState(false);
   const [showReplyInput, setShowReplyInput] = useState(false);
   const showRepliesLabel = formatMessage({
-    id: "alm.community.comment.showReplies",
-    defaultMessage: "Show Replies",
+    id: 'alm.community.comment.showReplies',
+    defaultMessage: 'Show Replies',
   });
   const hideRepliesLabel = formatMessage({
-    id: "alm.community.comment.hideReplies",
-    defaultMessage: "Hide Replies",
+    id: 'alm.community.comment.hideReplies',
+    defaultMessage: 'Hide Replies',
   });
   const [buttonLabel, setButtonLabel] = useState(showRepliesLabel);
   const [replyCount, setReplyCount] = useState(comment.replyCount);
   const [showEditCommentView, setShowEditCommentView] = useState(false);
   const [commentText, setCommentText] = useState(comment.richText);
-  const processedCommentText = processMention(commentText, userMentions || []);
+  const [almConfirmationAlert] = useConfirmationAlert();
+  const EMPTY = '';
 
   const viewButtonClickHandler = () => {
     if (!showReplies) {
@@ -92,9 +80,7 @@ const PrimeCommunityComment = (props: any) => {
       firstRunForUpvote.current = false;
       return;
     }
-    myUpVoteStatus === true
-      ? setUpVoteCount(upVoteCount + 1)
-      : setUpVoteCount(upVoteCount - 1);
+    myUpVoteStatus === true ? setUpVoteCount(upVoteCount + 1) : setUpVoteCount(upVoteCount - 1);
   }, [myUpVoteStatus]);
 
   useEffect(() => {
@@ -115,24 +101,20 @@ const PrimeCommunityComment = (props: any) => {
 
   const upVoteButtonClickHandler = () => {
     //if already upVoted, delete vote
-    myUpVoteStatus
-      ? deleteCommentVote(comment.id, UP)
-      : voteComment(comment.id, UP);
+    myUpVoteStatus ? deleteCommentVote(comment.id, UP) : voteComment(comment.id, UP);
     if (!myUpVoteStatus && myDownVoteStatus) {
-      setMyDownVoteStatus((myDownVoteStatus) => !myDownVoteStatus);
+      setMyDownVoteStatus(myDownVoteStatus => !myDownVoteStatus);
     }
-    setMyUpVoteStatus((myUpVoteStatus) => !myUpVoteStatus);
+    setMyUpVoteStatus(myUpVoteStatus => !myUpVoteStatus);
   };
 
   const downVoteButtonClickHandler = () => {
     //if already downVoted, delete vote
-    myDownVoteStatus
-      ? deleteCommentVote(comment.id, DOWN)
-      : voteComment(comment.id, DOWN);
+    myDownVoteStatus ? deleteCommentVote(comment.id, DOWN) : voteComment(comment.id, DOWN);
     if (!myDownVoteStatus && myUpVoteStatus) {
-      setMyUpVoteStatus((myUpVoteStatus) => !myUpVoteStatus);
+      setMyUpVoteStatus(myUpVoteStatus => !myUpVoteStatus);
     }
-    setMyDownVoteStatus((myDownVoteStatus) => !myDownVoteStatus);
+    setMyDownVoteStatus(myDownVoteStatus => !myDownVoteStatus);
   };
 
   const replyClickHandler = () => {
@@ -140,22 +122,15 @@ const PrimeCommunityComment = (props: any) => {
   };
 
   const saveReplyHandler = async (value: any) => {
-    try {
-      const formattedValue = formatMention(value);
-      await addReply(comment.id, formattedValue);
-      setReplyCount(replyCount + 1);
-      fetchReplies(comment.id);
-      showReplySection();
-    } catch (exception) {
-      console.log("not updating reply count");
-    }
+    await addReply(comment.id, value);
+    setReplyCount(replyCount + 1);
+    fetchReplies(comment.id);
+    showReplySection();
   };
 
   const updateComment = async (value: any) => {
-    if (typeof props.updateComment === "function") {
-      const formattedValue = formatMention(value);
-      await props.updateComment(comment.id, formattedValue);
-      // update the comment without formatted text, it will go through redux and come back with the formatted text
+    if (typeof setComment === 'function') {
+      await setComment(comment.id, value);
       setCommentText(value);
       setShowEditCommentView(false);
     }
@@ -166,7 +141,7 @@ const PrimeCommunityComment = (props: any) => {
   };
 
   const deleteCommentHandler = () => {
-    if (typeof props.deleteCommentHandler === "function") {
+    if (typeof props.deleteCommentHandler === 'function') {
       props.deleteCommentHandler();
     }
   };
@@ -176,7 +151,7 @@ const PrimeCommunityComment = (props: any) => {
   };
 
   const updateRightAnswerHandler = (value: any) => {
-    if (typeof props.updateRightAnswerHandler === "function") {
+    if (typeof props.updateRightAnswerHandler === 'function') {
       props.updateRightAnswerHandler(comment.id, value);
     }
   };
@@ -204,8 +179,8 @@ const PrimeCommunityComment = (props: any) => {
               object={comment}
               type={COMMENT}
               actionLabel={formatMessage({
-                id: "alm.community.reply.label",
-                defaultMessage: "Reply",
+                id: 'alm.community.reply.label',
+                defaultMessage: 'Reply',
               })}
               actionClickHandler={replyClickHandler}
               buttonLabel={buttonLabel}
@@ -224,8 +199,8 @@ const PrimeCommunityComment = (props: any) => {
                 ref={ref}
                 object={comment}
                 inputPlaceholder={formatMessage({
-                  id: "alm.community.comment.replyHere",
-                  defaultMessage: "Reply here",
+                  id: 'alm.community.comment.replyHere',
+                  defaultMessage: 'Reply here',
                 })}
                 primaryActionHandler={(value: any) => saveReplyHandler(value)}
                 concisedToolbarOptions={true}
@@ -247,10 +222,10 @@ const PrimeCommunityComment = (props: any) => {
           ref={ref}
           object={comment}
           inputPlaceholder={formatMessage({
-            id: "alm.community.comment.commentHere",
-            defaultMessage: "Comment here",
+            id: 'alm.community.comment.commentHere',
+            defaultMessage: 'Comment here',
           })}
-          defaultValue={processedCommentText}
+          defaultValue={comment.richText}
           primaryActionHandler={(value: any) => updateComment(value)}
           secondaryActionHandler={() => setShowEditCommentView(false)}
           concisedToolbarOptions={true}

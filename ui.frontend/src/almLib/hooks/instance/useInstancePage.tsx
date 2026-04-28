@@ -9,50 +9,53 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useIntl } from "react-intl";
-import APIServiceInstance from "../../common/APIService";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useIntl } from 'react-intl';
+import APIServiceInstance from '../../common/APIService';
 import {
   PrimeLearningObject,
   PrimeLearningObjectInstance,
   PrimeLocalizationMetadata,
-} from "../../models/PrimeModels";
-import { getALMObject } from "../../utils/global";
-import { useCardIcon } from "../../utils/hooks";
-import { checkIfCompletionDeadlineNotPassed } from "../../utils/instance";
-import { QueryParams } from "../../utils/restAdapter";
-import { getPreferredLocalizedMetadata } from "../../utils/translationService";
+} from '../../models/PrimeModels';
+import { getALMObject } from '../../utils/global';
+import { useCardIcon } from '../../utils/hooks';
+import { checkIfCompletionDeadlineNotPassed } from '../../utils/instance';
+import { QueryParams } from '../../utils/restAdapter';
+import {
+  formatMap,
+  getPreferredLocalizedMetadata,
+  GetTranslation,
+} from '../../utils/translationService';
+import { ENGLISH_LOCALE, INSTANCE_CARD_BACKGROUND_SIZE, WAITING } from '../../utils/constants';
+import { useUserContext } from '../../contextProviders/userContextProvider';
+import { Text } from '@adobe/react-spectrum';
 
 const DEFAULT_INCLUDE_LO_OVERVIEW =
-  "enrollment,instances.enrollment, instances.loResources.resources,subLOs.instances.loResources,skills.skillLevel.skill, instances.badge,supplementaryResources, skills.skillLevel.badge, instances.loResources.resources.room, enrollment.loInstance";
+  'enrollment,instances.enrollment, instances.loResources.resources,instances.loResources.checklistReviewedBy,subLOs.instances.loResources,skills.skillLevel.skill, instances.badge,supplementaryResources, skills.skillLevel.badge, instances.loResources.resources.room, enrollment.loInstance';
 
-export const useInstancePage = (
-  trainingId: string,
-  params: QueryParams = {}
-) => {
+export const useInstancePage = (trainingId: string, params: QueryParams = {}) => {
   const { locale } = useIntl();
+  const { user } = useUserContext() || {};
+  const contentLocale = user?.contentLocale || ENGLISH_LOCALE;
   const [currentState, setCurrentState] = useState({
     training: {} as PrimeLearningObject,
     isLoading: true,
-    errorCode: "",
+    errorCode: '',
   });
   const { isLoading, training, errorCode } = currentState;
   useEffect(() => {
     const getTrainingInstance = async () => {
       try {
         let queryParam: QueryParams = {};
-        queryParam["include"] = params.include || DEFAULT_INCLUDE_LO_OVERVIEW;
-        queryParam["useCache"] = true;
-        queryParam["filter.ignoreEnhancedLP"] = false;
-        const response = await APIServiceInstance.getTraining(
-          trainingId,
-          queryParam
-        );
+        queryParam['include'] = params.include || DEFAULT_INCLUDE_LO_OVERVIEW;
+        queryParam['useCache'] = true;
+        queryParam['filter.ignoreEnhancedLP'] = false;
+        const response = await APIServiceInstance.getTraining(trainingId, queryParam);
         if (response) {
           setCurrentState({
             training: response,
             isLoading: false,
-            errorCode: "",
+            errorCode: '',
           });
         }
       } catch (error: any) {
@@ -67,29 +70,32 @@ export const useInstancePage = (
   }, [params.include, trainingId]);
 
   const {
-    name = "",
-    description = "",
-    overview = "",
-    richTextOverview = "",
+    name = '',
+    description = '',
+    overview = '',
+    richTextOverview = '',
   } = useMemo((): PrimeLocalizationMetadata => {
     if (!training) {
       return {} as PrimeLocalizationMetadata;
     }
-    return getPreferredLocalizedMetadata(training.localizedMetadata, locale);
-  }, [training, locale]);
+    return getPreferredLocalizedMetadata(training.localizedMetadata, contentLocale);
+  }, [training, contentLocale]);
 
   const activeInstances: PrimeLearningObjectInstance[] = useMemo(() => {
     const instances = training.instances;
     return instances?.length
       ? instances?.filter(
-          (instance) =>
-            ((instance.state === "Active" &&
-            checkIfCompletionDeadlineNotPassed(instance)) || (instance.enrollment ))
+          instance =>
+            (instance.state === 'Active' && checkIfCompletionDeadlineNotPassed(instance)) ||
+            instance.enrollment
         )
       : [];
   }, [training.instances]);
 
-  const { cardIconUrl, color, bannerUrl, cardBgStyle } = useCardIcon(training);
+  const { cardIconUrl, color, bannerUrl, cardBgStyle, listThumbnailBgStyle } = useCardIcon(
+    training,
+    INSTANCE_CARD_BACKGROUND_SIZE
+  );
 
   const selectInstanceHandler = useCallback(
     (instanceId: string) => {
@@ -99,12 +105,92 @@ export const useInstancePage = (
   );
 
   const getSummary = async (trainingInstance: PrimeLearningObjectInstance) => {
-    
     return await APIServiceInstance.getTrainingInstanceSummary(
       trainingInstance.learningObject.id,
       trainingInstance.id
-    ).then(response => response?.loInstanceSummary)
-    .catch(error => console.log(error));
+    )
+      .then(response => response?.loInstanceSummary)
+      .catch(error => console.log(error));
+  };
+
+  const extensionLocalizedMetadata = (extension: any, contentLocale: any) => {
+    if (!extension) {
+      return {} as any;
+    }
+    return getPreferredLocalizedMetadata(extension.localizedMetadata, contentLocale);
+  };
+
+  const loFormat = (format: string) => {
+    return format ? GetTranslation(`${formatMap[format]}`, true) : '';
+  };
+
+  const instanceName = (name: string, selectHandler: any, styles: any) => {
+    return (
+      <a
+        tabIndex={0}
+        className={styles.instanceName}
+        onClick={selectHandler}
+        data-automationid={`component:instance-details-list:::selectInstance:::${name}`}
+      >
+        {name}
+      </a>
+    );
+  };
+
+  const languageText = (instanceLanguage: any, styles: any) => {
+    return instanceLanguage ? (
+      <p className={styles.languageInfo}>
+        <span className={styles.label}>
+          <Text UNSAFE_style={{ fontWeight: 'bold' }}>
+            {GetTranslation('alm.text.language', true)}
+            {': '}
+          </Text>
+          <span className={styles.value}>{instanceLanguage}</span>
+        </span>
+      </p>
+    ) : (
+      ''
+    );
+  };
+
+  const seatsAvailableText = (
+    seatLimit: any,
+    seatsAvailable: any,
+    enrollment: any,
+    waitlistPosition: any,
+    hasCrVcModule: any,
+    styles: any
+  ) => {
+    return seatLimit ? (
+      <>
+        {seatsAvailable > 0 ? (
+          <span className={styles.label}>
+            <Text UNSAFE_style={{ fontWeight: 'bold' }}>
+              {GetTranslation('alm.overviewseatsAvailableMsg', true)}
+              {': '}
+            </Text>
+            <span className={styles.value}>{seatsAvailable}</span>
+          </span>
+        ) : enrollment && enrollment.state === WAITING ? (
+          <span>
+            {GetTranslation('alm.overview.waitlist.position', true)}
+            {waitlistPosition}
+          </span>
+        ) : (
+          <span className={styles.seatNotAvailable}>
+            {GetTranslation('alm.overview.no.seats.available', true)}
+          </span>
+        )}
+      </>
+    ) : hasCrVcModule ? (
+      <>
+        <span className={styles.label}>
+          {GetTranslation('alm.overviewseatsAvailableMsg', true)}
+        </span>
+      </>
+    ) : (
+      ''
+    );
   };
 
   return {
@@ -118,9 +204,15 @@ export const useInstancePage = (
     overview,
     richTextOverview,
     cardBgStyle,
+    listThumbnailBgStyle,
     activeInstances,
     selectInstanceHandler,
     errorCode,
-    getSummary
+    getSummary,
+    extensionLocalizedMetadata,
+    loFormat,
+    instanceName,
+    languageText,
+    seatsAvailableText,
   };
 };

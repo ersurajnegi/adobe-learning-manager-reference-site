@@ -15,33 +15,33 @@ import {
   SOCIAL_DISLIKE_SVG,
   SOCIAL_DISLIKE_FILLED_SVG,
   DOWNLOAD_ICON,
-} from "../../../utils/inline_svg";
-import { useIntl } from "react-intl";
-import styles from "./PrimeCommunityObjectActions.module.css";
-import { COMMENT, REPLY } from "../../../utils/constants";
+} from '../../../utils/inline_svg';
+import { useIntl } from 'react-intl';
+import styles from './PrimeCommunityObjectActions.module.css';
+import { COMMENT, REPLY } from '../../../utils/constants';
 
 const PrimeCommunityObjectActions = (props: any) => {
   const { formatMessage } = useIntl();
   const viewButtonClickHandler = () => {
-    if (typeof props.viewButtonClickHandler === "function") {
+    if (typeof props.viewButtonClickHandler === 'function') {
       props.viewButtonClickHandler();
     }
   };
 
   const upVoteButtonClickHandler = () => {
-    if (typeof props.upVoteButtonClickHandler === "function") {
+    if (typeof props.upVoteButtonClickHandler === 'function') {
       props.upVoteButtonClickHandler();
     }
   };
 
   const downVoteButtonClickHandler = () => {
-    if (typeof props.downVoteButtonClickHandler === "function") {
+    if (typeof props.downVoteButtonClickHandler === 'function') {
       props.downVoteButtonClickHandler();
     }
   };
 
   const actionClickHandler = () => {
-    if (typeof props.downVoteButtonClickHandler === "function") {
+    if (typeof props.downVoteButtonClickHandler === 'function') {
       props.actionClickHandler();
     }
   };
@@ -49,55 +49,35 @@ const PrimeCommunityObjectActions = (props: any) => {
   return (
     <>
       <div className={styles.primeObjectOptions}>
-        <div style={{display:"flex"}}>
+        <div style={{ display: 'flex' }}>
           {props.type === COMMENT && (
-            <button
-              className={styles.primeObjectCommentsCount}
-              onClick={actionClickHandler}
-            >
+            <button className={styles.primeObjectCommentsCount} onClick={actionClickHandler}>
               {props.actionLabel}
             </button>
           )}
           {props.type !== REPLY && (
-            <button
-              className={styles.primeObjectCommentsCount}
-              onClick={viewButtonClickHandler}
-            >
+            <button className={styles.primeObjectCommentsCount} onClick={viewButtonClickHandler}>
               {props.buttonLabel} ({props.buttonCount})
             </button>
           )}
-          <button
-            className={styles.primeObjectUpVoteIcon}
-            onClick={upVoteButtonClickHandler}
-          >
-            {props.myUpVoteStatus === true
-              ? SOCIAL_LIKE_FILLED_SVG()
-              : SOCIAL_LIKE_SVG()}
-            <span className={styles.primeObjectUpVoteCount}>
-              {props.upVoteCount}
-            </span>
+          <button className={styles.primeObjectUpVoteIcon} onClick={upVoteButtonClickHandler}>
+            {props.myUpVoteStatus === true ? SOCIAL_LIKE_FILLED_SVG() : SOCIAL_LIKE_SVG()}
+            <span className={styles.primeObjectUpVoteCount}>{props.upVoteCount}</span>
           </button>
-          <button
-            className={styles.primeObjectDownVoteIcon}
-            onClick={downVoteButtonClickHandler}
-          >
-            {props.myDownVoteStatus
-              ? SOCIAL_DISLIKE_FILLED_SVG()
-              : SOCIAL_DISLIKE_SVG()}{" "}
-            <span className={styles.primeObjectDownVoteCount}>
-              {props.downVoteCount}
-            </span>
+          <button className={styles.primeObjectDownVoteIcon} onClick={downVoteButtonClickHandler}>
+            {props.myDownVoteStatus ? SOCIAL_DISLIKE_FILLED_SVG() : SOCIAL_DISLIKE_SVG()}{' '}
+            <span className={styles.primeObjectDownVoteCount}>{props.downVoteCount}</span>
           </button>
           {props.object && props.object.id === props.answerCommentId && (
             <div className={styles.primeObjectRightAnswer}>
               {formatMessage({
-                id: "alm.community.comment.rightAnswer",
-                defaultMessage: "RIGHT ANSWER",
+                id: 'alm.community.comment.rightAnswer',
+                defaultMessage: 'RIGHT ANSWER',
               })}
             </div>
           )}
         </div>
-        
+
         {/* PAPI-19269 - Download not supported from public api */}
         {/* {props.resource && (
           <div className={styles.primeResourceDownload}>    

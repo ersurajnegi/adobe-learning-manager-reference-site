@@ -9,22 +9,17 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import {
-  ApolloClient,
-  ApolloProvider,
-  createHttpLink,
-  InMemoryCache,
-} from "@apollo/client";
-import { setContext } from "@apollo/client/link/context";
-import { onError } from "@apollo/client/link/error";
-import React from "react";
+import { ApolloClient, ApolloProvider, createHttpLink, InMemoryCache } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+import { onError } from '@apollo/client/link/error';
+import React from 'react';
 import {
   getALMConfig,
   getALMObject,
   getCommerceStoreName,
   getCommerceToken,
   redirectToLoginAndAbort,
-} from "../utils/global";
+} from '../utils/global';
 
 const uri = getALMConfig().graphqlProxyPath || getALMConfig().commerceURL;
 const httpLink = createHttpLink({
@@ -32,12 +27,12 @@ const httpLink = createHttpLink({
 });
 const authLink = setContext((_, { headers }) => {
   const signInToken = getCommerceToken();
-  const store = getCommerceStoreName() || "default";
+  const store = getCommerceStoreName() || 'default';
 
   return {
     headers: {
       ...headers,
-      authorization: signInToken ? `Bearer ${signInToken}` : "",
+      authorization: signInToken ? `Bearer ${signInToken}` : '',
       store,
     },
   };
@@ -46,14 +41,14 @@ const authLink = setContext((_, { headers }) => {
 const errorControl = onError(({ networkError, graphQLErrors }) => {
   if (graphQLErrors) {
     graphQLErrors.forEach(({ message, locations, path, extensions }) => {
-      if (extensions?.category === "graphql-authorization") {
+      if (extensions?.category === 'graphql-authorization') {
         getALMObject().handleLogOut();
         redirectToLoginAndAbort(true);
       }
     });
   }
   if (networkError) {
-    console.log(" [Network error]:", networkError);
+    console.log(' [Network error]:', networkError);
   }
 });
 

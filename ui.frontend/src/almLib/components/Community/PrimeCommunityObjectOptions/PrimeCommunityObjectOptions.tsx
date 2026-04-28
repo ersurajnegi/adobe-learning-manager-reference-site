@@ -9,12 +9,12 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useEffect, useRef, useState } from "react";
-import { useIntl } from "react-intl";
-import { PrimeUser } from "../../../models";
-import { QUESTION } from "../../../utils/constants";
-import { getALMUser } from "../../../utils/global";
-import styles from "./PrimeCommunityObjectOptions.module.css";
+import { useEffect, useRef, useState } from 'react';
+import { useIntl } from 'react-intl';
+import { PrimeUser } from '../../../models';
+import { QUESTION } from '../../../utils/constants';
+import { getALMUser } from '../../../utils/global';
+import styles from './PrimeCommunityObjectOptions.module.css';
 
 const PrimeCommunityObjectOptions = (props: any) => {
   const ref = useRef<any>();
@@ -35,32 +35,32 @@ const PrimeCommunityObjectOptions = (props: any) => {
         props.toggleOptions && props.toggleOptions();
       }
     };
-    document.addEventListener("click", handleClickOutside, true);
+    document.addEventListener('click', handleClickOutside, true);
     return () => {
-      document.removeEventListener("click", handleClickOutside, true);
+      document.removeEventListener('click', handleClickOutside, true);
     };
   });
 
   const deleteObjectHandler = () => {
-    if (typeof props.deleteHandler === "function") {
+    if (typeof props.deleteHandler === 'function') {
       props.deleteHandler();
     }
   };
 
   const reportObjectHandler = () => {
-    if (typeof props.reportAbuseHandler === "function") {
+    if (typeof props.reportAbuseHandler === 'function') {
       props.reportAbuseHandler();
     }
   };
 
   const editObjectHandler = () => {
-    if (typeof props.editHandler === "function") {
+    if (typeof props.editHandler === 'function') {
       props.editHandler();
     }
   };
 
   const updateRightAnswerHandler = (value: any) => {
-    if (typeof props.updateRightAnswerHandler === "function") {
+    if (typeof props.updateRightAnswerHandler === 'function') {
       props.updateRightAnswerHandler(value);
     }
   };
@@ -99,13 +99,10 @@ const PrimeCommunityObjectOptions = (props: any) => {
     <>
       <div ref={ref} className={styles.primeObjectOptionsList}>
         {showEditOption() && (
-          <div
-            className={styles.primeObjectRegularOption}
-            onClick={editObjectHandler}
-          >
+          <div className={styles.primeObjectRegularOption} onClick={editObjectHandler}>
             {formatMessage({
-              id: "alm.community.board.edit",
-              defaultMessage: "Edit",
+              id: 'alm.community.board.edit',
+              defaultMessage: 'Edit',
             })}
           </div>
         )}
@@ -118,8 +115,8 @@ const PrimeCommunityObjectOptions = (props: any) => {
               }}
             >
               {formatMessage({
-                id: "alm.community.board.markAsRightAnswer",
-                defaultMessage: "Mark as Right answer",
+                id: 'alm.community.board.markAsRightAnswer',
+                defaultMessage: 'Mark as Right answer',
               })}
             </div>
             <div
@@ -129,33 +126,25 @@ const PrimeCommunityObjectOptions = (props: any) => {
               }}
             >
               {formatMessage({
-                id: "alm.community.board.unmarkAsRightAnswer",
-                defaultMessage: "Unmark as Right answer",
+                id: 'alm.community.board.unmarkAsRightAnswer',
+                defaultMessage: 'Unmark as Right answer',
               })}
             </div>
           </>
         )}
-        {(showEditOption() || showPollOptions()) && (
-          <div className={styles.primeSeperator}></div>
-        )}
+        {(showEditOption() || showPollOptions()) && <div className={styles.primeSeperator}></div>}
         {isPostOwner() && (
-          <div
-            className={styles.primeObjectCriticalOption}
-            onClick={deleteObjectHandler}
-          >
+          <div className={styles.primeObjectCriticalOption} onClick={deleteObjectHandler}>
             {formatMessage({
-              id: "alm.text.delete",
-              defaultMessage: "Delete",
+              id: 'alm.text.delete',
+              defaultMessage: 'Delete',
             })}
           </div>
         )}
-        <div
-          className={styles.primeObjectCriticalOption}
-          onClick={reportObjectHandler}
-        >
+        <div className={styles.primeObjectCriticalOption} onClick={reportObjectHandler}>
           {formatMessage({
-            id: "alm.community.board.report",
-            defaultMessage: "Report",
+            id: 'alm.community.board.report',
+            defaultMessage: 'Report',
           })}
         </div>
       </div>

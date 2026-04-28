@@ -9,13 +9,13 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-export * from "./useBoard";
-export * from "./useBoards";
-export * from "./useBoardOptions";
-export * from "./usePosts";
-export * from "./usePost";
-export * from "./useComments";
-export * from "./useComment";
-export * from "./useCommunityObjectOptions";
-export * from "./useReplies";
-export * from "./useReply";
+export * from './useBoard';
+export * from './useBoards';
+export * from './useBoardOptions';
+export * from './usePosts';
+export * from './usePost';
+export * from './useComments';
+export * from './useComment';
+export * from './useCommunityObjectOptions';
+export * from './useReplies';
+export * from './useReply';

@@ -12,24 +12,42 @@ governing permissions and limitations under the License.
 //import { PrimeConfig } from "../externalLib";
 // eslint-disable-next-line import/no-anonymous-default-export
 const mountingPoints = {
-  catalogContainer: ".catalog__container",
-  trainingOverviewPage: ".training__page__container",
-  boardsContainer: ".boards__container",
-  boardContainer: ".board__container",
-  badgesContainer: ".badges__container",
-  notificationContainer: ".notification__container",
-  instanceContainer: ".instance__container",
-  profilePageContainer: ".profile__container",
-  authorContainer: ".author__container",
-  userSkillsContainer: ".skills__container",
-  activeFieldsContainer: ".activeFields__container",
-  navigationBarContainer: ".navigationBar__container",
-  mastHeadContainer: ".mastHead__container",
-  categoryBrowserContainer: ".categoryBrowser__container",
-  footerContainer: ".footer__container",
+  catalogContainer: '.catalog__container',
+  trainingOverviewPage: '.training__page__container',
+  boardsContainer: '.boards__container',
+  boardContainer: '.board__container',
+  badgesContainer: '.badges__container',
+  notificationContainer: '.notification__container',
+  instanceContainer: '.instance__container',
+  profilePageContainer: '.profile__container',
+  authorContainer: '.author__container',
+  userSkillsContainer: '.skills__container',
+  userRecommendationsContainer: '.recommendations__container',
+  activeFieldsContainer: '.activeFields__container',
+  navigationBarContainer: '.navigationBar__container',
+  mastHeadContainer: '.mastHead__container',
+  categoryBrowserContainer: '.categoryBrowser__container',
+  footerContainer: '.footer__container',
+  homePageWidgets: '.prime-widgets__container',
+  calendarWidgetContainer: '.calendar_widget_container',
+  complianceWidgetContainer: '.compliance__widget__container',
+  socialLearningContainer: '.social_learning_container',
+  leaderboardContainer: '.leaderboard__container',
+  recommendationsContainer: '.recommendations__container',
+  mastheadContainer: '.masthead__container',
+  myLearningContainer: '.mylearning__container',
+  recommendationsStripContainer: '.recommendations__strip__container',
+  adminRecoContainer: '.admin__reco__container',
+  bookmarksContainer: '.bookmarks__container',
+  trendingRecoContainer: '.trending__reco__container',
+  aoiRecoContainer: '.aoi__reco__container',
+  discoveryRecoContainer: '.discovery__reco__container',
+  catalogBrowserContainer: '.catalog__browser__container',
+  layoutContainer: '.layout__container',
+  genericWidgetContainer: '.alm-widget-container',
 };
 
 (window as any).ALM = (window as any).ALM || {};
-(window as any).ALM.ALMConfig["mountingPoints"] = mountingPoints;
+(window as any).ALM.ALMConfig['mountingPoints'] = mountingPoints;
 
 export { mountingPoints };

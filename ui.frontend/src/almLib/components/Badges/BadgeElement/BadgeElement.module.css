@@ -1,12 +1,21 @@
-@import "../../../styles/variables.css";
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+@import '../../../styles/variables.css';
 
 .App {
   box-sizing: border-box;
 }
 
 .itemview {
-  padding-top: 10px;
-  padding-bottom: 10px;
   border-top: 1px solid var(--prime-color-nc6);
   position: relative;
 }
@@ -18,12 +27,9 @@
 }
 
 .containertext {
-  display: inline-block;
-  max-width: 70%;
-  margin-top: 10px;
+  flex: 1;
+  min-width: 0;
   padding-left: 10px;
-  padding-right: 20px;
-  position: absolute;
 }
 
 .badgename {
@@ -44,8 +50,17 @@
 
 .badgebox {
   width: 100%;
-  height: 100px;
-  padding-left: 5px;
+  padding: 20px 10px;
+  border-bottom: 1px solid var(--dark-grey-6);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.contentrow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .achieved {
@@ -60,6 +75,7 @@
   display: inline;
   color: var(--prime-color-primary);
   cursor: pointer;
+  text-decoration: none;
 }
 
 .badgestatus {
@@ -69,13 +85,13 @@
 
 .imagecontainer {
   width: 80px;
-  display: inline-block;
-  vertical-align: top;
+  flex-shrink: 0;
 }
 
 .blue {
-  color: var(--prime-color-primary);
+  text-decoration: none;
   cursor: pointer;
+  font-weight: var(--prime-font-weight-600);
 }
 
 .right {
@@ -84,52 +100,35 @@
   margin-left: 5px;
 }
 
-.margin {
-  color: var(--prime-color-primary);
-  float: right;
-  margin-left: 5px;
-  margin-right: 3px;
+.downloadLink {
   cursor: pointer;
+  text-decoration: none;
+  font-weight: var(--prime-font-weight-600);
+  padding: 0 7px;
 }
 
 .downloadicons {
-  float: right;
-  margin-right: 0;
-  margin-top: 5px;
+  align-self: flex-end;
 }
 
 .downloadiconsdisabled {
   opacity: 0.5;
-  float: right;
-  margin-right: 0;
-  margin-top: 10px;
+  align-self: flex-end;
 }
 
 .downloadoptions {
-  float: right;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
 }
 
-.downloadlink {
-  float: left;
-  margin-right: 3px;
+.checkbox::after {
+  fill: var(--prime-success-color);
 }
 
 @media (max-width: 768px) {
   .itemview {
     font-size: 14px;
-  }
-  .containertext {
-    padding-top: 25px;
-  }
-  .imagecontainer {
-    padding-top: 25px;
-  }
-  .checkbox {
-    padding-top: 25px;
-    padding-right: 5px !important;
-  }
-  .badgebox {
-    height: 120px;
   }
   .image {
     width: 70px;

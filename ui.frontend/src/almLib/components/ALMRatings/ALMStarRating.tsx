@@ -1,11 +1,24 @@
-import React, { useState, useEffect } from "react";
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+import React, { useState, useEffect } from 'react';
 import {
   EMPTY_STAR_SVG,
   FULL_STAR_SVG,
   HALF_STAR_SVG,
-} from "../../utils/inline_svg";
-import styles from "./ALMStarRating.module.css";
-import { useIntl } from "react-intl";
+  AVG_RATING_STAR,
+} from '../../utils/inline_svg';
+import styles from './ALMStarRating.module.css';
+import { GetTranslation } from '../../utils/translationService';
+import { useIntl } from 'react-intl';
 
 interface ratingProps {
   avgRating?: number;
@@ -17,12 +30,7 @@ interface ratingProps {
 const ALMRatingsComponent = (props: ratingProps) => {
   const { formatMessage } = useIntl();
 
-  const {
-    avgRating,
-    ratingsCount,
-    ratingGiven = -1,
-    submitRating = () => {},
-  } = props;
+  const { avgRating, ratingsCount, ratingGiven = -1, submitRating = () => {} } = props;
   const initialRating = ratingGiven ? ratingGiven : 0;
 
   const [hover, setHover] = useState(initialRating);
@@ -59,8 +67,8 @@ const ALMRatingsComponent = (props: ratingProps) => {
         setNumEmptyStars(numEmptyStars - Math.floor(avgRating) - halfStar);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps 
-  }, [avgRating, ratingGiven ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [avgRating, ratingGiven]);
 
   useEffect(() => {
     const template = [];
@@ -86,41 +94,42 @@ const ALMRatingsComponent = (props: ratingProps) => {
   }, [numFullStars, numHalfStars, numEmptyStars]);
 
   const avgRatingStars = () => {
-    return template.map((star) => {
-      let i = 0;
+    if (avgRating !== undefined && avgRating !== null) {
       return (
-        <div className={styles.starRating} key={i++}>
-          <span>{star}</span>
+        <div className={styles.starRating}>
+          {AVG_RATING_STAR()}
+          <span className={styles.averageRatingCount}>
+            {avgRating}/{5}
+          </span>
         </div>
       );
-    });
+    }
   };
 
   const avgRatingRender = () => {
     return (
-      <div
-        title={formatMessage(
-          { id: "alm.text.avgRatingLabel" },
-          {
-            averageRating: avgRating,
-            ratingsCount: ratingsCount,
-          }
-        )}
-        role="img"
-        className={styles.overviewAvgRating}
-        aria-label={formatMessage(
-          { id: "alm.text.avgRatingLabel" },
-          {
-            averageRating: avgRating,
-            ratingsCount: ratingsCount,
-          }
-        )}
-      >
-        <div aria-hidden="true">
-          {avgRatingStars()}
-          <p className={styles.averageRatingCount}>{ratingsCount}</p>
-        </div>
+      // <div
+      //   title={formatMessage(
+      //     { id: "alm.text.avgRatingLabel" },
+      //     {
+      //       averageRating: avgRating,
+      //       ratingsCount: ratingsCount,
+      //     }
+      //   )}
+      //   role="img"
+      //   className={styles.overviewAvgRating}
+      //   aria-label={formatMessage(
+      //     { id: "alm.text.avgRatingLabel" },
+      //     {
+      //       averageRating: avgRating,
+      //       ratingsCount: ratingsCount,
+      //     }
+      //   )}
+      // >
+      <div className={styles.starRating} aria-hidden="true">
+        {avgRatingStars()}
       </div>
+      // </div>
     );
   };
 
@@ -128,7 +137,7 @@ const ALMRatingsComponent = (props: ratingProps) => {
     return (
       <div className={styles.noRating}>
         {formatMessage({
-          id: "alm.catalog.card.noRating",
+          id: 'alm.catalog.card.noRating',
         })}
       </div>
     );
@@ -147,24 +156,37 @@ const ALMRatingsComponent = (props: ratingProps) => {
     if (editStars) {
       return [...Array(5)].map((star, i) => {
         const index = i + 1;
+        const isChecked = ratingGiven == index;
         return (
-          <div
-            role="radiogroup"
-            tabIndex={0}
-            className={styles.givenRatingStars}
-            onClick={() => submitRating(index)}
-            onMouseEnter={() => setHover(index)}
-            onMouseLeave={() => setHover(ratingGiven)}
-            key={index}
-          >
-            <span>{index <= hover ? FULL_STAR_SVG() : EMPTY_STAR_SVG()}</span>
-          </div>
+          <span key={index}>
+            <input
+              onChange={() => {
+                setHover(index);
+                submitRating(index);
+              }}
+              className={styles.starInputHidden}
+              type="radio"
+              name="rating"
+              value={index}
+              checked={isChecked}
+              id={`rating${index}`}
+              aria-label={`${index} ${GetTranslation('text.star')}`}
+            />
+            <label
+              onMouseEnter={() => setHover(index)}
+              onMouseLeave={() => setHover(ratingGiven)}
+              className={styles.givenRatingStars}
+              htmlFor={`rating${index}`}
+            >
+              {index <= hover ? FULL_STAR_SVG() : EMPTY_STAR_SVG()}
+            </label>
+          </span>
         );
       });
     }
   };
 
-  return <div>{displayRating()}</div>;
+  return <div className={styles.starRadioGroup}>{displayRating()}</div>;
 };
 
 export default ALMRatingsComponent;

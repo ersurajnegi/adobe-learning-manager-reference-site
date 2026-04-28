@@ -9,26 +9,22 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useIntl } from "react-intl";
-import { PrimeCommunityAddPostDialogTrigger } from "../PrimeCommunityAddPostDialogTrigger";
+import { useIntl } from 'react-intl';
+import { PrimeCommunityAddPostDialogTrigger } from '../PrimeCommunityAddPostDialogTrigger';
 
 const PrimeCommunityAddPostButton = (props: any) => {
   const { formatMessage } = useIntl();
-  const saveHandler = (
+  const { savePostHandler } = props;
+
+  const saveHandler = async (
     input: any,
     postingType: any,
     resource: any,
     isResourceModified: any,
     pollOptions: any
   ) => {
-    if (typeof props.savePostHandler === "function") {
-      props.savePostHandler(
-        input,
-        postingType,
-        resource,
-        isResourceModified,
-        pollOptions
-      );
+    if (typeof savePostHandler === 'function') {
+      return await savePostHandler(input, postingType, resource, isResourceModified, pollOptions);
     }
   };
 
@@ -36,26 +32,11 @@ const PrimeCommunityAddPostButton = (props: any) => {
     <>
       <PrimeCommunityAddPostDialogTrigger
         buttonLabel={formatMessage({
-          id: "alm.community.newPost.label",
-          defaultMessage: "New Post",
+          id: 'alm.community.newPost.label',
+          defaultMessage: 'New Post',
         })}
-        savePostHandler={(
-          input: any,
-          postingType: any,
-          resource: any,
-          isResourceModified: any,
-          pollOptions: any
-        ) => {
-          saveHandler(
-            input,
-            postingType,
-            resource,
-            isResourceModified,
-            pollOptions
-          );
-        }}
+        savePostHandler={saveHandler}
         inMobileView={props.inMobileView}
-        boardId={props.boardId}
       ></PrimeCommunityAddPostDialogTrigger>
     </>
   );

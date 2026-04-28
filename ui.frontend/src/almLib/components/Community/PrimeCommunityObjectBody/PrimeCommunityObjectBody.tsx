@@ -9,14 +9,14 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { getALMConfig, getALMObject } from "../../../utils/global";
-import styles from "./PrimeCommunityObjectBody.module.css";
-import { useEffect, useState } from "react";
-import { useIntl } from "react-intl";
-import Question from "@spectrum-icons/workflow/Question";
-import { PrimeCommunityLinkPreview } from "../PrimeCommunityLinkPreview";
-import { PrimeCommunityPoll } from "../PrimeCommunityPoll";
-import linkifyHtml from "linkify-html";
+import { getALMConfig, getAuthKey } from '../../../utils/global';
+import styles from './PrimeCommunityObjectBody.module.css';
+import { useEffect, useState } from 'react';
+import { useIntl } from 'react-intl';
+import Question from '@spectrum-icons/workflow/Question';
+import { PrimeCommunityLinkPreview } from '../PrimeCommunityLinkPreview';
+import { PrimeCommunityPoll } from '../PrimeCommunityPoll';
+import linkifyHtml from 'linkify-html';
 
 import {
   AUDIO,
@@ -28,18 +28,8 @@ import {
   QUESTION,
   REPLY,
   VIDEO,
-} from "../../../utils/constants";
-import { FULLSCREEN_SVG, FULLSCREEN_EXIT_SVG } from "../../../utils/inline_svg";
-import { PrimeCommunityMention } from "../PrimeCommunityMention";
-
-// Utility function to get text content from HTML string
-const getTextContentFromHtml = (htmlString: string): string => {
-  if (!htmlString) return '';
-  // Create a temporary DOM element to parse HTML and extract text
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = htmlString;
-  return tempDiv.textContent || tempDiv.innerText || '';
-};
+} from '../../../utils/constants';
+import { FULLSCREEN_SVG, FULLSCREEN_EXIT_SVG } from '../../../utils/inline_svg';
 
 const PrimeCommunityObjectBody = (props: any) => {
   const { formatMessage } = useIntl();
@@ -47,29 +37,26 @@ const PrimeCommunityObjectBody = (props: any) => {
   const isQuestionType = object.postingType === QUESTION;
   const entityType = props.type;
   const urlRegex =
-    "((http|https)://)(www.)?[a-zA-Z0-9@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)";
+    '((http|https)://)(www.)?[a-zA-Z0-9@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)';
+  const csrfToken = getALMConfig().csrfToken;
 
   const formatUrl = (url: string) => {
     if (!/^https?:\/\//i.test(url)) {
-      url = "http://" + url;
+      url = 'http://' + url;
     }
     return url;
   };
 
-  const userMentions = object.userMentions || [];
-
   const isValidUrl = (input: string) => {
-    return (
-      input.match(urlRegex) || (input.indexOf(".") > -1 && !input.endsWith("."))
-    );
+    return input.match(urlRegex) || (input.indexOf('.') > -1 && !input.endsWith('.'));
   };
 
   const getFormattedDescription = (description: string) => {
-    if (description && description !== "") {
+    if (description && description !== '') {
       description = linkifyHtml(description);
       description = description.replace(
         /<a\b/g,
-        `<a class="${styles.objectbodyLink}" target="_blank" rel="noopener noreferrer"`,
+        `<a class="${styles.objectbodyLink}" target="_blank" rel="noopener noreferrer"`
       );
     }
     return description;
@@ -85,46 +72,31 @@ const PrimeCommunityObjectBody = (props: any) => {
       case REPLY:
         return getFormattedDescription(props.text);
       default:
-        return "";
+        return '';
     }
   };
-  const [fullDescription, setFullDescription] = useState(
-    getDescription()
-  );
+  const [fullDescription, setFullDescription] = useState(getDescription());
   const primeConfig = getALMConfig();
-  const iframeSrc = `${
-    primeConfig.almBaseURL
-  }/app/player?entity_type=${entityType}&entity_id=${
-    object.id
-  }&access_token=${getALMObject().getAccessToken()}&player_type=inline`;
+  const authKey = getAuthKey();
+  const iframeSrc = `${primeConfig.almBaseURL}/app/player?entity_type=${entityType}&entity_id=${object.id}&${authKey}&player_type=inline`;
 
   const MAX_CHAR_SHOWN = 450;
   const DEFAULT_INDEX_VALUE = 2;
   const [viewIndex, setViewIndex] = useState(DEFAULT_INDEX_VALUE);
-  // Count only visible text characters for viewMore logic
-  const textContentLength = getTextContentFromHtml(fullDescription);
-  const [viewMore, setViewMore] = useState(
-    textContentLength.length > MAX_CHAR_SHOWN
-  );
+  const [viewMore, setViewMore] = useState(fullDescription?.length > MAX_CHAR_SHOWN);
   const [currentDescription, setCurrentDescription] = useState(
-    textContentLength.length > MAX_CHAR_SHOWN
+    fullDescription?.length > MAX_CHAR_SHOWN
       ? fullDescription.substring(0, MAX_CHAR_SHOWN)
       : fullDescription
   );
 
   const getTruncatedDescription = () => {
     const supportedCharacterLength = MAX_CHAR_SHOWN * viewIndex;
-    const textContentLength = getTextContentFromHtml(fullDescription);
-    
-    if (textContentLength.length <= supportedCharacterLength) {
+    if (fullDescription?.length <= supportedCharacterLength) {
       setViewMore(false);
       setCurrentDescription(fullDescription);
       setViewIndex(DEFAULT_INDEX_VALUE);
-    } else {
-      setCurrentDescription(
-        fullDescription.substring(0, supportedCharacterLength)
-      );
-    }
+    } else setCurrentDescription(fullDescription.substring(0, supportedCharacterLength));
     setViewIndex(viewIndex + 1);
   };
 
@@ -135,15 +107,11 @@ const PrimeCommunityObjectBody = (props: any) => {
   useEffect(() => {
     if (props.description) {
       const fullDesc = getDescription();
-      const textContentLength = getTextContentFromHtml(fullDesc);
-      
       setFullDescription(fullDesc);
       setCurrentDescription(
-        textContentLength.length > MAX_CHAR_SHOWN
-          ? fullDesc.substring(0, MAX_CHAR_SHOWN)
-          : fullDesc
+        fullDesc.length > MAX_CHAR_SHOWN ? fullDesc.substring(0, MAX_CHAR_SHOWN) : fullDesc
       );
-      setViewMore(textContentLength.length > MAX_CHAR_SHOWN);
+      setViewMore(props.description?.length > MAX_CHAR_SHOWN);
     }
   }, [props.description]);
 
@@ -155,12 +123,12 @@ const PrimeCommunityObjectBody = (props: any) => {
       if (element.requestFullscreen) {
         element.requestFullscreen();
       }
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = 'hidden';
     } else {
       if (document.fullscreenElement && document.exitFullscreen) {
         document.exitFullscreen();
       }
-      document.body.style.overflow = "";
+      document.body.style.overflow = '';
     }
     setIsFullScreen(!isFullScreen);
   };
@@ -168,14 +136,14 @@ const PrimeCommunityObjectBody = (props: any) => {
   const handleFullScreenChange = () => {
     if (!document.fullscreenElement) {
       setIsFullScreen(false);
-      document.body.style.overflow = "";
+      document.body.style.overflow = '';
     }
   };
 
   useEffect(() => {
-    document.addEventListener("fullscreenchange", handleFullScreenChange);
+    document.addEventListener('fullscreenchange', handleFullScreenChange);
     return () => {
-      document.removeEventListener("fullscreenchange", handleFullScreenChange);
+      document.removeEventListener('fullscreenchange', handleFullScreenChange);
     };
   }, []);
 
@@ -186,8 +154,8 @@ const PrimeCommunityObjectBody = (props: any) => {
           props.type === BOARD
             ? styles.primeBoardDescription
             : isQuestionType
-            ? styles.primeQuestionPostDescription
-            : styles.primePostDescription
+              ? styles.primeQuestionPostDescription
+              : styles.primePostDescription
         }
       >
         {isQuestionType && (
@@ -195,21 +163,17 @@ const PrimeCommunityObjectBody = (props: any) => {
             <Question />
           </div>
         )}
-        <PrimeCommunityMention
-          htmlString={currentDescription}
-          userMentions={userMentions}
+        <div
           className={`${styles.primePostDescriptionText} ql-editor`}
-        />
+          dangerouslySetInnerHTML={{ __html: currentDescription }}
+        ></div>
       </div>
       {viewMore && (
         <div className={styles.viewMoreDiv}>
-          <button
-            className={styles.primeCommunityViewMoreButton}
-            onClick={getTruncatedDescription}
-          >
+          <button className={styles.primeCommunityViewMoreButton} onClick={getTruncatedDescription}>
             {formatMessage({
-              id: "alm.community.viewMore",
-              defaultMessage: "View more",
+              id: 'alm.community.viewMore',
+              defaultMessage: 'View more',
             })}
           </button>
         </div>
@@ -249,27 +213,17 @@ const PrimeCommunityObjectBody = (props: any) => {
 
           {object.resource && object.resource.contentType === IMAGE && (
             <div
-              className={
-                isFullScreen
-                  ? styles.fullScreenImageBox
-                  : styles.primeCommunityImageBox
-              }
+              className={isFullScreen ? styles.fullScreenImageBox : styles.primeCommunityImageBox}
             >
               <div className={styles.primeCommunityImageContainer}>
                 <img
                   src={object.resource.data!}
                   loading="lazy"
-                  className={
-                    isFullScreen
-                      ? styles.fullScreenImage
-                      : styles.primePostImage
-                  }
+                  className={isFullScreen ? styles.fullScreenImage : styles.primePostImage}
                   alt="primePostImage"
                 />
               </div>
-              <div
-                className={isFullScreen ? "" : styles.primeCommunityResourceExpand}
-              >
+              <div className={isFullScreen ? '' : styles.primeCommunityResourceExpand}>
                 <button
                   className={styles.primeCommunityResourceExpandButton}
                   onClick={handleExpandButtonClick}
@@ -296,9 +250,7 @@ const PrimeCommunityObjectBody = (props: any) => {
           )}
 
           {object.resource &&
-            ["PDF", "XLS", "PPTX", "DOC"].includes(
-              object.resource.contentType
-            ) && (
+            ['PDF', 'XLS', 'PPTX', 'DOC'].includes(object.resource.contentType) && (
               <div className="image-box">
                 <div className="image-container">
                   <iframe

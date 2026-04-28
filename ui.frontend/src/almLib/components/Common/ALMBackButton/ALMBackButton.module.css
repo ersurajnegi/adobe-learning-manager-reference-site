@@ -10,7 +10,7 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 /* Back button css */
-@import "../../../styles/variables.css";
+@import '../../../styles/variables.css';
 
 .backContainer {
   display: none;
@@ -20,7 +20,7 @@ governing permissions and limitations under the License.
   .backContainer {
     display: flex;
     align-items: center;
-    padding: 12px;
+    padding: 6px;
     max-height: 47px;
   }
   .buttonLabel {
@@ -30,6 +30,7 @@ governing permissions and limitations under the License.
     letter-spacing: 0px;
     color: var(--prime-color-nc1);
     opacity: 1;
+    padding-left: 8px;
   }
   .backButton::after {
     border-radius: 0;
@@ -39,17 +40,19 @@ governing permissions and limitations under the License.
   .backButton:focus,
   .backButton:focus-visible {
     outline: none;
+    background-color: transparent !important;
+    cursor: pointer;
   }
   .backButton {
     min-width: initial;
     min-height: initial;
     padding-left: 0;
     border-radius: 0;
+    border: none;
   }
   .backButton svg {
     position: relative;
     right: 2px;
-    margin-right: 10px;
     width: 22px;
     max-height: 22px !important;
   }

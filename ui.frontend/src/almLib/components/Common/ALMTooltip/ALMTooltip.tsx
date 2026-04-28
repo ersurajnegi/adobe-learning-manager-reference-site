@@ -9,23 +9,23 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import AlertCircle from "@spectrum-icons/workflow/AlertCircle";
-import { Tooltip } from "@adobe/react-spectrum";
+import { ALM_TOOLTIP } from '../../../utils/inline_svg';
+import { Tooltip } from '@adobe/react-spectrum';
 
-import styles from "./ALMTooltip.module.css";
+import styles from './ALMTooltip.module.css';
 
 const ALMTooltip: React.FC<{
   message: string;
 }> = ({ message }) => {
   return (
     <span className={styles.showOnHover}>
-      <AlertCircle />
+      {ALM_TOOLTIP()}
       <span className={styles.tooltip}>
         <Tooltip
           showIcon={true}
-          placement={"bottom"}
+          placement={'bottom'}
           UNSAFE_className={styles.almTooltip}
-          isOpen = {true}
+          isOpen={true}
         >
           {message}
         </Tooltip>

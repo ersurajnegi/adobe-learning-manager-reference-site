@@ -9,7 +9,7 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-@import "../../../styles/variables.css";
+@import '../../../styles/variables.css';
 
 .tooltip {
   display: none;
@@ -19,7 +19,6 @@ governing permissions and limitations under the License.
 }
 .showOnHover:hover .tooltip {
   display: block;
-
 }
 .showOnHover svg {
   width: 20px;
@@ -30,16 +29,16 @@ governing permissions and limitations under the License.
   cursor: pointer;
 }
 
-div[class^="spectrum-Tooltip"].almTooltip {
+div[class^='spectrum-Tooltip'].almTooltip {
   visibility: initial;
   opacity: 1;
-  position: absolute!important;
-  right: 0!important;
-  width: 180px!important;
+  position: absolute !important;
+  right: 0 !important;
+  width: 180px !important;
 }
-.almTooltip span[class*="spectrum-Tooltip-tip"] {
-  left: 10%!important;
+.almTooltip span[class*='spectrum-Tooltip-tip'] {
+  left: 10% !important;
 }
-.almTooltip span[class^="spectrum-Tooltip-label"] {
+.almTooltip span[class^='spectrum-Tooltip-label'] {
   font-size: var(--prime-font-size-12);
 }

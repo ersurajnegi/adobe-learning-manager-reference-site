@@ -9,18 +9,28 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useIntl } from "react-intl";
-import { usePost } from "../../../hooks/community";
-import { PrimeCommunityAddPostButton } from "../PrimeCommunityAddPostButton";
-import { useConfirmationAlert } from "../../../common/Alert/useConfirmationAlert";
-import styles from "./PrimeCommunityAddPost.module.css";
+import { useIntl } from 'react-intl';
+import { usePost } from '../../../hooks/community';
+import { PrimeCommunityAddPostButton } from '../PrimeCommunityAddPostButton';
+import { useConfirmationAlert } from '../../../common/Alert/useConfirmationAlert';
+import styles from './PrimeCommunityAddPost.module.css';
+import { getAlmConfirmationBadwordParams } from '../../../utils/social-utils';
+import { useEffect } from 'react';
+import { PrimeEvent } from '../../../utils/widgets/common';
 
 const PrimeCommunityAddPost = (props: any) => {
   const boardId = props.boardId;
   const { formatMessage } = useIntl();
   const { addPost } = usePost();
   const [almConfirmationAlert] = useConfirmationAlert();
-  const EMPTY = "";
+  const EMPTY = '';
+  useEffect(() => {
+    document.addEventListener(PrimeEvent.ALM_SHOW_POST_CONFIRMATION, showConfirmationDialog);
+    return () => {
+      document.removeEventListener(PrimeEvent.ALM_SHOW_POST_CONFIRMATION, showConfirmationDialog);
+    };
+  }, []);
+
   const savePostHandler = async (
     input: any,
     postingType: any,
@@ -28,38 +38,23 @@ const PrimeCommunityAddPost = (props: any) => {
     isResourceModified: any,
     pollOptions: any
   ) => {
-    try {
-      await addPost(
-        boardId,
-        input,
-        postingType,
-        resource,
-        isResourceModified,
-        pollOptions
-      );
-      // below setTimeout is needed to fix spetrum dialog breaking scroll issue
-      setTimeout(() => {
-        showConfirmationDialog();
-      }, 1000);
-    } catch (exception) {
-      console.log("Error in creating Post");
-    }
+    return await addPost(boardId, input, postingType, resource, isResourceModified, pollOptions);
   };
 
   const showConfirmationDialog = () => {
     almConfirmationAlert(
       formatMessage({
-        id: "alm.community.postPublished.label",
-        defaultMessage: "Post Published",
+        id: 'alm.community.postPublished.label',
+        defaultMessage: 'Post Published',
       }),
       formatMessage({
-        id: "alm.community.postPublished.successMessage",
+        id: 'alm.community.postPublished.successMessage',
         defaultMessage:
-          "Your post has been published. It may take some time to appear on the board.",
+          'Your post has been published. It may take some time to appear on the board.',
       }),
       formatMessage({
-        id: "alm.community.ok.label",
-        defaultMessage: "Ok",
+        id: 'alm.community.ok.label',
+        defaultMessage: 'Ok',
       }),
       EMPTY,
       props.reloadPosts
@@ -72,22 +67,7 @@ const PrimeCommunityAddPost = (props: any) => {
         <div className={styles.primeAddPostSection}>
           <div className={styles.primeAddPostButtonDiv}>
             <PrimeCommunityAddPostButton
-              savePostHandler={(
-                input: any,
-                postingType: any,
-                resource: any,
-                isResourceModified: any,
-                pollOptions: any
-              ) =>
-                savePostHandler(
-                  input,
-                  postingType,
-                  resource,
-                  isResourceModified,
-                  pollOptions
-                )
-              }
-              boardId={boardId}
+              savePostHandler={savePostHandler}
             ></PrimeCommunityAddPostButton>
           </div>
         </div>
@@ -101,15 +81,7 @@ const PrimeCommunityAddPost = (props: any) => {
             resource: any,
             isResourceModified: any,
             pollOptions: any
-          ) =>
-            savePostHandler(
-              input,
-              postingType,
-              resource,
-              isResourceModified,
-              pollOptions
-            )
-          }
+          ) => savePostHandler(input, postingType, resource, isResourceModified, pollOptions)}
           inMobileView={true}
         ></PrimeCommunityAddPostButton>
       </div>

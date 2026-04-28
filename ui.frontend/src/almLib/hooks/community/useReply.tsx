@@ -9,16 +9,16 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useCallback } from "react";
-import { getALMConfig } from "../../utils/global";
-import { RestAdapter } from "../../utils/restAdapter";
+import { useCallback } from 'react';
+import { getALMConfig } from '../../utils/global';
+import { RestAdapter } from '../../utils/restAdapter';
 
 export const useReply = () => {
   const voteReply = useCallback(async (postId: any, action: any) => {
     const baseApiUrl = getALMConfig().primeApiURL;
     await RestAdapter.ajax({
       url: `${baseApiUrl}/replies/${postId}/vote?action=${action}`,
-      method: "POST",
+      method: 'POST',
     });
   }, []);
 
@@ -26,7 +26,7 @@ export const useReply = () => {
     const baseApiUrl = getALMConfig().primeApiURL;
     await RestAdapter.ajax({
       url: `${baseApiUrl}/replies/${postId}/vote?action=${action}`,
-      method: "DELETE",
+      method: 'DELETE',
     });
   }, []);
 

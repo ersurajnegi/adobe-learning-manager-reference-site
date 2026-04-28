@@ -1,0 +1,98 @@
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+.almLayoutContainer {
+  max-width: 100%;
+  width: 100%;
+  margin: var(--prime-layout-gutter-space, 10px) auto;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  row-gap: calc(var(--prime-layout-gutter-space, 10px) * 4);
+}
+
+.almLayoutRow {
+  max-width: var(--prime-layout-container-width);
+  width: 90%;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  margin: 0 auto;
+}
+.almLayoutRowFullWidth {
+  max-width: 100%;
+  width: 100%;
+  padding: 0 !important;
+}
+.almLayoutRowFullWidth .almLayoutRow {
+  max-width: 100%;
+  width: 100%;
+  padding: 0;
+}
+
+.almLayoutColumn {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--prime-layout-gutter-space, 10px) * 4);
+}
+
+.almLayoutColumn .almLayoutRow {
+  gap: 0;
+  max-width: 100%;
+  width: 100%;
+}
+/* Column Sizes */
+.almLayoutColumn2 {
+  grid-column: span 2;
+}
+.almLayoutColumn3 {
+  grid-column: span 3;
+}
+.almLayoutColumn4 {
+  grid-column: span 4;
+}
+.almLayoutColumn6 {
+  grid-column: span 6;
+}
+.almLayoutColumn7 {
+  grid-column: span 7;
+}
+.almLayoutColumn8 {
+  grid-column: span 8;
+}
+.almLayoutColumn9 {
+  grid-column: span 9;
+}
+.almLayoutColumn12 {
+  grid-column: span 12;
+}
+/* Custom Media Query for Responsiveness */
+@media (max-width: 1024px) {
+  .almLayoutContainer,
+  .almLayoutRow {
+    grid-template-columns: 1fr;
+    row-gap: calc(var(--prime-layout-gutter-space, 10px) * 2);
+  }
+
+  .almLayoutColumn {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-column: span 12;
+  }
+}
+.widgetContainer {
+  padding: 0 calc(var(--prime-layout-gutter-space) / 2);
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.almLayoutRowFullWidth > .almLayoutColumn12 .widgetContainer {
+  padding: 0;
+}

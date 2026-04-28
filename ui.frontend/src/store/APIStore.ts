@@ -8,15 +8,11 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License. */
 
-import { createStore } from "redux";
-import { reducer } from "../almLib";
+import { createStore } from 'redux';
+import { reducer } from '../almLib';
 
-import { composeWithDevTools } from "redux-devtools-extension";
+import { composeWithDevTools } from 'redux-devtools-extension';
 
 const initialState = {};
-const store = createStore(
-  reducer,
-  initialState as never,
-  composeWithDevTools(),
-);
+const store = createStore(reducer, initialState as never, composeWithDevTools());
 export default store;

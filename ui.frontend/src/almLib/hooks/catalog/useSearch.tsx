@@ -9,25 +9,24 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useIntl } from "react-intl";
-import { useDispatch, useSelector } from "react-redux";
-import { PrimeUser } from "../../models";
-import {
-  resetSearchText,
-  updateSearchText,
-} from "../../store/actions/catalog/action";
-import { user } from "../../store/reducers/user";
-import { State } from "../../store/state";
-import { debounce } from "../../utils/catalog";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useIntl } from 'react-intl';
+import { useDispatch, useSelector } from 'react-redux';
+import { PrimeUser } from '../../models';
+import { resetSearchText, updateSearchText } from '../../store/actions/catalog/action';
+import { user } from '../../store/reducers/user';
+import { State } from '../../store/state';
+import { debounce } from '../../utils/catalog';
 import {
   getALMConfig,
   getALMUser,
   getQueryParamsFromUrl,
   getWindowObject,
+  isBookmarksEnabled,
   updateURLParams,
-} from "../../utils/global";
-import { QueryParams, RestAdapter } from "../../utils/restAdapter";
+} from '../../utils/global';
+import { QueryParams, RestAdapter } from '../../utils/restAdapter';
+import { MOBILE_SCREEN_WIDTH } from '../../utils/constants';
 
 const DEFAULT_MIN_LENGTH = 1;
 
@@ -39,14 +38,14 @@ export const useSearch = () => {
   const [isMobileScreen, setIsMobileScreen] = useState(false);
 
   useEffect(() => {
-    setIsMobileScreen(window.innerWidth <= 414);
+    setIsMobileScreen(window.innerWidth <= MOBILE_SCREEN_WIDTH);
     const handleResize = () => {
-      setIsMobileScreen(window.innerWidth <= 414);
+      setIsMobileScreen(window.innerWidth <= MOBILE_SCREEN_WIDTH);
     };
 
-    window.addEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
 
-    return () => window.removeEventListener("resize", handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const maxSuggestions = isMobileScreen ? 8 : 10;
@@ -54,14 +53,22 @@ export const useSearch = () => {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleSearch = useCallback(
-    debounce((text: string) => {
+    debounce((text: string, autoCorrectMode = true) => {
       let trimmedText = text.trim();
-
       if (trimmedText.length === 0) return;
-
-      updateURLParams({ searchText: trimmedText });
+      // If bookmarks is enabled and we're performing a search, remove bookmarks from URL
+      if (isBookmarksEnabled()) {
+        updateURLParams({ bookmarks: '' });
+      }
+      //NEED to check for autoCorrect here
+      updateURLParams({ searchText: trimmedText, autoCorrectMode });
       if (trimmedText.length >= DEFAULT_MIN_LENGTH) {
-        dispatch(updateSearchText(text));
+        dispatch(
+          updateSearchText({
+            query: text,
+            autoCorrectMode: autoCorrectMode,
+          })
+        );
       } else if (trimmedText.length === 0) {
         dispatch(resetSearchText());
       }
@@ -70,18 +77,22 @@ export const useSearch = () => {
   );
 
   const resetSearch = useCallback(() => {
-    updateURLParams({ searchText: "" });
+    updateURLParams({
+      searchText: '',
+      snippetType: '',
+      autoCorrectMode: '',
+    });
     dispatch(resetSearchText());
   }, [dispatch]);
 
-  const getSearchSuggestions = async (searchTerm = "") => {
+  const getSearchSuggestions = async (searchTerm = '') => {
     const userSearchHistory = await getUsersSearchHistory(searchTerm);
     const popularSearches = await getpopularSearchesSuggestions(searchTerm);
 
     return processResults(userSearchHistory, popularSearches);
   };
 
-  const getUsersSearchHistory = async (searchTerm = "") => {
+  const getUsersSearchHistory = async (searchTerm = '') => {
     let suggestions: string[] = [];
     const userSearchHistory = getWindowObject().userSearchHistory;
     if (userSearchHistory?.length) {
@@ -91,7 +102,7 @@ export const useSearch = () => {
       getWindowObject().userSearchHistory = suggestions;
     }
     if (searchTerm) {
-      suggestions = suggestions.filter((item) =>
+      suggestions = suggestions.filter(item =>
         item.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -99,12 +110,8 @@ export const useSearch = () => {
     return suggestions;
   };
 
-  const getpopularSearchesSuggestions = async (searchTerm = "") => {
-    const result = await getSearchSuggestionsFromApi(
-      10,
-      "accountHistory",
-      searchTerm
-    );
+  const getpopularSearchesSuggestions = async (searchTerm = '') => {
+    const result = await getSearchSuggestionsFromApi(10, 'accountHistory', searchTerm);
     return result;
   };
 
@@ -149,10 +156,7 @@ export const useSearch = () => {
     return arr.filter((item, index) => arr.indexOf(item) === index);
   };
 
-  const fillPopularSuggestions = (
-    suggestions: any,
-    popularHistoryresults: any
-  ) => {
+  const fillPopularSuggestions = (suggestions: any, popularHistoryresults: any) => {
     let beginIndex = 0;
     do {
       const endIndex = beginIndex + maxSuggestions - suggestions.results.length;
@@ -176,10 +180,7 @@ export const useSearch = () => {
       suggestions.userHistoryIndex,
       suggestions.results.length
     );
-    let currentUserHistoryResult = [...suggestions.results].slice(
-      0,
-      suggestions.userHistoryIndex
-    );
+    let currentUserHistoryResult = [...suggestions.results].slice(0, suggestions.userHistoryIndex);
     let beginIndex = suggestions.userHistoryIndex;
     do {
       const endIndex = beginIndex + maxSuggestions - suggestions.results.length;
@@ -188,14 +189,9 @@ export const useSearch = () => {
       );
       suggestions.userHistoryIndex = currentUserHistoryResult.length;
 
-      let mergedResults = currentUserHistoryResult.concat(
-        popularHistoryresultsArray
-      );
+      let mergedResults = currentUserHistoryResult.concat(popularHistoryresultsArray);
       mergedResults = removeDuplicates(mergedResults);
-      if (
-        mergedResults.length === maxSuggestions ||
-        endIndex > userHistoryResults.length
-      ) {
+      if (mergedResults.length === maxSuggestions || endIndex > userHistoryResults.length) {
         suggestions.results = mergedResults;
         return;
       }
@@ -204,10 +200,7 @@ export const useSearch = () => {
     } while (true);
   };
 
-  const processResults = (
-    userSearchHistory: string[],
-    popularHistoryresults: string[]
-  ) => {
+  const processResults = (userSearchHistory: string[], popularHistoryresults: string[]) => {
     const suggestions: any = {};
     suggestions.results = userSearchHistory.slice(0, maxUserSuggestions);
     suggestions.userHistoryIndex = suggestions.results.length;
@@ -217,10 +210,7 @@ export const useSearch = () => {
       fillUserSuggestions(suggestions, userSearchHistory);
     }
     return {
-      userSearchHistory: [...suggestions.results].splice(
-        0,
-        suggestions.userHistoryIndex
-      ),
+      userSearchHistory: [...suggestions.results].splice(0, suggestions.userHistoryIndex),
       popularSearches: suggestions.results.splice(suggestions.userHistoryIndex),
     };
   };
@@ -233,7 +223,12 @@ export const useSearch = () => {
   useEffect(() => {
     const queryParams = getQueryParamsFromUrl();
     if (queryParams.searchText) {
-      dispatch(updateSearchText(queryParams.searchText));
+      dispatch(
+        updateSearchText({
+          query: queryParams.searchText,
+          autoCorrectMode: queryParams.autoCorrectMode,
+        })
+      );
     }
   }, [dispatch]);
 

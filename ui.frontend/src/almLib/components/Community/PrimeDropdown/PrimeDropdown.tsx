@@ -9,9 +9,9 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import styles from "./PrimeDropdown.module.css";
-import { useRef, useState, useEffect } from "react";
-import { ARROW_DOWN_SVG } from "../../../utils/inline_svg";
+import styles from './PrimeDropdown.module.css';
+import { useRef, useState, useEffect } from 'react';
+import { ARROW_DOWN_SVG } from '../../../utils/inline_svg';
 
 const PrimeDropdown = (props: any) => {
   const ref = useRef<any>();
@@ -27,22 +27,22 @@ const PrimeDropdown = (props: any) => {
           toggleDropdownExpand && toggleDropdownExpand();
         }
       };
-      document.addEventListener("click", handleClickOutside, true);
+      document.addEventListener('click', handleClickOutside, true);
       return () => {
-        document.removeEventListener("click", handleClickOutside, true);
+        document.removeEventListener('click', handleClickOutside, true);
       };
     }
   });
 
   const toggleDropdownExpand = () => {
-    setisExpandDropdown((isExpandDropdown) => !isExpandDropdown);
+    setisExpandDropdown(isExpandDropdown => !isExpandDropdown);
   };
   const dropdownClickHandler = () => {
     toggleDropdownExpand();
   };
 
   const optionClickHandler = (option: any) => {
-    if (typeof props.optionClickHandler === "function") {
+    if (typeof props.optionClickHandler === 'function') {
       toggleDropdownExpand();
       props.optionClickHandler(option?.target.innerHTML);
     }
@@ -52,12 +52,8 @@ const PrimeDropdown = (props: any) => {
     <>
       <div ref={ref} className={styles.primeDropdown}>
         {props.label}
-        <span
-          className={styles.primeDropdownValue}
-          onClick={dropdownClickHandler}
-        >
-          : {selectedOption}{" "}
-          <span className={styles.primeDropdownIcon}>{ARROW_DOWN_SVG()}</span>
+        <span className={styles.primeDropdownValue} onClick={dropdownClickHandler}>
+          : {selectedOption} <span className={styles.primeDropdownIcon}>{ARROW_DOWN_SVG()}</span>
         </span>
         <div>
           {isExpandDropdown && (
@@ -65,7 +61,7 @@ const PrimeDropdown = (props: any) => {
               {optionList?.map((option: any) => (
                 <li
                   className={styles.primeDropdownOption}
-                  onClick={(option) => optionClickHandler(option)}
+                  onClick={option => optionClickHandler(option)}
                   key={option}
                 >
                   {option}

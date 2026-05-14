@@ -11,42 +11,62 @@ governing permissions and limitations under the License.
 */
 /* eslint-disable no-script-url */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import Calendar from "@spectrum-icons/workflow/Calendar";
-import Clock from "@spectrum-icons/workflow/Clock";
-import ClockCheck from "@spectrum-icons/workflow/ClockCheck";
-import Download from "@spectrum-icons/workflow/Download";
-import GlobeGrid from "@spectrum-icons/workflow/GlobeGrid";
-import Layers from "@spectrum-icons/workflow/Layers";
-import Money from "@spectrum-icons/workflow/Money";
-import PinOff from "@spectrum-icons/workflow/PinOff";
-import Send from "@spectrum-icons/workflow/Send";
-import UserGroup from "@spectrum-icons/workflow/UserGroup";
-import BookmarkSingleOutline from "@spectrum-icons/workflow/BookmarkSingleOutline";
-import BookmarkSingle from "@spectrum-icons/workflow/BookmarkSingle";
-import { useEffect, useMemo, useState } from "react";
-import { useIntl } from "react-intl";
-import { AlertType } from "../../../common/Alert/AlertDialog";
-import { useAlert } from "../../../common/Alert/useAlert";
-import { useConfirmationAlert } from "../../../common/Alert/useConfirmationAlert";
-import { InstanceBadge, Skill } from "../../../models/custom";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useIntl } from 'react-intl';
+import { AlertType } from '../../../common/Alert/AlertDialog';
+import { useAlert } from '../../../common/Alert/useAlert';
+import { VariantType, useConfirmationAlert } from '../../../common/Alert/useConfirmationAlert';
+import { InstanceBadge, Skill } from '../../../models/custom';
 import {
+  MODULE_COMPLETION_STATUS_ICON,
+  CERTIFICATION_TYPE_ICON,
+  CERTIFICATION_VALIDITY_ICON,
+  CALENDAR_ICON,
+  INSTANCES_ICON,
+  BADGES_RECIEVED_ICON,
+  LO_SKILLS_ICON,
+  LO_AUTHORS_ICON,
+  LO_JOBAID_ICON,
+  LO_RESOURCES_ICON,
+  NATIVE_EXTENSIBILITY_ICON,
+  LO_RESOURCE_DOWNLOAD_ICON,
+  LO_LANGUAGES_AVAILABLE_ICON,
+  BOOKMARK_ICON,
+  BOOKMARKED_ICON,
+  LO_RECOMMENDATIONS_ICON,
+  WHO_SHOULD_ATTEND_ICON,
+  DEFAULT_USER_SVG,
+  Warning_ICON,
+  YELLOW_ALERT_ICON,
+  PURCHASE_DETAILS_ICON,
+  LO_RESOURCE_LINK_ICON,
+  DOWNLOAD_ICON,
+} from '../../../utils/inline_svg';
+import {
+  PrimeAccount,
   PrimeExtension,
+  PrimeJobAidTrainingMap,
   PrimeLearningObject,
   PrimeLearningObjectInstance,
   PrimeLearningObjectInstanceEnrollment,
   PrimeLearningObjectResourceGrade,
+  PrimeLocalizationMetadata,
   PrimeLoInstanceSummary,
-} from "../../../models/PrimeModels";
+  PrimeRecommendations,
+  PrimeResource,
+} from '../../../models/PrimeModels';
 import {
   ACTIVITY,
   ADD_TO_CART,
   ADOBE_COMMERCE,
+  ADVANCED,
   CERTIFICATION,
   CLASSROOM,
   COMPLETED,
   COURSE,
   ENROLL,
   FLEX_LP_COURSE_INFO,
+  INTERMEDIATE,
   LEARNING_PROGRAM,
   MANAGER_APPROVAL,
   PENDING_ACCEPTANCE,
@@ -56,18 +76,48 @@ import {
   STARTED,
   VIRTUAL_CLASSROOM,
   WAITING,
-} from "../../../utils/constants";
-import { modifyTime } from "../../../utils/dateTime";
+  START,
+  CONTINUE,
+  REVISIT,
+  REGISTER_INTEREST,
+  CONTENT,
+  ENROLL_ACTION,
+  UPDATE_ENROLLMENT_ACTION,
+  WAITING_ACTION,
+  ADD_TO_CART_ACTION,
+  PENDING_APPROVAL_ACTION,
+  PENDING_ACCEPTANCE_ACTION,
+  ADD_TO_CART_NATIVE_ACTION,
+  BUY_NOW_NATIVE_ACTION,
+  ALM_FETCH_CART,
+  EXTERNAL_STR,
+  ERROR_ALREADY_ADDED,
+  UNREGISTER_INTEREST,
+  POST_REQUEST,
+  DELETE_REQUEST,
+  PAPI_ERROR_CODES,
+  EXTERNAL_AUTHOR,
+  ENGLISH_LOCALE,
+} from '../../../utils/constants';
+import { modifyTime, modifyTimeDDMMYY } from '../../../utils/dateTime';
+import { debounce } from '../../../utils/catalog';
 import {
   checkIfLinkedInLearningCourse,
   getALMAccount,
   getALMConfig,
   getALMObject,
   getQueryParamsFromUrl,
+  getWindowObject,
+  isDarkThemeApplied,
   isExtensionAllowed,
   launchContentUrlInNewWindow,
+  navigateToLoggedInLO,
+  navigateToLogin,
+  redirectToLoginAndAbort,
+  sendEvent,
   updateURLParams,
-} from "../../../utils/global";
+  isAccAltCompletionEnabled,
+} from '../../../utils/global';
 import {
   useCanShowRating,
   filterLoReourcesBasedOnResourceType,
@@ -75,42 +125,90 @@ import {
   getEnrolledInstancesCount,
   getEnrollment,
   isEnrolledInAutoInstance,
-  findCoursesInsideFlexLP,
-  findFlexlpInsideLP,
-} from "../../../utils/hooks";
+  getCoursesInsideFlexLP,
+  getCourseInstanceMapping,
+  checkIfEntityIsValid,
+  getConflictingSessions,
+  isValidSubLoForFlexLpToLaunch,
+  isEnrolledInstanceAutoInstance,
+  getTrainingUrl,
+} from '../../../utils/hooks';
 import {
-  DEFAULT_USER_SVG,
-  Extension_SVG,
-  INSTANCE_ICON,
-  LEARNER_BADGE_SVG,
-  Warning_ICON,
-} from "../../../utils/inline_svg";
-import {
-  arePrerequisiteEnforcedAndCompleted,
+  arePrerequisitesEnforcedAndCompleted,
   checkIsEnrolled,
+  notifyParentToCleanModuleParams,
   storeActionInNonLoggedMode,
-} from "../../../utils/overview";
-import { getFormattedPrice } from "../../../utils/price";
+} from '../../../utils/overview';
+import { getFormattedPrice } from '../../../utils/price';
 import {
   GetTranslation,
+  GetTranslationReplaced,
   GetTranslationsReplaced,
   getPreferredLocalizedMetadata,
-} from "../../../utils/translationService";
-// import { ALMStarRating } from "../../ALMRatings";
-import { StarRatingSubmitDialog } from "../../StarRatingSubmitDialog";
-import { ALMTooltip } from "../../Common/ALMTooltip";
-import { PrimeTrainingPageExtraJobAid } from "../PrimeTrainingPageExtraDetailsJobAids";
-import styles from "./PrimeTrainingPageMetadata.module.css";
-import React from "react";
+} from '../../../utils/translationService';
+import { StarRatingSubmitDialog } from '../../StarRatingSubmitDialog';
+import { ALMTooltip } from '../../Common/ALMTooltip';
+import { PrimeTrainingPageExtraJobAid } from '../PrimeTrainingPageExtraDetailsJobAids';
+import { PrimeTrainingRelatedLoList } from '../PrimeTrainingRelatedLoList';
+import { PrimeLoLeaderBoard } from '../../ALMLpLeaderBoard';
+import styles from './PrimeTrainingPageMetadata.module.css';
+import React from 'react';
 import {
   checkIfEnrollmentDeadlineNotPassed,
   checkIfUnenrollmentDeadlinePassed,
-} from "../../../utils/instance";
+} from '../../../utils/instance';
 import {
   InvocationType,
   getExtension,
   isExtensionAllowedForLO,
-} from "../../../utils/native-extensibility";
+} from '../../../utils/native-extensibility';
+import SessionConflictDialog from '../../SessionConflict/SessionConflictDialog';
+import {
+  courseIsNotCrVcOrTimingEnabled,
+  disableStart,
+  doesFirstTrainingHavePrerequisites,
+  findSubLoToLaunchForFlexLp,
+  getAllCoreContentModulesOfTraining,
+  getAllCoursesOfTraining,
+  getAllJobAidsInTraining,
+  getAllPreviewableModules,
+  getCourseIdAndInstanceIdFromResourceId,
+  getInstanceIdToLaunch,
+  getModuleIdToLaunch,
+  getSectionLOsOrder,
+  getTrainingLink,
+  getTrainingTypeLabel,
+  isReattemptAllowed,
+  isRevisitAllowed,
+  shouldResetAttempt,
+  shouldShowContinueButton,
+  shouldShowOnlyExternalAuthor,
+  subLoHasResources,
+} from '../../../utils/lo-utils';
+import { downloadFile } from '../../../utils/widgets/utils';
+import { useProfile } from '../../../hooks';
+import { PrimeEvent } from '../../../utils/widgets/common';
+import { useUserContext } from '../../../contextProviders/userContextProvider';
+import { useDeviceTypeContext } from '../../../contextProviders/DeviceContextProvider';
+import { ALMPopup } from '../../ALMPopup';
+import { ALMPopupContent } from '../../ALMPopup/ALMPopup';
+import { Flex, ActionButton, Divider } from '@adobe/react-spectrum';
+import Visibility from '@spectrum-icons/workflow/Visibility';
+import BookmarkSingle from '@spectrum-icons/workflow/BookmarkSingle';
+import BookmarkSingleOutline from '@spectrum-icons/workflow/BookmarkSingleOutline';
+import ShareAndroid from '@spectrum-icons/workflow/ShareAndroid';
+import Link from '@spectrum-icons/workflow/Link';
+import Email from '@spectrum-icons/workflow/Email';
+import ArrowDown from '@spectrum-icons/workflow/ArrowDown';
+import {
+  deleteDownloadedContentForTraining,
+  getDownloadLinks,
+  sendDownloadContentEvent,
+  showDownloadButton,
+} from '../../../utils/mobileAppUtils/downloadUtils';
+import { AppMode, DownloadStatus } from '../../../utils/mobileAppUtils/appConstants';
+import { useSelector } from 'react-redux';
+import CheckmarkCircle from '@spectrum-icons/workflow/CheckmarkCircle';
 
 const PrimeTrainingPageMetaData: React.FC<{
   trainingInstance: PrimeLearningObjectInstance;
@@ -122,19 +220,22 @@ const PrimeTrainingPageMetaData: React.FC<{
   showEnrollDeadline: string;
   enrollmentHandler: Function;
   flexLpEnrollHandler: Function;
-  updateRating: (
-    rating: number,
-    loInstanceId: any
-  ) => Promise<void | undefined>;
-  updateBookMark: (
-    isBookmarked: boolean,
-    loId: any
-  ) => Promise<void | undefined>;
+  updateRating: (rating: number, loInstanceId: any) => Promise<void | undefined>;
+  updateLearningObject: (loId: string) => Promise<PrimeLearningObject>;
+  updateBookMark: (isBookmarked: boolean, loId: any) => Promise<void | undefined>;
   alternateLanguages: Promise<string[]>;
   launchPlayerHandler: Function;
   addToCartHandler: () => Promise<{
     items: any;
     totalQuantity: Number;
+    error: any;
+  }>;
+  addToCartNativeHandler: () => Promise<{
+    redirectionUrl: string;
+    error: any;
+  }>;
+  buyNowNativeHandler: () => Promise<{
+    redirectionUrl: string;
     error: any;
   }>;
   updateEnrollmentHandler: Function;
@@ -144,10 +245,24 @@ const PrimeTrainingPageMetaData: React.FC<{
   waitlistPosition: string;
   setActiveExtension: Function;
   timeBetweenAttemptEnabled: boolean;
-  selectedInstanceInfo: Object;
-  isFlexible: boolean;
-  areAllInstancesSelectedHandler: Function;
+  courseInstanceMapping: any;
+  isFlexLPOrContainsFlexLP: boolean;
+  areAllInstancesSelected: Function;
   lastPlayingLoResourceId: string;
+  lastPlayingCourseId: string;
+  lastPlayingCourseInstanceId: string;
+  relatedCoursesList: PrimeLearningObject[];
+  relatedLpList: PrimeLearningObject[];
+  sourceAlternateLOs: PrimeLearningObject[];
+  sourceAlternateLoCount: number;
+  loadAllSourceAlternateLOs: () => Promise<void>;
+  setCourseInstanceMapping: any;
+  enrollViaModuleClick: any;
+  setEnrollViaModuleClick: Function;
+  isRegisterInterestEnabled: boolean;
+  registerInterestHandler: Function;
+  isCourseEnrollable: boolean;
+  isCourseEnrolled: boolean;
 }> = ({
   trainingInstance,
   skills,
@@ -158,79 +273,192 @@ const PrimeTrainingPageMetaData: React.FC<{
   enrollmentHandler,
   launchPlayerHandler,
   addToCartHandler,
+  addToCartNativeHandler,
+  buyNowNativeHandler,
   updateEnrollmentHandler,
   unEnrollmentHandler,
   jobAidClickHandler,
   flexLpEnrollHandler,
   isPreviewEnabled,
   alternateLanguages,
-  selectedInstanceInfo,
-  isFlexible,
+  courseInstanceMapping,
+  isFlexLPOrContainsFlexLP,
   updateRating,
+  updateLearningObject,
   updateBookMark,
   waitlistPosition,
   setActiveExtension,
   timeBetweenAttemptEnabled,
-  areAllInstancesSelectedHandler,
+  areAllInstancesSelected,
   lastPlayingLoResourceId,
+  lastPlayingCourseId,
+  lastPlayingCourseInstanceId,
+  relatedCoursesList,
+  relatedLpList,
+  sourceAlternateLOs,
+  sourceAlternateLoCount,
+  loadAllSourceAlternateLOs,
+  setCourseInstanceMapping,
+  enrollViaModuleClick,
+  setEnrollViaModuleClick,
+  isRegisterInterestEnabled,
+  registerInterestHandler,
+  isCourseEnrollable,
+  isCourseEnrolled,
 }) => {
+  const { user } = useUserContext() || {};
+  const contentLocale = user?.contentLocale || ENGLISH_LOCALE;
+  const guest = getALMConfig().guest;
   const [almAlert] = useAlert();
   const [almConfirmationAlert] = useConfirmationAlert();
   const { formatMessage, locale } = useIntl();
+
+  const { updateProfileSettings } = useProfile();
+  const [flexLPCoursesList, setFlexLPCoursesList] = useState({
+    enrolledCourses: [],
+    unenrolledCourses: [],
+  });
 
   const primaryEnrollment = training.enrollment;
   const enrollment = getEnrollment(training, trainingInstance);
   const enrolledInstancesCount = getEnrolledInstancesCount(training);
 
   const loType = training.loType;
+  const trainingTypeLabel = useMemo(() => getTrainingTypeLabel(loType), [loType]);
+  const isCourse = loType === COURSE;
+  const isLP = loType === LEARNING_PROGRAM;
+  const isCertification = loType === CERTIFICATION;
+  const isExternalCertification = isCertification && training.isExternal;
   const subLOs = training.subLOs;
   const sections = training.sections;
   const isPrimeUserLoggedIn = getALMObject().isPrimeUserLoggedIn();
+  const loPrice = training.price;
+  const learnerDesktopApp = getALMConfig().learnerDesktopApp;
+  const learnerMobileApp = getALMConfig().learnerMobileApp;
   const isPricingEnabled =
-    training.price && getALMConfig().usageType === ADOBE_COMMERCE;
+    loPrice &&
+    (getALMConfig().usageType === ADOBE_COMMERCE || learnerDesktopApp || learnerMobileApp);
   const isAutoInstanceEnrolled = isEnrolledInAutoInstance(training);
-
+  const isCourseEnrolledInstanceAutoInstance = isCourse && isEnrolledInstanceAutoInstance(training);
+  const hasOptionalLoResources = training.hasOptionalLoResources;
   const [isTrainingSynced, setIsTrainingSynced] = useState(true);
   const [isBookMarked, setIsBookMarked] = useState(training.isBookmarked);
   const [overviewExtension, setOverviewExtension] = useState<PrimeExtension>();
   const [enrollExtension, setEnrollExtension] = useState<PrimeExtension>();
-
-  const [alternativesLangAvailable, setAlternativesLangAvailable] = useState<
-    string[]
-  >([]);
-
+  const [alternativesLangAvailable, setAlternativesLangAvailable] = useState<string[]>([]);
+  const trainingProgressPercent = enrollment && enrollment.progressPercent;
   const isEnrolled = checkIsEnrolled(enrollment);
+  const [account, setAccount] = useState({} as PrimeAccount);
+  const recommendationText = useMemo(() => {
+    return GetTranslation('alm.lo.recommended.for');
+  }, []);
+  const isInstanceRetired = useMemo(() => {
+    return trainingInstance.state === RETIRED;
+  }, [trainingInstance.state]);
+  const { isDesktop, isTablet, isMobile } = useDeviceTypeContext();
 
+  const isCourseNotEnrollable = isCourse && !isCourseEnrollable && !isCourseEnrolled;
+  useEffect(() => {
+    if (
+      enrollViaModuleClick.id &&
+      !isEnrollButtonDisabled &&
+      !isPricingEnabled &&
+      !isCourseNotEnrollable
+    ) {
+      const enrollOnClick = user.enrollOnClick;
+
+      const makeEnrollmentCall = () => {
+        checkConflictingSessions();
+        return;
+      };
+
+      if (enrollOnClick || enrollViaModuleClick.isAutoPlay) {
+        makeEnrollmentCall();
+        return;
+      }
+
+      almConfirmationAlert(
+        formatMessage({
+          id: 'alm.community.board.confirmationRequired',
+          defaultMessage: 'Confirmation Required',
+        }),
+        GetTranslation('alm.module.click.description', true),
+        formatMessage({
+          id: 'text.continue',
+        }),
+        formatMessage({
+          id: 'alm.overview.cancel',
+        }),
+        async () => {
+          try {
+            makeEnrollmentCall();
+            updateProfileSettings({ shouldEnrollOnClick: true }); // updating enrollOnClick to true
+          } catch (e) {
+            almAlert(true, GetTranslation('alm.enrollment.error'), AlertType.error);
+          }
+        },
+        setEnrollViaModuleClick([]) // setting empty
+      );
+    }
+  }, [enrollViaModuleClick, user, isCourseNotEnrollable]);
+
+  useEffect(() => {
+    document.addEventListener(PrimeEvent.PLAYER_CLOSE, handlePlayerClose);
+    return () => {
+      document.removeEventListener(PrimeEvent.PLAYER_CLOSE, handlePlayerClose);
+    };
+  }, []);
+
+  const handlePlayerClose = async (event: any) => {
+    const actionButton = document.getElementById(actionButtonId);
+    actionButton?.focus();
+  };
   const toggle = () => {
-    setIsBookMarked((prevState) => !prevState);
+    setIsBookMarked(prevState => !prevState);
     updateBookMark(!isBookMarked, training.id);
   };
-  const getBookMarkIcon = (
-    <span className={styles.bookMarkIcon}>
-      {isBookMarked ? <BookmarkSingle /> : <BookmarkSingleOutline />}
-    </span>
-  );
-  const getBookMarkStatusText = (
-    <span className={styles.bookMarkText}>
-      {isBookMarked
-        ? GetTranslation("alm.text.saved")
-        : GetTranslation("alm.text.save")}
-    </span>
-  );
+  const bookmarkTitle = isBookMarked
+    ? GetTranslation('alm.text.remove.from.list')
+    : GetTranslation('alm.text.add.to.list');
 
+  const getBookMarkStatus = () => {
+    const bookmarkIcon = isBookMarked ? <BookmarkSingle /> : <BookmarkSingleOutline />;
+    const bookMarkStatus = isBookMarked
+      ? GetTranslation('alm.text.saved')
+      : GetTranslation('alm.text.save');
+    return (
+      <>
+        <span className={styles.bookmarkIcon} data-automationid="bookmark">
+          {bookmarkIcon}
+        </span>
+        {(isDesktop || isTablet) && (
+          <span className={styles.bookMarkText} data-automationid="bookmark-status">
+            {bookMarkStatus}
+          </span>
+        )}
+      </>
+    );
+  };
   const isInstanceNotSelected = (
-    <div>
-      <div className={styles.selectCiMsg}>
+    <>
+      <div
+        className={styles.selectCiMsg}
+        data-automationid={GetTranslation(`alm.training.flexlp.select.instance`, true)}
+      >
         {GetTranslation(`alm.training.flexlp.select.instance`, true)}
       </div>
-      <div className={styles.scrollToSelectMsg}>
+      <div
+        className={styles.scrollToSelectMsg}
+        data-automationid={GetTranslation(`alm.training.flexlp.no.instance`, true)}
+      >
         {GetTranslation(`alm.training.flexlp.no.instance`, true)}
       </div>
-    </div>
+    </>
   );
 
   const isInstanceSwitchEnabled =
-    training.instanceSwitchEnabled && primaryEnrollment?.state !== COMPLETED;
+    training.instanceSwitchEnabled &&
+    (primaryEnrollment?.state !== COMPLETED || primaryEnrollment?.progressPercent === 100);
   const isMultiEnrollmentEnabled = training.multienrollmentEnabled;
   const hasMultipleInstances = !hasSingleActiveInstance(training);
 
@@ -238,110 +466,104 @@ const PrimeTrainingPageMetaData: React.FC<{
   const requireManagerApproval = training.enrollmentType === MANAGER_APPROVAL;
   const isPrimaryEnrollmentWaitlisted = primaryEnrollment?.state === WAITING;
 
-  const typeOfUnEnrollButton =
-    loType === CERTIFICATION
-      ? GetTranslation("alm.text.unenroll.certification", true)
-      : loType === LEARNING_PROGRAM
-      ? GetTranslation("alm.text.unenroll.learningProgram", true)
-      : hasMultipleInstances &&
-        isMultiEnrollmentEnabled &&
-        enrolledInstancesCount > 1
-      ? GetTranslation("alm.text.unenroll.instance", true)
-      : GetTranslation("alm.text.unenroll.course", true);
+  const typeOfUnEnrollButton = useMemo(() => {
+    return isCertification
+      ? GetTranslation('alm.text.unenroll.certification', true)
+      : isLP
+        ? GetTranslation('alm.text.unenroll.learningProgram', true)
+        : hasMultipleInstances && isMultiEnrollmentEnabled && enrolledInstancesCount > 1
+          ? GetTranslation('alm.text.unenroll.instance', true)
+          : GetTranslation('alm.text.unenroll.course', true);
+  }, [training]);
 
-  const courseIdList = Object.keys(selectedInstanceInfo);
-  const courseInfoList = Object.values(selectedInstanceInfo);
+  const courseIdList = Object.keys(courseInstanceMapping);
 
   let showPreviewButton =
-    isPreviewEnabled && training.hasPreview && !isEnrolled;
-  const showPriceDetails = isPricingEnabled && enrollment;
+    isPreviewEnabled && training.hasPreview && !checkIsEnrolled(training.enrollment);
 
-  const flexLp = () => {
-    let flexLpObject = {} as any;
-    for (let i = 0; i < courseIdList.length; i++) {
-      flexLpObject[courseIdList[i] as keyof typeof flexLpObject] =
-        courseInfoList[i]["instanceId" as keyof (typeof courseInfoList)[0]];
-    }
-    return flexLpObject;
-  };
-
-  const updationChecker = () => {
-    for (let i = 0; i < courseInfoList.length; i++) {
-      if (courseInfoList[i]["isbuttonChange"]) {
+  const flexLpUpdationChecker = () => {
+    const entries = Object.entries(courseInstanceMapping);
+    for (let i = 0; i < entries.length; i++) {
+      const loInstanceObj = entries[i][1] as any;
+      if (loInstanceObj.isInstanceUpdated) {
         return true;
       }
     }
     return false;
   };
-
-  const [isChildFlexLP, setIsChildFlexLP] = useState(false);
-  const [isTrainingFlexLP, setIsTrainingFlexLP] = useState(false);
-
-  useEffect(() => {
-    const childIsFlexLP = findFlexlpInsideLP(training);
-    if (childIsFlexLP) {
-      setIsChildFlexLP(true);
-      setIsTrainingFlexLP(true);
-    } else if (isFlexible) {
-      setIsTrainingFlexLP(true);
-    }
-  }, []);
-
   // Enrolled courses inside flex lp, for which instance not selected
   const courseInstanceNotSelected =
     loType == COURSE && primaryEnrollment && !primaryEnrollment.loInstance;
 
-  const courseInstanceInsideFlexLPSelected = training.subLOs?.some((lo) => {
-    return lo.enrollment?.loInstance !== undefined;
-  });
+  const courseInstanceInsideFlexLPSelected = useMemo(() => {
+    const allCoursesOfFlexLP = getAllCoursesOfTraining(training);
+    return allCoursesOfFlexLP?.some(
+      course =>
+        checkIfEntityIsValid(course.enrollment) &&
+        checkIfEntityIsValid(course.enrollment?.loInstance)
+    );
+  }, [training?.subLOs]);
 
   const action: string = useMemo(() => {
     if (courseInstanceNotSelected) {
-      return "start";
+      return START;
     } else if (enrollment) {
       if (enrollment.state === PENDING_APPROVAL) {
-        return "pendingApproval";
+        return PENDING_APPROVAL_ACTION;
       } else if (enrollment.state === PENDING_ACCEPTANCE) {
-        return "pendingAcceptance";
+        return PENDING_ACCEPTANCE_ACTION;
       } else if (enrollment.state === WAITING) {
-        return "waiting";
+        return WAITING_ACTION;
       } else if (
-        enrollment.progressPercent >= 0 &&
-        updationChecker() &&
-        isTrainingFlexLP
+        trainingProgressPercent >= 0 &&
+        flexLpUpdationChecker() &&
+        isFlexLPOrContainsFlexLP
       ) {
-        return "updateEnrollment";
-      } else if (enrollment.state === STARTED) {
-        return "continue";
-      } else if (enrollment.progressPercent === 0) {
-        return "start";
-      } else if (enrollment.progressPercent === 100) {
-        return "revisit";
+        return UPDATE_ENROLLMENT_ACTION;
+      } else if (
+        (enrollment.state === STARTED ||
+          shouldShowContinueButton(isEnrolled, isCourse, training, isFlexLPOrContainsFlexLP)) &&
+        trainingProgressPercent != 100 &&
+        enrollment.state !== COMPLETED
+      ) {
+        return CONTINUE;
+      } else if (trainingProgressPercent === 0 && enrollment.state !== COMPLETED) {
+        return START;
+      } else if (trainingProgressPercent === 100 || enrollment.state === COMPLETED) {
+        return REVISIT;
       }
-      return "continue";
-    } else if (trainingInstance.state === RETIRED) {
-      return "registerInterest";
+      return CONTINUE;
+    } else if (isInstanceRetired && !isRegisterInterestEnabled) {
+      return REGISTER_INTEREST;
+    } else if (isInstanceRetired && isRegisterInterestEnabled) {
+      return UNREGISTER_INTEREST;
     } else if (isPricingEnabled) {
-      return "addToCart";
+      const isMultiItemCart = account.multiItemCartEnabled;
+      if ((learnerDesktopApp || learnerMobileApp) && isMultiItemCart) {
+        return ADD_TO_CART_NATIVE_ACTION;
+      } else if ((learnerDesktopApp || learnerMobileApp) && !isMultiItemCart) {
+        return BUY_NOW_NATIVE_ACTION;
+      }
+      return ADD_TO_CART_ACTION;
     } else if (isPrimaryEnrollmentWaitlisted) {
-      return "updateEnrollment";
-    } else {
-      return "enroll";
+      return UPDATE_ENROLLMENT_ACTION;
+    } else if (isCourseNotEnrollable) {
+      return '';
     }
-  }, [enrollment, trainingInstance.state, isPricingEnabled]);
+    return ENROLL_ACTION;
+  }, [enrollment, trainingInstance.state, isPricingEnabled, account, isRegisterInterestEnabled]);
 
   useEffect(() => {
     const getAndSetOverviewExtension = async () => {
       const account = await getALMAccount();
+      setAccount(account);
       if (account) {
         const extension = getExtension(
           account.extensions,
           training.extensionOverrides,
           InvocationType.LEARNER_OVERVIEW
         );
-        extension &&
-          isExtensionAllowed(extension) &&
-          setOverviewExtension(extension);
+        extension && isExtensionAllowed(extension) && setOverviewExtension(extension);
       }
     };
     getAndSetOverviewExtension();
@@ -363,43 +585,73 @@ const PrimeTrainingPageMetaData: React.FC<{
     getEnrollExtension();
   }, [training, trainingInstance]);
 
-  const completionDeadline = trainingInstance.completionDeadline;
-  const unenrollmentDeadline = trainingInstance.unenrollmentDeadline;
-  const enrollmentDeadline = trainingInstance.enrollmentDeadline;
+  const completionDeadline =
+    trainingInstance.completionDeadline ||
+    trainingInstance.enrollment?.completionDeadline ||
+    enrollment?.completionDeadline;
+  const { unenrollmentDeadline, enrollmentDeadline } = trainingInstance;
 
   const enrollmentCount = instanceSummary?.enrollmentCount;
   const seatLimit = instanceSummary?.seatLimit;
-  const seatsAvailable =
-    seatLimit !== undefined ? seatLimit - (enrollmentCount || 0) : -1;
+  const seatsAvailable = seatLimit !== undefined ? seatLimit - (enrollmentCount || 0) : -1;
 
   const isSeatAvailable = trainingInstance.seatLimit
     ? trainingInstance.seatLimit > 0 && seatsAvailable > 0
     : true;
 
-  const isEnrollingToWaitlisted =
-    !enrollment && seatLimit !== undefined && !isSeatAvailable;
+  const isEnrollingToWaitlisted = !enrollment && seatLimit !== undefined && !isSeatAvailable;
 
   const hasEnrollmentDeadlinePassed = enrollmentDeadline
     ? new Date(enrollmentDeadline) < new Date()
     : false;
 
+  const isEnrolledInPrimaryInstance = primaryEnrollment?.loInstance?.id === trainingInstance.id;
+  const hasCompletedPrimaryEnrollment =
+    primaryEnrollment?.state === COMPLETED || primaryEnrollment?.progressPercent === 100;
+  const isSwitchToOtherInstanceDisabled =
+    training.instanceSwitchEnabled && !isEnrolledInPrimaryInstance && hasCompletedPrimaryEnrollment;
+
   const isEnrollButtonDisabled =
     hasEnrollmentDeadlinePassed ||
-    (primaryEnrollment &&
-      !isPrimaryEnrollmentWaitlisted &&
-      isEnrollingToWaitlisted) ||
+    (primaryEnrollment && !isPrimaryEnrollmentWaitlisted && isEnrollingToWaitlisted) ||
     (!isInstanceSwitchEnabled &&
       !isMultiEnrollmentEnabled &&
       primaryEnrollment &&
       primaryEnrollment.loInstance &&
-      primaryEnrollment.loInstance.id !== trainingInstance.id &&
+      !isEnrolledInPrimaryInstance &&
       !isPrimaryEnrollmentWaitlisted) ||
     isPendingApproval ||
-    (isTrainingFlexLP && courseIdList.length === 0);
-
+    isSwitchToOtherInstanceDisabled;
+  const purchasedDate = enrollment?.dateEnrolled || '';
+  const showPriceDetails = account.enableECommerce && loPrice && loPrice > 0 && enrollment;
+  const getPriceFormatHTML = (header: string, body: any) => {
+    return (
+      <>
+        <div className={styles.bodyHeader} data-automationid={GetTranslation(header)}>
+          {GetTranslation(header)}
+        </div>
+        <div className={styles.bodyText} data-automationid={`Purchased-details-${body}`}>
+          {body}
+        </div>
+      </>
+    );
+  };
+  const getPriceDetails = useMemo(() => {
+    return (
+      <>
+        <div> {getPriceFormatHTML('alm.training.price', `$${loPrice}`)}</div>
+        <div>
+          {getPriceFormatHTML(
+            'alm.overview.session.date.header',
+            modifyTime(purchasedDate, locale)
+          )}
+        </div>
+      </>
+    );
+  }, []);
   const seatsAvailableText = trainingInstance.seatLimit ? (
     seatLimit && seatsAvailable > 0 ? (
-      <p className={`${styles.label} ${styles.centerAlign}`}>
+      <p className={`${styles.label} ${styles.centerAlign}`} data-automationid="seats-available">
         {formatMessage(
           {
             id: `alm.overview.seatsAvailable`,
@@ -411,13 +663,16 @@ const PrimeTrainingPageMetaData: React.FC<{
       seatLimit &&
       seatsAvailable <= 0 && (
         <>
-          <p className={`${styles.errorText} ${styles.centerAlign}`}>
+          <p
+            className={`${styles.errorText} ${styles.centerAlign}`}
+            data-automationid="seats-unavailable"
+          >
             {formatMessage({
               id: `alm.overview.no.seats.available`,
             })}
           </p>
           {!isEnrollButtonDisabled && (
-            <p className={styles.centerAlign}>
+            <p className={styles.centerAlign} data-automationid="waitlisted">
               {formatMessage({
                 id: `alm.overview.to.be.waitlisted`,
               })}
@@ -427,86 +682,146 @@ const PrimeTrainingPageMetaData: React.FC<{
       )
     )
   ) : (
-    ""
+    ''
   );
 
   const waitListText =
     enrollment && enrollment.state === WAITING ? (
-      <p className={`${styles.label} ${styles.centerAlign}`}>
+      <p className={`${styles.label} ${styles.centerAlign}`} data-automationid="waitlist-position">
         {formatMessage({
           id: `alm.overview.waitlist.position`,
         })}
         {waitlistPosition}
       </p>
     ) : (
-      ""
+      ''
     );
 
-  const prerequisiteCompletionText = action === "start" &&
-    !arePrerequisiteEnforcedAndCompleted(training) && (
-      <p className={`${styles.label} ${styles.centerAlign}`}>
-        {formatMessage(
-          {
-            id: "alm.overview.complete.prerequisite.message",
-          },
-          { loType: loType }
-        )}
+  const shouldConsiderPassStatus = user.account?.shouldPreReqConsiderPassStatus;
+
+  const prerequisiteCompletionText = action === START &&
+    !arePrerequisitesEnforcedAndCompleted(training, user?.account, shouldConsiderPassStatus) && (
+      <p
+        className={`${styles.label} ${styles.centerAlign} ${styles.PreRequisiteAlert}`}
+        data-automationid="complete-prerequisite-message"
+      >
+        {YELLOW_ALERT_ICON()}
+        {GetTranslation(`alm.overview.complete.prerequisite.message.${loType}`, true)}
       </p>
     );
 
   const actionText = useMemo(() => {
-    if (action === "addToCart") {
+    if (action === ADD_TO_CART_ACTION) {
       return formatMessage(
         {
           id: `alm.addToCart`,
         },
-        { x: getFormattedPrice(training.price) }
+        { x: getFormattedPrice(loPrice) }
       );
+    } else if (action === ADD_TO_CART_NATIVE_ACTION) {
+      return formatMessage(
+        {
+          id: `alm.addToCartNative`,
+        },
+        { x: getFormattedPrice(loPrice) }
+      );
+    } else if (action === BUY_NOW_NATIVE_ACTION) {
+      return formatMessage(
+        {
+          id: `alm.buyNowNative`,
+        },
+        { x: getFormattedPrice(loPrice) }
+      );
+    } else if (action === '') {
+      return '';
     }
     return formatMessage({
       id: `alm.overview.button.${action}`,
     });
-  }, [action, formatMessage, training.price]);
+  }, [action, formatMessage, loPrice]);
+  const actionButtonId = `actionButton-${actionText}`;
 
   const filteredSkills: Skill[] = useMemo(() => {
-    let map: any = {};
-    let filteredSkills = skills?.filter((item) => {
-      if (!map[item.name]) {
-        map[item.name] = true;
-        return true;
+    const skillMap: Record<string, Skill> = {};
+
+    skills?.forEach(skill => {
+      const key = `${skill.name}-${skill.level}`;
+      if (skillMap[key]) {
+        skillMap[key].credits += skill.credits;
+      } else {
+        skillMap[key] = { ...skill };
       }
-      return false;
     });
-    return filteredSkills;
+
+    return Object.values(skillMap);
   }, [skills]);
+
+  const doLoSkillsExist = filteredSkills?.length > 0;
+  function getUnenrollmentMessageKey(isSuccess: boolean) {
+    let type;
+    if (isCertification) {
+      type = 'cert';
+    } else if (isLP) {
+      type = 'lp';
+    } else if (hasMultipleInstances && isMultiEnrollmentEnabled && enrolledInstancesCount > 1) {
+      type = 'instance';
+    } else {
+      type = COURSE;
+    }
+    return `${isSuccess ? 'succMsg' : 'errMsg'}.learner.${type}.unenroll`;
+  }
+
+  function showUnenrollmentMessage(isSuccess: boolean) {
+    const messageKey = getUnenrollmentMessageKey(isSuccess);
+    return almAlert(
+      true,
+      GetTranslation(messageKey, true),
+      isSuccess ? AlertType.success : AlertType.error
+    );
+  }
+
+  function showUnenrollmentSuccessMessage() {
+    return showUnenrollmentMessage(true);
+  }
+
+  function showUnenrollmentErrorMessage() {
+    return showUnenrollmentMessage(false);
+  }
+
+  const removeOfflineContentAfterUnenroll = useCallback(() => {
+    const instanceId = trainingInstance.id;
+    deleteDownloadedContentForTraining(training, instanceId, user, true).catch(() => {});
+  }, [training, trainingInstance, user]);
 
   const unEnrollmentClickHandler = async () => {
     try {
-      const response = await unEnrollmentHandler({
-        enrollmentId: enrollment.id,
-        isFlexLp: isFlexible,
+      await unEnrollmentHandler({
+        enrollmentId: enrollment?.id || training?.enrollment?.id,
+        isFlexLp: isFlexLPOrContainsFlexLP,
       });
-      if (hasMultipleInstances && response) {
-        viewAllInstanceHandler();
-      }
-    } catch (e) {}
+      showUnenrollmentSuccessMessage();
+      removeOfflineContentAfterUnenroll();
+    } catch (e) {
+      showUnenrollmentErrorMessage();
+    }
   };
 
   const instanceUpdateClickHandler = () => {
-    const instanceEnrollmentList = isTrainingFlexLP
-      ? { enroll: flexLp() }
-      : {
-          enroll: {
-            [training.id]: trainingInstance.id,
-          },
-        };
-
     updateEnrollmentHandler({
       enrollmentId: primaryEnrollment.id,
-      instanceEnrollList: instanceEnrollmentList,
-      isFlexLp: isTrainingFlexLP,
+      instanceEnrollList: {
+        enroll: {
+          [training.id]: trainingInstance.id,
+        },
+      },
+      isFlexLp: false,
     });
   };
+
+  const { hasPrerequisites, trainingType } = doesFirstTrainingHavePrerequisites(
+    training,
+    user?.account
+  );
 
   const enrollmentClickHandler = async (launchPlayer = true) => {
     try {
@@ -527,10 +842,21 @@ const PrimeTrainingPageMetaData: React.FC<{
         allowMultiEnrollment: isMultiEnrollmentEnabled,
       });
       if (checkIsEnrolled(newEnrollment) && launchPlayer) {
+        if (isExternalCertification && !training.subLOs) {
+          return;
+        }
+
+        if (hasPrerequisites) {
+          almAlert(
+            true,
+            GetTranslation(`alm.overview.error.unmetPreReqMessage.${trainingType}`, true),
+            AlertType.error
+          );
+          return;
+        }
         if (
-          isFirstModuleCrOrVc() ||
-          isFirstResourceType(ACTIVITY) ||
-          !arePrerequisiteEnforcedAndCompleted(training)
+          (isFirstModuleCrOrVc() || isFirstResourceType(ACTIVITY)) &&
+          !enrollViaModuleClick.isAutoPlay
         ) {
           return;
         }
@@ -540,164 +866,309 @@ const PrimeTrainingPageMetaData: React.FC<{
         ) {
           return launchContentUrlInNewWindow(training, coreContentModules[0]);
         }
+        await updateLearningObject(training?.id);
         playerHandler(newEnrollment);
       }
-    } catch (e) {
-      console.log(e);
+      setEnrollViaModuleClick([]); // setting empty once enrollment is done
+    } catch (error: any) {
+      setEnrollViaModuleClick([]);
+      if (error.message === PAPI_ERROR_CODES.ERROR_ENROLLMENT_WAITLIST_FULL) {
+        almConfirmationAlert(
+          GetTranslation('alm.error.waitlist.limit.title'),
+          GetTranslation('alm.error.waitlist.limit.message'),
+          GetTranslation('alm.community.ok.label')
+        );
+        return;
+      } else if (error.message === PAPI_ERROR_CODES.ERROR_BL_ENROLLMENT_ACQUIRED_COURSE_LIMIT) {
+        almAlert(
+          true,
+          GetTranslation(`enrollment.limit.reached.error.${training.loType}`, true),
+          AlertType.error
+        );
+        return;
+      }
+
+      almAlert(true, GetTranslation('alm.enrollment.error'), AlertType.error);
     }
   };
 
   // Need to update this later
   const updateEnrollmentClickHandler = () => {
     unEnrollmentHandler({ enrollmentId: primaryEnrollment.id }).then(() => {
+      removeOfflineContentAfterUnenroll();
       enrollmentClickHandler();
     });
   };
-  const instanceEnrollmentHandler = async () => {
-    if (action === "enroll") {
-      try {
-        const account = await getALMAccount();
 
-        if (account && isExtensionAllowedForLO(training, trainingInstance)) {
-          const extension = getExtension(
-            account.extensions,
-            training.extensionOverrides,
-            InvocationType.LEARNER_ENROLL
-          );
-          if (extension && isExtensionAllowed(extension)) {
-            getALMObject().storage.setItem(
-              FLEX_LP_COURSE_INFO,
-              selectedInstanceInfo,
-              1800
-            );
-            setActiveExtension(extension);
-            return;
-          }
+  const getFlexLpPayload = (
+    training: PrimeLearningObject,
+    flexLpCourseListUpdated: any,
+    instanceSwitchAllowedForParentLO: boolean
+  ) => {
+    const flexLpObject = {} as any;
+
+    // For both enrollment and update enrollment calls
+    const coursesInsideFlexLP = training.subLOs.reduce(
+      (result: PrimeLearningObject[], subLO: PrimeLearningObject) => {
+        if (subLO.loType === COURSE) {
+          result.push(subLO);
         }
-        const enrollRequestObj = flexLp();
-        await flexLpEnrollHandler({
-          allowMultiEnrollment: isMultiEnrollmentEnabled,
-          body: { enroll: enrollRequestObj },
-        });
-      } catch (e) {}
-    } else {
-      instanceUpdateClickHandler();
+        return result;
+      },
+      []
+    );
+
+    // instance switch not allowed if no seats available or enrollment/unenrollment deadline is passed
+    instanceSwitchAllowedForParentLO = Object.entries(courseInstanceMapping).every(
+      ([id, course]: [string, any]) => {
+        const isSwitchAllowed = course.isInstanceSwitchAllowed;
+        const coursePresent = coursesInsideFlexLP.some(course => course.id === id);
+
+        return !coursePresent || (coursePresent && isSwitchAllowed);
+      }
+    );
+
+    Object.entries(courseInstanceMapping).forEach(([id, course]: [string, any]) => {
+      const instanceId = course.instanceId;
+      const isInstanceUpdated = action === ENROLL_ACTION || course.isInstanceUpdated;
+      const courseObj = { name: course.name, id: id };
+      const isSwitchAllowed = course.isInstanceSwitchAllowed;
+
+      if (coursesInsideFlexLP.some(course => course.id === id && isInstanceUpdated)) {
+        if (instanceSwitchAllowedForParentLO) {
+          flexLpObject[id] = instanceId;
+          flexLpCourseListUpdated.enrolledCourses.push(courseObj);
+        } else if (!isSwitchAllowed) {
+          // instance switch not allowed if no seats available or enrollment deadline is passed
+          flexLpCourseListUpdated.unenrolledCourses.push(courseObj);
+        }
+      }
+    });
+    return flexLpObject;
+  };
+
+  const flexLpEnrollmentHandler = async () => {
+    try {
+      const account = await getALMAccount();
+      const isAllowed = account && isExtensionAllowedForLO(training, trainingInstance);
+
+      if (isAllowed) {
+        const extension = getExtension(
+          account.extensions,
+          training.extensionOverrides,
+          InvocationType.LEARNER_ENROLL
+        );
+
+        if (extension && isExtensionAllowed(extension)) {
+          getALMObject().storage.setItem(FLEX_LP_COURSE_INFO, courseInstanceMapping, 1800);
+          setActiveExtension(extension);
+          return;
+        }
+      }
+
+      await updateOrEnrollFlexibleSubLOs();
+    } catch (error) {
+      console.log(error);
     }
   };
 
-  const getAllCoursesInsideFlexLP = (subLOsInsideLP: PrimeLearningObject[]) => {
+  const updateOrEnrollFlexibleSubLOs = async () => {
+    // Instance switch is not allowed if enrollment deadline is passed or no seats available
+    const flexLpCourseListUpdated = { ...flexLPCoursesList };
+    let instanceSwitchAllowedForParentLO = true;
+
+    await Promise.all(
+      subLOs.map(async subLO => {
+        if (subLO.loType === LEARNING_PROGRAM && subLO.instances[0].isFlexible) {
+          const enrollRequestObj = getFlexLpPayload(
+            subLO,
+            flexLpCourseListUpdated,
+            instanceSwitchAllowedForParentLO
+          );
+          if (instanceSwitchAllowedForParentLO) {
+            await updateOrEnrollFlexLP(subLO, enrollRequestObj);
+          }
+        }
+      })
+    );
+
+    instanceSwitchAllowedForParentLO = true;
+    const enrollRequestObj = getFlexLpPayload(
+      training,
+      flexLpCourseListUpdated,
+      instanceSwitchAllowedForParentLO
+    );
+
+    setFlexLPCoursesList(flexLpCourseListUpdated);
+
+    if (instanceSwitchAllowedForParentLO) {
+      // Root training enrollment
+      await updateOrEnrollFlexLP(training, enrollRequestObj, trainingInstance.id);
+      if (
+        action === UPDATE_ENROLLMENT_ACTION &&
+        flexLpCourseListUpdated.unenrolledCourses.length === 0
+      ) {
+        almAlert(true, GetTranslation(`alm.text.saveSuccessfulMessage`), AlertType.success);
+      }
+    }
+
+    updateCourseInstanceMapping(flexLpCourseListUpdated);
+  };
+  const showFlexLpEnrollmentAlert = () => {
+    const title = getFlexLpEnrollmentFailedTitle();
+    const message = getFlexLpEnrollmentFailedMessage();
+    const variant =
+      flexLPCoursesList.enrolledCourses.length > 0 ? VariantType.WARNING : VariantType.ERROR;
+
+    almConfirmationAlert(
+      title,
+      message,
+      formatMessage({ id: 'alm.community.ok.label' }),
+      '',
+      () => setFlexLPCoursesList({ enrolledCourses: [], unenrolledCourses: [] }),
+      undefined,
+      variant
+    );
+  };
+
+  useEffect(() => {
+    /* Flex LP Validations */
+    if (flexLPCoursesList.unenrolledCourses.length > 0) {
+      showFlexLpEnrollmentAlert();
+    }
+  }, [flexLPCoursesList]);
+
+  const updateOrEnrollFlexLP = async (
+    training: PrimeLearningObject,
+    requestBody: any,
+    trainingInstanceId = ''
+  ) => {
+    const payload = {
+      id: training.id,
+      instanceId: trainingInstanceId || training.instances[0].id,
+      allowMultiEnrollment: training.multienrollmentEnabled,
+    };
+
+    const emptyRequest = Object.keys(requestBody).length === 0;
+
+    if (action === ENROLL_ACTION) {
+      try {
+        if (emptyRequest) {
+          await enrollmentHandler(payload);
+        } else {
+          await flexLpEnrollHandler({
+            ...payload,
+            body: { enroll: requestBody },
+          });
+        }
+      } catch (error: any) {
+        almAlert(true, GetTranslation('alm.enrollment.error'), AlertType.error);
+      }
+      return;
+    }
+
+    if (emptyRequest) {
+      return;
+    }
+    await updateEnrollmentHandler({
+      enrollmentId: training.enrollment.id,
+      instanceEnrollList: {
+        enroll: requestBody,
+      },
+      isFlexLp: true,
+    });
+  };
+
+  const updateCourseInstanceMapping = (flexLPCoursesList: any) => {
+    const updatedMapping = { ...courseInstanceMapping };
+
+    Object.entries(courseInstanceMapping).forEach(([id, course]: [string, any]) => {
+      const isUnenrolled = flexLPCoursesList.unenrolledCourses.some(
+        (unenrolledCourse: any) => unenrolledCourse.id === id
+      );
+
+      // Setting isInstanceUpdated to be false after successfull enrollment call if instance switch was allowed
+      updatedMapping[id] = { ...course, isInstanceUpdated: isUnenrolled };
+    });
+    setCourseInstanceMapping(updatedMapping);
+  };
+
+  const getAllCoursesInsideFlexLPSection = (
+    subLOsInsideLP: PrimeLearningObject[],
+    isFlexible: boolean
+  ) => {
     let allCourses: PrimeLearningObject[] = [];
-    subLOsInsideLP.forEach((lo) => {
+    subLOsInsideLP.forEach(lo => {
       if (lo.loType === LEARNING_PROGRAM && lo.instances[0].isFlexible) {
-        allCourses.push(...findCoursesInsideFlexLP(lo));
-      } else if (lo.loType === COURSE) {
+        allCourses.push(...getCoursesInsideFlexLP(lo, true));
+      } else if (lo.loType === COURSE && isFlexible) {
         allCourses.push(lo);
       }
     });
     return allCourses;
   };
 
-  function dialogBoxMessageHandler() {
+  function flexLPInstanceConfirmationMessage() {
     return (
       <>
         <p className={styles.dialogBoxMessage}>
-          {GetTranslation(
-            "alm.training.flexLp.enrollmentDialogBox.selectedCourseMessage",
-            true
-          )}
+          {GetTranslation('alm.training.flexLp.enrollmentDialogBox.selectedCourseMessage', true)}
         </p>
         <p className={styles.dialogBoxMessage}>
-          {GetTranslation(
-            "alm.training.flexLp.enrollmentDialogBox.instanceChangeMessage",
-            true
-          )}
+          {GetTranslation('alm.training.flexLp.enrollmentDialogBox.instanceChangeMessage', true)}
         </p>
         <p className={styles.dialogBoxMessage}>
           <span className={styles.warningIcon}>{Warning_ICON()}</span>
-          {GetTranslation(
-            "alm.training.flexLp.enrollmentDialogBox.pendingCourseMessage",
-            true
-          )}
+          {GetTranslation('alm.training.flexLp.enrollmentDialogBox.pendingCourseMessage', true)}
         </p>
         <hr></hr>
         <ol className={styles.flexLpDialogList}>
           {sections.map((section, index) => {
             const trainingIds = section.loIds;
             const subLOsInsideLP = training.subLOs.filter(
-              (subLO) => trainingIds.indexOf(subLO.id) !== -1
+              subLO => trainingIds.indexOf(subLO.id) !== -1
             );
+            const isFlexible = trainingInstance.isFlexible;
 
             subLOsInsideLP.sort(
               (trainingId1, trainingId2) =>
-                trainingIds.indexOf(trainingId1.id) -
-                trainingIds.indexOf(trainingId2.id)
+                trainingIds.indexOf(trainingId1.id) - trainingIds.indexOf(trainingId2.id)
             );
-            const allCourses = getAllCoursesInsideFlexLP(subLOsInsideLP);
+            const allCourses = getAllCoursesInsideFlexLPSection(subLOsInsideLP, isFlexible);
             return allCourses.map((item: any) => {
+              const selectedInstanceDetails =
+                getCourseInstanceMapping(courseInstanceMapping, item.id) || {};
+              const isValidEnrollment = checkIfEntityIsValid(item.enrollment);
+
+              const trainingName = item.localizedMetadata[0].name;
+              let instanceName = '';
+
+              if (courseIdList.includes(item.id)) {
+                instanceName = selectedInstanceDetails.instanceName;
+              } else if (
+                (item.enrollment && training.enrollment && isValidEnrollment) ||
+                item.enrollment?.state === COMPLETED
+              ) {
+                instanceName = selectedInstanceDetails?.instanceName || '';
+              }
+
               return (
                 <React.Fragment key={item.id}>
-                  {courseIdList.includes(item.id) ? (
-                    <li className={styles.courseListInFlexLp}>
-                      <b>
-                        {
-                          selectedInstanceInfo[
-                            item.id as keyof typeof selectedInstanceInfo
-                          ]["name" as keyof typeof selectedInstanceInfo]
-                        }
-                      </b>
-                      <p>
-                        {GetTranslation(
-                          "alm.overview.flexlp.dialog.instance",
-                          true
+                  <li className={styles.courseListInFlexLp}>
+                    <span>
+                      <b data-automationid={trainingName}>{trainingName}</b>
+                      <p data-automationid={`${trainingName}-selected-instance`}>
+                        {GetTranslation('alm.overview.flexlp.dialog.instance', true)}:{' '}
+                        {instanceName || (
+                          <span className={styles.notSelected}>
+                            {formatMessage({
+                              id: 'alm.overview.flexlp.dialog.noInstanceSelected',
+                            })}
+                          </span>
                         )}
-                        :{" "}
-                        {
-                          selectedInstanceInfo[
-                            item.id as keyof typeof selectedInstanceInfo
-                          ]["instanceName" as keyof typeof selectedInstanceInfo]
-                        }
                       </p>
-                    </li>
-                  ) : (
-                    <li className={styles.courseListInFlexLp}>
-                      {(item.enrollment &&
-                        training.enrollment &&
-                        item.enrollment.loInstance) ||
-                      (item.enrollment?.state === COMPLETED &&
-                        item.enrollment.loInstance) ? (
-                        <p>
-                          <b>{item.localizedMetadata[0].name}</b>
-                          <p>
-                            {GetTranslation(
-                              "alm.overview.flexlp.dialog.instance",
-                              true
-                            )}
-                            :{" "}
-                            {
-                              item.enrollment.loInstance.localizedMetadata[0]
-                                .name
-                            }
-                          </p>
-                        </p>
-                      ) : (
-                        <p>
-                          <b>{item.localizedMetadata[0].name}</b>
-                          <p>
-                            {GetTranslation(
-                              "alm.overview.flexlp.dialog.instance",
-                              true
-                            )}
-                            :{" "}
-                            <span className={styles.notSelected}>
-                              {formatMessage({
-                                id: "alm.overview.flexlp.dialog.noInstanceSelected",
-                              })}
-                            </span>
-                          </p>
-                        </p>
-                      )}
-                    </li>
-                  )}
+                    </span>
+                  </li>
                 </React.Fragment>
               );
             });
@@ -710,28 +1181,28 @@ const PrimeTrainingPageMetaData: React.FC<{
   const flexLpEnrollmentConfirmationClickHandler = () => {
     almConfirmationAlert(
       formatMessage({
-        id: "alm.community.board.confirmationRequired",
-        defaultMessage: "Confirmation Required",
+        id: 'alm.training.flexLp.enrollment.new',
+        defaultMessage: 'Proceed with enrollment',
       }),
-      dialogBoxMessageHandler(),
+      flexLPInstanceConfirmationMessage(),
       formatMessage({
-        id: "alm.overview.confirm",
+        id: primaryEnrollment ? 'alm.text.update' : 'alm.overview.button.enroll',
       }),
       formatMessage({
-        id: "alm.overview.cancel",
+        id: 'alm.overview.cancel',
       }),
-      instanceEnrollmentHandler
+      flexLpEnrollmentHandler
     );
   };
 
   const instanceSwitchConfirmationClickHandler = () => {
     almConfirmationAlert(
       formatMessage({
-        id: "alm.community.board.confirmationRequired",
-        defaultMessage: "Confirmation Required",
+        id: 'alm.community.board.confirmationRequired',
+        defaultMessage: 'Confirmation Required',
       }),
       GetTranslationsReplaced(
-        "alm.instance.switch.confirmation",
+        'alm.instance.switch.confirmation',
         {
           x: primaryEnrollment?.loInstance.localizedMetadata[0].name,
           y: trainingInstance.localizedMetadata[0].name,
@@ -739,10 +1210,10 @@ const PrimeTrainingPageMetaData: React.FC<{
         true
       ),
       formatMessage({
-        id: "alm.overview.confirm",
+        id: 'alm.overview.confirm',
       }),
       formatMessage({
-        id: "alm.overview.cancel",
+        id: 'alm.overview.cancel',
       }),
       instanceUpdateClickHandler
     );
@@ -751,15 +1222,15 @@ const PrimeTrainingPageMetaData: React.FC<{
   const multiEnrollmentConfirmationClickHandler = () => {
     almConfirmationAlert(
       formatMessage({
-        id: "alm.community.board.confirmationRequired",
-        defaultMessage: "Confirmation Required",
+        id: 'alm.community.board.confirmationRequired',
+        defaultMessage: 'Confirmation Required',
       }),
-      GetTranslation("alm.multi.enrollment.confirmation", true),
+      GetTranslation('alm.multi.enrollment.confirmation', true),
       formatMessage({
-        id: "alm.overview.confirm",
+        id: 'alm.overview.confirm',
       }),
       formatMessage({
-        id: "alm.overview.cancel",
+        id: 'alm.overview.cancel',
       }),
       enrollmentClickHandler
     );
@@ -768,31 +1239,32 @@ const PrimeTrainingPageMetaData: React.FC<{
   const updateEnrollmentConfirmationClickHandler = () => {
     almConfirmationAlert(
       formatMessage({
-        id: "alm.update.enrollment.confirmationRequired",
+        id: 'alm.update.enrollment.confirmationRequired',
       }),
-      GetTranslation("alm.update.enrollment.confirmationInfo", true),
+      GetTranslation('alm.change.instance.enrollment', true),
       formatMessage({
-        id: "alm.overview.confirm",
+        id: 'text.proceed',
       }),
       formatMessage({
-        id: "alm.overview.cancel",
+        id: 'alm.overview.cancel',
       }),
-      updateEnrollmentClickHandler
+      instanceUpdateClickHandler
     );
   };
 
   let instancePageLink =
     window.location.href.split(getALMConfig().trainingOverviewPath)[0] +
     getALMConfig().instancePath +
-    "/trainingId/" +
+    '/trainingId/' +
     training.id;
 
   const getInstanceUnenrollmentConfirmationString = () => {
     return (
       <p
+        className={`${styles.instanceUnenrollmentConfirmation} ${isDarkThemeApplied() ? styles.darkThemeLinkColor : styles.lightThemeLinkColor}`}
         dangerouslySetInnerHTML={{
           __html: GetTranslationsReplaced(
-            "alm.overview.instance.switch.unenroll.confirmation",
+            'alm.overview.instance.switch.unenroll.confirmation',
             {
               url: instancePageLink,
             },
@@ -804,19 +1276,18 @@ const PrimeTrainingPageMetaData: React.FC<{
   };
 
   const instanceUnenrollConfirmationClickHandler = () => {
-    const confirmationMessage: any =
-      getInstanceUnenrollmentConfirmationString();
+    const confirmationMessage: any = getInstanceUnenrollmentConfirmationString();
     almConfirmationAlert(
       formatMessage({
-        id: "alm.community.board.confirmationRequired",
-        defaultMessage: "Confirmation Required",
+        id: 'alm.community.board.confirmationRequired',
+        defaultMessage: 'Confirmation Required',
       }),
       confirmationMessage,
       formatMessage({
-        id: "alm.overview.confirm.unenrollment",
+        id: 'alm.overview.confirm.unenrollment',
       }),
       formatMessage({
-        id: "alm.overview.cancel",
+        id: 'alm.overview.cancel',
       }),
       unEnrollmentClickHandler
     );
@@ -826,24 +1297,13 @@ const PrimeTrainingPageMetaData: React.FC<{
     alm.navigateToInstancePage(training.id);
   };
   const viewPrimaryEnrollment = () => {
-    alm.navigateToTrainingOverviewPage(
-      training.id,
-      primaryEnrollment.loInstance.id
-    );
+    alm.navigateToTrainingOverviewPage(training.id, primaryEnrollment.loInstance.id);
   };
 
   const alm = getALMObject();
 
   const handleEnrollment = async () => {
-    if (isTrainingFlexLP) {
-      if (isChildFlexLP) {
-        almAlert(
-          true,
-          GetTranslation("alm.training.flexlp.no.support", true),
-          AlertType.error
-        );
-        return;
-      }
+    if (isFlexLPOrContainsFlexLP) {
       storeActionInNonLoggedMode(ENROLL);
       flexLpEnrollmentConfirmationClickHandler();
     } else if (hasMultipleInstances && primaryEnrollment) {
@@ -862,86 +1322,166 @@ const PrimeTrainingPageMetaData: React.FC<{
 
   const previewHandler = async () => {
     storeActionInNonLoggedMode(PREVIEW);
-    playerHandler();
+    playerHandlerForPreview();
   };
 
+  const playerHandlerForPreview = () => {
+    const coreContentModules = getAllCoreContentModulesOfTraining(training, trainingInstance);
+    const previewableModules = getAllPreviewableModules(coreContentModules);
+    const previewableModuleToLaunch = previewableModules?.[0];
+    launchPlayerHandler({
+      id: previewableModuleToLaunch?.learningObject.id,
+      moduleId: previewableModuleToLaunch?.id,
+      trainingInstanceId: previewableModuleToLaunch?.loInstance.id,
+      isResetRequired: resetAttemptForFirstModule,
+    });
+  };
   // MQA Case
   const lastPlayedloResource =
-    trainingInstance?.loResources?.find((loResource) => {
+    trainingInstance?.loResources?.find(loResource => {
       return loResource.id === lastPlayingLoResourceId;
     }) ||
     (trainingInstance?.loResources && trainingInstance?.loResources[0]);
 
-  let resetAttemptForFirstModule = true;
-  const infiniteAttempts =
-    lastPlayedloResource?.multipleAttempt?.infiniteAttempts;
-  if (infiniteAttempts || !lastPlayedloResource?.multipleAttemptEnabled) {
-    resetAttemptForFirstModule = false;
-  }
+  const resetAttemptForFirstModule = shouldResetAttempt(training, lastPlayedloResource, enrollment);
+  const getFirstSubLoOfParentLo = (Lo: PrimeLearningObject): PrimeLearningObject | undefined => {
+    if (Lo.loType === COURSE) {
+      return Lo;
+    }
+    if (Lo.loType != COURSE && Lo.subLOs && Lo.subLOs.length > 0) {
+      const allSubLOs = getSectionLOsOrder(Lo);
+      return getFirstSubLoOfParentLo(allSubLOs[0][0]);
+    }
+  };
 
-  const playerHandler = (
-    newEnrollment?: PrimeLearningObjectInstanceEnrollment
-  ) => {
-    if (
-      checkIfLinkedInLearningCourse(training) &&
-      getALMConfig().handleLinkedInContentExternally
-    ) {
+  const launchPlayerForNewEnrollmentOrRevisit = () => {
+    //Launch the first subLO of the first section
+    //For certification we take the first course, for LP we take the first course of the first section
+    const sectionSubLOs = isLP ? getSectionLOsOrder(training) : [];
+    const childLo = isCertification ? training.subLOs[0] : isLP ? sectionSubLOs[0][0] : training;
+    const subLoToLaunch = isCourse ? training : getFirstSubLoOfParentLo(childLo);
+    const trainingId = subLoToLaunch && subLoToLaunch.id;
+    const trainingInstanceId =
+      subLoToLaunch &&
+      (subLoToLaunch.enrollment && checkIfEntityIsValid(subLoToLaunch.enrollment)
+        ? subLoToLaunch?.enrollment?.loInstance.id
+        : getInstanceIdToLaunch(subLoToLaunch, trainingInstance.id));
+    const loResourceId =
+      subLoToLaunch && trainingInstanceId && getModuleIdToLaunch(subLoToLaunch, trainingInstanceId);
+    if (!loResourceId) {
+      // If loResourceId is not present don't launch the player
+      return;
+    }
+    launchPlayerHandler({
+      id: trainingId,
+      moduleId: loResourceId,
+      trainingInstanceId: trainingInstanceId,
+      isResetRequired: resetAttemptForFirstModule,
+    });
+  };
+
+  const launchPlayerForExistingEnrollment = async () => {
+    //If PlayerLoState API returns empty response then launch the first module
+    if (!lastPlayingLoResourceId) {
+      launchPlayerForNewEnrollmentOrRevisit();
+    } else {
+      // If lastPlayingCourseId or lastPlayingCourseInstanceId is not present then extract from resourceId
+      const courseAndInstanceId = getCourseIdAndInstanceIdFromResourceId(lastPlayingLoResourceId);
+      const instanceIdToLaunch = trainingInstance?.id.includes(courseAndInstanceId.courseId)
+        ? trainingInstance?.id
+        : courseAndInstanceId.courseInstanceId;
+      launchPlayerHandler({
+        id: lastPlayingCourseId || courseAndInstanceId.courseId,
+        moduleId: lastPlayingLoResourceId,
+        trainingInstanceId: lastPlayingCourseInstanceId || instanceIdToLaunch,
+        isResetRequired: resetAttemptForFirstModule,
+      });
+    }
+  };
+
+  const playerHandler = (newEnrollment?: PrimeLearningObjectInstanceEnrollment) => {
+    if (guest) {
+      navigateToLoggedInLO();
+      return;
+    }
+    if (checkIfLinkedInLearningCourse(training) && getALMConfig().handleLinkedInContentExternally) {
       return launchContentUrlInNewWindow(training, coreContentModules[0]);
     }
-    if (isTrainingFlexLP) {
-      const sectionSubLOs = sections.map((section, index) => {
-        const trainingIds = section.loIds;
+    if (isFlexLPOrContainsFlexLP) {
+      const sectionSubLOs = getSectionLOsOrder(training);
+      let subLoToLaunch;
 
-        // Filter sub-LOs based on trainingIds
-        const subLOsInsideLP = training.subLOs.filter(
-          (subLO) => trainingIds.indexOf(subLO.id) !== -1
-        );
-
-        // Sort sub-LOs based on their order in trainingIds
-        subLOsInsideLP.sort(
-          (subLO1, subLO2) =>
-            trainingIds.indexOf(subLO1.id) - trainingIds.indexOf(subLO2.id)
-        );
-
-        return subLOsInsideLP;
-      });
-
-      let launchSubLO;
-      for (const subLO of sectionSubLOs[0]) {
-        if (subLO.enrollment && subLO.enrollment.loInstance) {
-          launchSubLO = subLO;
-          break;
+      if (training.isSubLoOrderEnforced && action === START) {
+        // Launch the first course if subLoOrder is enforced after enrollment, if instance not selected throw error
+        const firstSubLO = sectionSubLOs[0][0];
+        subLoToLaunch = firstSubLO.loType === COURSE ? firstSubLO : firstSubLO.subLOs[0]; // For LP, we take the first course of the first section
+      } else {
+        let launchSubLO;
+        for (const section of sectionSubLOs) {
+          launchSubLO = findSubLoToLaunchForFlexLp(section);
+          if (launchSubLO && Object.keys(launchSubLO).length !== 0) {
+            break;
+          }
         }
+        subLoToLaunch = launchSubLO
+          ? getFirstSubLoOfParentLo(launchSubLO)
+          : getFirstSubLoOfParentLo(sectionSubLOs[0][0]);
       }
-
-      const trainingId = (launchSubLO && launchSubLO.id) || subLOs[0].id;
+      const trainingId = subLoToLaunch && subLoToLaunch.id;
+      const trainingName = subLoToLaunch?.localizedMetadata[0].name || '';
+      const selectedInstanceDetails =
+        trainingId && getCourseInstanceMapping(courseInstanceMapping, trainingId);
 
       const trainingInstanceId =
-        (Object.keys(selectedInstanceInfo).length > 0 &&
-          selectedInstanceInfo[trainingId as keyof typeof selectedInstanceInfo][
-            "instanceId" as keyof typeof selectedInstanceInfo
-          ]) ||
-        (launchSubLO && launchSubLO.enrollment.loInstance.id) ||
-        subLOs[0].enrollment.loInstance.id;
+        (subLoToLaunch &&
+          isValidSubLoForFlexLpToLaunch(subLoToLaunch) &&
+          subLoToLaunch.enrollment.loInstance.id) ||
+        selectedInstanceDetails?.instanceId;
+
+      if (!trainingInstanceId) {
+        almAlert(
+          true,
+          GetTranslationReplaced('alm.flexlp.error.player.select.instance', trainingName, true),
+          AlertType.error
+        );
+        return;
+      }
 
       launchPlayerHandler({
         id: trainingId,
-        moduleId: "",
+        moduleId: '',
         trainingInstanceId: trainingInstanceId,
       });
+    } else if (enrollViaModuleClick.id) {
+      // for enrollment done via module click, open that course module in player
+      const { id, moduleId, instanceId, isAutoPlay } = enrollViaModuleClick;
+      const isMultienrolled = getEnrolledInstancesCount(training) > 1;
+      launchPlayerHandler({
+        id: id,
+        moduleId: moduleId,
+        trainingInstanceId: instanceId,
+        isMultienrolled: isMultienrolled,
+      });
+      if (isAutoPlay) {
+        notifyParentToCleanModuleParams();
+      }
     } else if (isMultiEnrollmentEnabled) {
       const isMultienrolled =
         getEnrolledInstancesCount(training) > 1 ||
         (newEnrollment && primaryEnrollment !== newEnrollment);
       launchPlayerHandler({
         id: training.id,
-        moduleId: "",
+        moduleId: '',
         trainingInstanceId: trainingInstance.id,
         isMultienrolled: isMultienrolled,
         isResetRequired: resetAttemptForFirstModule,
       });
     } else {
-      launchPlayerHandler({ isResetRequired: resetAttemptForFirstModule });
+      if (!newEnrollment) {
+        launchPlayerForExistingEnrollment();
+      } else {
+        launchPlayerForNewEnrollmentOrRevisit();
+      }
     }
   };
 
@@ -955,70 +1495,131 @@ const PrimeTrainingPageMetaData: React.FC<{
     } catch (e) {}
   };
 
+  const handleCartAction = useCallback(() => {
+    if (action === ADD_TO_CART_ACTION) {
+      addToCart();
+    } else if (action === ADD_TO_CART_NATIVE_ACTION) {
+      addToCartNative();
+    } else if (action === BUY_NOW_NATIVE_ACTION) {
+      buyNowNative();
+    }
+  }, [action]);
+
   const addToCart = async () => {
     try {
       storeActionInNonLoggedMode(ADD_TO_CART);
       const { error, totalQuantity } = await addToCartHandler();
       if (isPrimeUserLoggedIn) {
         if (error && error.length) {
-          let errorKey = "alm.addToCart.general.error";
+          let errorKey = 'alm.addToCart.general.error';
           error?.forEach((item: any) => {
-            if (
-              item &&
-              item.message &&
-              item.message?.includes("exceeds the maximum qty allowed")
-            ) {
-              errorKey = "alm.overview.added.to.cart.error";
+            if (item && item.message && item.message?.includes('exceeds the maximum qty allowed')) {
+              errorKey = 'alm.overview.added.to.cart.error';
             }
           });
-          almAlert(
-            true,
-            formatMessage({ id: errorKey }, { loType: loType }),
-            AlertType.error
-          );
+          almAlert(true, formatMessage({ id: errorKey }, { loType: loType }), AlertType.error);
         } else {
           getALMObject().updateCart(totalQuantity);
-          almAlert(
-            true,
-            formatMessage({ id: "alm.addedToCart" }),
-            AlertType.success
-          );
+          almAlert(true, formatMessage({ id: 'alm.addedToCart' }), AlertType.success);
         }
       }
     } catch (e) {}
   };
 
-  //show only if not enrolled
-  const showEnrollmentCount =
-    !enrollment && enrollmentCount !== undefined ? true : false;
+  const addToCartNative = async () => {
+    try {
+      if (!isPrimeUserLoggedIn) return;
+      const { redirectionUrl, error } = await addToCartNativeHandler();
+      if (error && error.length) {
+        let errorKey = 'alm.addToCart.general.error';
+        error?.forEach((item: any) => {
+          if (item && item === ERROR_ALREADY_ADDED) {
+            errorKey = 'alm.overview.added.to.cart.error';
+          }
+        });
+        almAlert(true, formatMessage({ id: errorKey }, { loType: loType }), AlertType.error);
+      } else {
+        sendEvent(ALM_FETCH_CART);
+        almAlert(true, formatMessage({ id: 'alm.addedToCart' }), AlertType.success);
+      }
+    } catch (e) {}
+  };
+
+  const buyNowNative = async () => {
+    try {
+      if (!isPrimeUserLoggedIn) return;
+      const { redirectionUrl, error } = await buyNowNativeHandler();
+      if (error && error.length) {
+        const errorKey = 'alm.addToCart.general.error';
+        almAlert(true, formatMessage({ id: errorKey }, { loType: loType }), AlertType.error);
+      } else {
+        if (redirectionUrl && window.parent) {
+          window.parent.location = redirectionUrl;
+        } else if (redirectionUrl) {
+          window.location.href = redirectionUrl;
+        }
+      }
+    } catch (e) {}
+  };
 
   const showBadges = badge?.badgeUrl;
 
   const showAuthors =
-    showAuthorInfo === "true" &&
+    showAuthorInfo === 'true' &&
     training.authorNames?.length > 0 &&
     getALMObject().isPrimeUserLoggedIn();
-  var legacyAuthorNames = new Set(training.authorNames);
-  training.authors?.forEach((author) => {
-    legacyAuthorNames.delete(author.name);
-  });
+  const externalAuthorString = useMemo(() => {
+    return GetTranslation('alm.text.externalAuthor');
+  }, []);
 
-  // const showAfterEnrollmentDeadlines =
-  //   training.enrollment &&
-  //   showEnrollDeadline === "true" &&
-  //   (completionDeadline || unenrollmentDeadline);
-  const showEnrollmentDeadline =
-    !enrollment && trainingInstance.enrollmentDeadline;
+  const renderAuthorDetails = () => {
+    if (shouldShowOnlyExternalAuthor(training)) {
+      return externalAuthorDetails;
+    }
+    return (
+      <>
+        {training?.authorDetails?.map(
+          author => isAuthorExternal(author) && getAuthorDetails(author, true)
+        )}
+        {training?.authors?.map(author => getAuthorDetails(author, false))}
+        {legacyAuthorNames && showLegacyAuthorDetails}
+      </>
+    );
+  };
+  const getAuthorDetailElement = (authorName: string) => (
+    <div className={styles.authorHeader} data-automationid="avatar-image">
+      <span
+        className={styles.cpauthorcircle}
+        data-automationid="default-avatar"
+        aria-label={GetTranslation('author.avatar.text')}
+      >
+        {DEFAULT_USER_SVG()}
+      </span>
+      <span className={styles.externalAuthor} data-automationid={authorName}>
+        {authorName}
+      </span>
+    </div>
+  );
+  const legacyAuthorNames = new Set(training.authorNames);
+  training.authorDetails?.forEach(author => {
+    legacyAuthorNames.delete(author.authorName);
+  });
+  const externalAuthorDetails = useMemo(() => {
+    return getAuthorDetailElement(externalAuthorString);
+  }, [shouldShowOnlyExternalAuthor]);
+
+  const showLegacyAuthorDetails = useMemo(() => {
+    return Array.from(legacyAuthorNames).map(authorName => getAuthorDetailElement(authorName));
+  }, [legacyAuthorNames]);
+
+  const showEnrollmentDeadline = !enrollment && trainingInstance.enrollmentDeadline;
 
   const getUnenrollmentConfirmationString = () => {
     if (isMultiEnrollmentEnabled && hasMultipleInstances) {
       return (
         <div
           dangerouslySetInnerHTML={{
-            __html: GetTranslation(
-              "alm.overview.instance.multi.unenroll.confirmation",
-              true
-            ),
+            __html: GetTranslation('alm.overview.instance.multi.unenroll.confirmation', true),
           }}
         />
       );
@@ -1028,9 +1629,9 @@ const PrimeTrainingPageMetaData: React.FC<{
         <div
           dangerouslySetInnerHTML={{
             __html: formatMessage({
-              id: "alm.overview.unenroll.confirmationWithRefundInfo",
+              id: 'alm.overview.unenroll.confirmationWithRefundInfo',
               defaultMessage:
-                "Unenrolling will delete all your progress data and personal information like Notes and Quiz Score (if any).<br><br>Are you sure you want to continue?<br><br>Please contact the Administrator to receive a refund.",
+                'Unenrolling will delete all your progress data and personal information like Notes and Quiz Score (if any).<br><br>Are you sure you want to continue?<br><br>Please contact the Administrator to receive a refund.',
             }),
           }}
         />
@@ -1040,9 +1641,9 @@ const PrimeTrainingPageMetaData: React.FC<{
       <div
         dangerouslySetInnerHTML={{
           __html: formatMessage({
-            id: "alm.overview.unenroll.confirmationInfo",
+            id: 'alm.overview.unenroll.confirmationInfo',
             defaultMessage:
-              "Unenrolling will delete all your progress data and personal information like Notes and Quiz Score (if any). <br><br> Are you sure you want to continue?",
+              'Unenrolling will delete all your progress data and personal information like Notes and Quiz Score (if any). <br><br> Are you sure you want to continue?',
           }),
         }}
       />
@@ -1053,104 +1654,111 @@ const PrimeTrainingPageMetaData: React.FC<{
     const confirmationMessage: any = getUnenrollmentConfirmationString();
     almConfirmationAlert(
       formatMessage({
-        id: "alm.overview.unenrollment.confirmationRequired",
-        defaultMessage: "Confirmation Required",
+        id: 'alm.overview.unenrollment.confirmationRequired',
+        defaultMessage: 'Confirmation Required',
       }),
       confirmationMessage,
       formatMessage({
-        id: "alm.overview.unenrollment.confirmationYes",
-        defaultMessage: "Yes",
+        id: 'alm.overview.unenrollment.confirmationYes',
+        defaultMessage: 'Yes',
       }),
       formatMessage({
-        id: "alm.overview.unenrollment.confirmationNo",
-        defaultMessage: "No",
+        id: 'alm.overview.unenrollment.confirmationNo',
+        defaultMessage: 'No',
       }),
       unEnrollmentClickHandler
     );
   };
 
-  const childLpHasResource = () => {
-    let displayResource: boolean = false;
-    if (subLOs?.length) {
-      displayResource = subLOs.some((item) => {
-        //when the sub LO is a learing program only then we show the resources from a sub LO
-        if (
-          item.loType === "learningProgram" &&
-          item.supplementaryResources?.length
-        ) {
-          return true;
-        }
-      });
-    }
-    return displayResource;
-  };
-
   // Job aids not supported in non-logged
-  const showJobAids = training.supplementaryLOs?.length && isPrimeUserLoggedIn;
-  const showResource =
-    training.supplementaryResources?.length || childLpHasResource();
+  const supplementaryLOs = training.supplementaryLOs;
+  const jobAidsForCourse = isCourse && supplementaryLOs?.length;
+  const jobAidsForLp =
+    isLP &&
+    (supplementaryLOs?.length ||
+      training.subLOs?.some(item => item.supplementaryLOs !== undefined));
+  const showJobAids = (jobAidsForCourse || jobAidsForLp) && isPrimeUserLoggedIn;
+  const showResource = training.supplementaryResources?.length || subLoHasResources(training);
 
   const isUnenrollmentDeadlinePassed = trainingInstance.unenrollmentDeadline
     ? checkIfUnenrollmentDeadlinePassed(trainingInstance)
     : false;
-
+  const showUnenrollForPendingApproval = isCertification
+    ? isPendingApproval && training?.unenrollmentAllowed
+    : isPendingApproval;
   const canUnenroll =
     (enrollment &&
       training.unenrollmentAllowed &&
-      !(enrollment?.progressPercent === 100)) ||
-    isPendingApproval;
-  const showCertificationDeadline =
-    primaryEnrollment && primaryEnrollment.completionDeadline;
-  const isCertification = loType === CERTIFICATION;
+      !(enrollment?.state === COMPLETED || enrollment?.progressPercent === 100)) ||
+    showUnenrollForPendingApproval;
+  const showCompletionDeadline = primaryEnrollment && primaryEnrollment.completionDeadline;
+  const showEnrollmentDeadlineData = enrollmentDeadline && showEnrollmentDeadline;
+  const showUnenrollmentDeadlineData =
+    unenrollmentDeadline && !showEnrollmentDeadline && canUnenroll;
 
-  const enrollmentDeadlineContainer =
-    enrollmentDeadline && showEnrollmentDeadline ? (
-      <>
-        <div className={styles.subtleText}>
-          {GetTranslation(`alm.overview.enrollment.deadline`)}
-          {modifyTime(trainingInstance.enrollmentDeadline, locale)}
-        </div>
-      </>
-    ) : (
-      ""
-    );
-
-  const completionDeadlineContainer = completionDeadline ? (
-    <div className={styles.subtleText}>
-      {GetTranslation(`alm.overview.completion.deadline`)}
-      {/* <div className={styles.label}> */}
-      {loType === CERTIFICATION
-        ? !showCertificationDeadline
-          ? formatMessage(
-              {
-                id: "alm.overview.certification.deadline",
-              },
-              {
-                0: trainingInstance?.completionDeadline?.slice(0, -1),
-              }
-            )
-          : modifyTime(showCertificationDeadline, locale)?.slice(0, -10)
-        : modifyTime(trainingInstance.completionDeadline, locale)}
-      {/* </div> */}
-    </div>
+  const enrollmentDeadlineContainer = showEnrollmentDeadlineData ? (
+    <>
+      <div
+        className={styles.bodyHeader}
+        data-automationid={GetTranslation('alm.overview.enrollment.deadline')}
+      >
+        {GetTranslation(`alm.overview.enrollment.deadline`)}
+      </div>
+      <div
+        className={styles.bodyText}
+        data-automationid={modifyTime(trainingInstance.enrollmentDeadline, locale)}
+      >
+        {modifyTime(trainingInstance.enrollmentDeadline, locale)}
+      </div>
+    </>
   ) : (
-    ""
+    ''
   );
 
-  const unenrollmentDeadlineContainer =
-    unenrollmentDeadline && !showEnrollmentDeadline && canUnenroll ? (
-      <>
-        <div className={styles.subtleText}>
-          {formatMessage({
-            id: "alm.overview.unenrollment.deadline",
-            defaultMessage: "Unenrollment - ",
-          })}
-          {modifyTime(trainingInstance.unenrollmentDeadline, locale)}
-        </div>
-      </>
-    ) : (
-      ""
+  const completionDeadlineData = useMemo(() => {
+    if (!isCertification) {
+      return modifyTime(completionDeadline, locale);
+    }
+    if (showCompletionDeadline) {
+      return modifyTimeDDMMYY(showCompletionDeadline, locale);
+    }
+    return formatMessage(
+      { id: 'alm.overview.certification.deadline' },
+      { 0: trainingInstance?.completionDeadline?.slice(0, -1) }
     );
+  }, [loType, showCompletionDeadline, trainingInstance, completionDeadline]);
+
+  const completionDeadlineContainer = completionDeadline ? (
+    <>
+      <div
+        className={styles.bodyHeader}
+        data-automationid={`completion-deadline-info - ${completionDeadlineData}`}
+      >
+        {GetTranslation(`alm.overview.completion.deadline`)}
+      </div>
+      <div className={styles.bodyText}>{completionDeadlineData}</div>
+    </>
+  ) : (
+    ''
+  );
+
+  const unenrollmentDeadlineContainer = showUnenrollmentDeadlineData ? (
+    <>
+      <div className={styles.bodyHeader} data-automationid="unenrollment-deadline">
+        {formatMessage({
+          id: 'alm.overview.unenrollment.deadline',
+          defaultMessage: 'Unenrollment - ',
+        })}
+      </div>
+      <div
+        className={` ${styles.bodyText} ${isUnenrollmentDeadlinePassed ? styles.unenrollmentDeadlinePassed : ''}`}
+      >
+        {modifyTime(trainingInstance.unenrollmentDeadline, locale)}
+      </div>
+    </>
+  ) : (
+    ''
+  );
 
   useEffect(() => {
     const computeIsSynced = async () => {
@@ -1158,8 +1766,7 @@ const PrimeTrainingPageMetaData: React.FC<{
       if (
         !account ||
         !isPrimeUserLoggedIn ||
-        new Date(training.dateCreated) <=
-          new Date(account.lastSyncedDateCreatedForMagento)
+        new Date(training.dateCreated) <= new Date(account.lastSyncedDateCreatedForMagento)
       ) {
         setIsTrainingSynced(true);
       } else {
@@ -1167,223 +1774,183 @@ const PrimeTrainingPageMetaData: React.FC<{
       }
     };
     computeIsSynced();
-  }, [training.dateCreated, training.price]);
+  }, [training.dateCreated, loPrice]);
 
   const trainingNotAvailableForPurchaseText = !isTrainingSynced ? (
     <p className={`${styles.label} ${styles.centerAlign}`}>
       {formatMessage(
         {
-          id: "alm.training.overview.not.available",
+          id: 'alm.training.overview.not.available',
         },
         { training: GetTranslation(`alm.training.${loType}`, true) }
       )}
     </p>
-  ) : isTrainingFlexLP && courseIdList.length === 0 ? (
+  ) : isFlexLPOrContainsFlexLP && courseIdList.length === 0 ? (
     <p className={`${styles.label} ${styles.centerAlign}`}>
-      {GetTranslation("alm.flexlp.addToCart", true)}
+      {GetTranslation('alm.flexlp.addToCart', true)}
     </p>
   ) : (
-    ""
+    ''
   );
 
-  const enrollmentDeadlinePassedText = hasEnrollmentDeadlinePassed ? (
-    <p className={`${styles.errorText} ${styles.centerAlign}`}>
-      {formatMessage({
-        id: "alm.training.overview.enrollmentDeadline.passed",
-      })}
-    </p>
-  ) : (
-    ""
-  );
-
-  const showInstanceContainerDetail = () => {
-    const progressMessage = GetTranslation(
-      `alm.overview.instanceSwitch.tooltip`,
-      true
+  const enrollmentDeadlinePassedText =
+    !isInstanceRetired && hasEnrollmentDeadlinePassed ? (
+      <p className={`${styles.errorText} ${styles.centerAlign}`}>
+        {formatMessage({
+          id: 'alm.training.overview.enrollmentDeadline.passed',
+        })}
+      </p>
+    ) : (
+      ''
     );
 
+  const showInstanceContainerDetail = () => {
+    const progressMessage = GetTranslation(`alm.overview.instanceSwitch.tooltip`, true);
+
     if (isAutoInstanceEnrolled) {
-      return "";
+      return '';
     }
     return (
       <>
-        {primaryEnrollment && isInstanceSwitchEnabled && (
-          <div>
-            <label className={styles.subtleText}>
-              {GetTranslation(`alm.instance.switch.detail`, true)}
-            </label>
+        {primaryEnrollment && training.instanceSwitchEnabled && !hasCompletedPrimaryEnrollment && (
+          <div className={styles.bodyHeader} data-automationid="instance-switch-description">
+            {GetTranslation(`alm.instance.switch.detail`, true)}
             <ALMTooltip message={progressMessage}></ALMTooltip>
           </div>
         )}
-        {primaryEnrollment &&
-          isMultiEnrollmentEnabled &&
-          !isEnrollButtonDisabled && (
-            <div>
-              <label className={styles.subtleText}>
-                {enrollment
-                  ? GetTranslation(
-                      `alm.multi.enrollment.enrolled.instance.detail`,
-                      true
-                    )
-                  : GetTranslation(
-                      `alm.multi.enrollment.unenrolled.instance.detail`,
-                      true
-                    )}
-              </label>
-            </div>
-          )}
+        {primaryEnrollment && isMultiEnrollmentEnabled && !isEnrollButtonDisabled && (
+          <div className={styles.bodyHeader} data-automationid="multi-enrollment-description">
+            {enrollment
+              ? GetTranslation(`alm.multi.enrollment.enrolled.instance.detail`, true)
+              : GetTranslation(`alm.multi.enrollment.unenrolled.instance.detail`, true)}
+          </div>
+        )}
       </>
     );
   };
-  const mandatoryModulesCount = useMemo(() => {
+  const getMandatoryModulesCount = useMemo(() => {
     let count = 0;
-    trainingInstance?.loResources?.forEach((resource) => {
+    trainingInstance?.loResources?.forEach(resource => {
       if (resource.mandatory) {
         count += 1;
       }
     });
     return count;
-  }, [trainingInstance?.loResources]);
+  }, [hasOptionalLoResources]);
+  const mandatoryModulesCount = hasOptionalLoResources
+    ? getMandatoryModulesCount
+    : training.loResourceCompletionCount;
 
-  const showMandatoryModulesCount =
-    loType === COURSE && mandatoryModulesCount > 0;
-
-  const showMinimumCompletion =
-    training.loResourceCompletionCount &&
-    training.loResourceCompletionCount !== trainingInstance.loResources?.length;
-  const coreContentModules = filterLoReourcesBasedOnResourceType(
-    trainingInstance,
-    "Content"
-  );
-  const minimumCriteria = useMemo(() => {
-    let label = "";
-    let value = "";
-    let completionCount = training.loResourceCompletionCount;
-
-    if (loType === COURSE) {
-      const totalCount = coreContentModules?.length;
-      label = GetTranslationsReplaced(
-        "alm.overview.course.minimum.criteria.label",
-        {
-          x: completionCount,
-          y: totalCount,
-        },
-        true
-      );
-      value = `${completionCount}/${totalCount}`;
-    } else if (loType === CERTIFICATION) {
-      const totalCount = subLOs?.length;
-      if (totalCount) {
-        label = GetTranslationsReplaced(
-          "alm.overview.certification.minimum.criteria.label",
-          {
-            x: completionCount,
-            y: totalCount,
-          },
-          true
-        );
-        value = `${completionCount}/${totalCount}`;
-      }
-    }
-    return { label, value };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    training.loResourceCompletionCount,
-    loType,
-    subLOs?.length,
-    trainingInstance,
-  ]);
+  const coreContentModules = filterLoReourcesBasedOnResourceType(trainingInstance, CONTENT);
+  const showMandatoryModulesCount = mandatoryModulesCount > 0;
 
   const coreContentCompleted = useMemo(() => {
-    let value = "";
-    //shown only for courses in classic
-    if (!isEnrolled || loType !== COURSE) {
-      return value;
+    // show completion status only for course and LP
+    if (!isEnrolled) {
+      return;
     }
-    if (loType === COURSE) {
-      const totalCount = coreContentModules?.length;
-      let completionCount = 0;
-      enrollment?.loResourceGrades?.forEach(
-        (item: PrimeLearningObjectResourceGrade) => {
-          if (item.hasPassed) {
-            completionCount += 1;
-          }
-        }
-      );
-
-      value = `${completionCount}/${totalCount || 0}`;
-    }
-    return value;
-  }, [
-    coreContentModules?.length,
-    isEnrolled,
-    enrollment?.loResourceGrades,
-    loType,
-  ]);
-  const trainingsCompleted = useMemo(() => {
-    let value = "";
-    if (
-      !isEnrolled ||
-      (loType !== LEARNING_PROGRAM && loType !== CERTIFICATION)
-    ) {
-      return value;
-    }
-    if (loType === LEARNING_PROGRAM || loType === CERTIFICATION) {
-      const totalCount = subLOs?.length || 0;
-      let completionCount = 0;
-      subLOs?.forEach((lo) => {
-        if (lo.enrollment?.hasPassed) {
+    let completionCount = 0;
+    if (isCourse) {
+      enrollment?.loResourceGrades?.forEach((item: PrimeLearningObjectResourceGrade) => {
+        if (item.completed && item.loResource.loResourceType === CONTENT) {
           completionCount += 1;
         }
       });
-      value = `${completionCount}/${totalCount}`;
+    } else if (isLP) {
+      training.subLOs.forEach(subLO => {
+        if (subLO.enrollment?.state === COMPLETED || subLO.enrollment?.progressPercent === 100) {
+          completionCount += 1;
+        }
+      });
     }
-    return value;
-  }, [isEnrolled, loType, subLOs]);
+    return completionCount;
+  }, [coreContentModules?.length, isEnrolled, enrollment?.loResourceGrades, loType]);
 
+  const alternateCompletedCount = useMemo(() => {
+    // show completed via alternate status only for LP and if enabled at account level
+    if (!isEnrolled || !isLP || !isAccAltCompletionEnabled(user?.account)) {
+      return 0;
+    }
+    return (
+      training.subLOs?.filter(
+        subLO => subLO.isAlternateComplete && subLO.enrollment?.state !== COMPLETED
+      ).length || 0
+    );
+  }, [isEnrolled, isLP, training.subLOs]);
+
+  function parseURLForHTTP(url: string) {
+    const pattern = /^(ftp|http|https):\/\//;
+    if (!pattern.test(url)) {
+      url = 'http://' + url;
+    }
+    return url;
+  }
+  const openResourceLink = (item: PrimeResource) => {
+    if (item.isExternalUrl) {
+      const win = getWindowObject().open(parseURLForHTTP(item.location), '_blank');
+      win?.focus();
+      return;
+    } else {
+      downloadFile(item.location);
+    }
+  };
   const renderResources = (training: PrimeLearningObject) => {
-    return training?.supplementaryResources?.map((item) => {
+    return training?.supplementaryResources?.map((item, index) => {
       if (enrollment) {
+        const { name, isExternalUrl, id } = item;
         return (
-          <a
-            href={item.location}
-            download
-            className={styles.supplymentaryLoName}
-            target="_blank"
-            rel="noreferrer"
-            key={item.id}
-          >
-            <span className={styles.resourceName}>{item.name}</span>
-          </a>
+          <div className={styles.loResources} data-automationid={name} key={index}>
+            <span className={styles.resourceName}>{name}</span>
+            <a
+              href=""
+              className={styles.supplymentaryLoName}
+              onClick={event => {
+                event.preventDefault();
+                openResourceLink(item);
+              }}
+              key={id}
+            >
+              {isExternalUrl ? LO_RESOURCE_LINK_ICON() : LO_RESOURCE_DOWNLOAD_ICON()}
+            </a>
+          </div>
         );
       } else {
-        return <span className={styles.subtleText}>{item.name}</span>;
+        return <div className={styles.subtleText}>{item.name}</div>;
       }
     });
   };
 
   const renderResourcesFromChildLP = (training: PrimeLearningObject) => {
-    //if parent LP has resources don't render resources from child lp
+    //if parent LP has resources don't render resources from child lp or child courses
     if (training?.supplementaryResources?.length) {
       return;
     }
     return subLOs?.map((loItem: any) => {
-      if (loItem.loType === "learningProgram") {
-        return renderResources(loItem);
-      }
+      return renderResources(loItem);
     });
   };
 
+  const checkConflictingSessions = async () => {
+    const conflictingSessions = await getConflictingSessions(training.id, trainingInstance.id);
+    if (!conflictingSessions || conflictingSessions.length === 0) {
+      handleEnrollment();
+      return;
+    }
+
+    SessionConflictDialog({
+      conflictingSessionsList: conflictingSessions,
+      locale: locale,
+      handleEnrollment: handleEnrollment,
+      confirmationDialog: almConfirmationAlert,
+      delay: 300,
+    });
+  };
   useEffect(() => {
     const queryParams = getQueryParamsFromUrl();
-    if (
-      isPrimeUserLoggedIn &&
-      !checkIsEnrolled(training.enrollment) &&
-      queryParams?.action
-    ) {
-      updateURLParams({ action: "" });
+    if (isPrimeUserLoggedIn && !checkIsEnrolled(training.enrollment) && queryParams?.action) {
+      updateURLParams({ action: '' });
       const action = queryParams.action;
-      switch (action) {
+      switch (action.toUpperCase()) {
         case PREVIEW:
           playerHandler();
           break;
@@ -1391,23 +1958,20 @@ const PrimeTrainingPageMetaData: React.FC<{
           addToCart();
           break;
         case ENROLL:
-          handleEnrollment();
+          checkConflictingSessions();
           break;
       }
     }
   }, []);
 
   const changeInstanceText = hasMultipleInstances && (
-    <a
-      className={`${styles.allInstances} ${styles.centerAlign}`}
-      onClick={viewAllInstanceHandler}
-    >
+    <a className={`${styles.allInstances} ${styles.centerAlign}`} onClick={viewAllInstanceHandler}>
       {GetTranslation(`alm.overview.waitlist.change.instance`, true)}
     </a>
   );
 
   const enrollmentDisabledInfoText = (
-    <p className={`${styles.label} ${styles.centerAlign}`}>
+    <p className={styles.centerAlign}>
       {primaryEnrollment?.state === COMPLETED
         ? GetTranslation(`alm.instance.completed`, true)
         : GetTranslation(`alm.instance.enrolled`, true)}
@@ -1418,35 +1982,27 @@ const PrimeTrainingPageMetaData: React.FC<{
   const instanceNotSelectedInfoText = (
     <p className={`${styles.label} ${styles.centerAlign}`}>
       <span className={styles.warningIcon}>{Warning_ICON()}</span>
-      <span>
-        {GetTranslation(
-          `alm.overview.flexlp.course.instance.not.selected`,
-          true
-        )}
-      </span>
+      <span>{GetTranslation(`alm.overview.flexlp.course.instance.not.selected`, true)}</span>
     </p>
   );
 
   const navigateToEnrolledInstance = (
-    <a
-      className={`${styles.allInstances} ${styles.centerAlign}`}
-      onClick={viewPrimaryEnrollment}
-    >
+    <a className={`${styles.allInstances} ${styles.centerAlign}`} onClick={viewPrimaryEnrollment}>
       {GetTranslation(`alm.visit.enrolled.instance`, true)}
     </a>
   );
 
   const requireManagerApprovalText = (
-    <p className={`${styles.label} ${styles.centerAlign}`}>
+    <p className={styles.centerAlign}>
       {formatMessage({
-        id: "alm.overview.request.manager.approval",
+        id: 'alm.overview.request.manager.approval',
       })}
     </p>
   );
 
   const pendingApprovalText = (
     <p className={`${styles.label} ${styles.centerAlign}`}>
-      {GetTranslation("alm.overview.pending.approval", true)}
+      {GetTranslation('alm.overview.pending.approval', true)}
     </p>
   );
 
@@ -1482,8 +2038,18 @@ const PrimeTrainingPageMetaData: React.FC<{
     ) {
       return (
         <div>
-          {enrollmentDeadlinePassedText}
-          {seatsAvailableText}
+          {/* Only for instance switch enabled courses */}
+          {isSwitchToOtherInstanceDisabled ? (
+            <>
+              <p className={styles.centerAlign}>{GetTranslation(`alm.instance.completed`, true)}</p>
+              {navigateToEnrolledInstance}
+            </>
+          ) : (
+            <>
+              {enrollmentDeadlinePassedText}
+              {seatsAvailableText}
+            </>
+          )}
         </div>
       );
     } else if (primaryEnrollment && enrollment === undefined) {
@@ -1500,27 +2066,21 @@ const PrimeTrainingPageMetaData: React.FC<{
   const pendingApprovalMssgId = () => {
     if (hasSingleActiveInstance(training)) {
       if (!checkIfEnrollmentDeadlineNotPassed(trainingInstance)) {
-        return "alm.overview.manager.approval.pending.enrollment.deadline.passed";
-      } else if (trainingInstance.state === RETIRED) {
-        return GetTranslation(
-          "alm.overview.manager.approval.pending.singleInstance",
-          true
-        );
+        return 'alm.overview.manager.approval.pending.enrollment.deadline.passed';
+      } else if (isInstanceRetired) {
+        return GetTranslation('alm.overview.manager.approval.pending.singleInstance', true);
       } else {
-        return "alm.overview.manager.approval.pending";
+        return 'alm.overview.manager.approval.pending';
       }
     } else if (!checkIfEnrollmentDeadlineNotPassed(trainingInstance)) {
       return GetTranslation(
-        "alm.overview.manager.approval.pending.enrollment.deadline.passed.change.instance",
+        'alm.overview.manager.approval.pending.enrollment.deadline.passed.change.instance',
         true
       );
-    } else if (trainingInstance.state === RETIRED) {
-      return GetTranslation(
-        "alm.overview.manager.approval.pending.instance.retired",
-        true
-      );
+    } else if (isInstanceRetired) {
+      return GetTranslation('alm.overview.manager.approval.pending.instance.retired', true);
     } else {
-      return "alm.overview.manager.approval.pending";
+      return 'alm.overview.manager.approval.pending';
     }
   };
 
@@ -1533,15 +2093,15 @@ const PrimeTrainingPageMetaData: React.FC<{
   };
 
   const hasFirstSubLoAsLP = () => {
-    return subLOs[0].loType === "learningProgram";
+    return subLOs[0].loType === LEARNING_PROGRAM;
   };
 
   const getModuleTypeOfFirstSubLo = () => {
     let firstLoInstance = subLOs[0].instances[0];
     if (hasFirstSubLoAsLP()) {
-      firstLoInstance = firstLoInstance.subLoInstances[0];
+      firstLoInstance = firstLoInstance?.subLoInstances?.[0];
     }
-    return firstLoInstance.loResources[0].resourceType;
+    return firstLoInstance?.loResources?.[0].resourceType;
   };
 
   const isFirstResourceType = (type: string) => {
@@ -1552,33 +2112,97 @@ const PrimeTrainingPageMetaData: React.FC<{
   };
 
   const isFirstModuleCrOrVc = () => {
-    return (
-      isFirstResourceType(CLASSROOM) || isFirstResourceType(VIRTUAL_CLASSROOM)
-    );
+    return isFirstResourceType(CLASSROOM) || isFirstResourceType(VIRTUAL_CLASSROOM);
   };
+
+  function disableStartForCourse(course: PrimeLearningObject): boolean {
+    const currentTrainingInstance = isCourse ? trainingInstance : course?.enrollment?.loInstance;
+    const coreContentOfTheCourse = filterLoReourcesBasedOnResourceType(
+      currentTrainingInstance,
+      CONTENT
+    );
+    // If the course has more than one core content modules
+    if (coreContentOfTheCourse?.length > 1) {
+      if (training?.isSubLoOrderEnforced) {
+        const firstModule = coreContentOfTheCourse?.[0];
+        // If the first module is VC or CR and its start is disabled, return true
+        if (
+          (firstModule.resourceType === VIRTUAL_CLASSROOM ||
+            firstModule.resourceType === CLASSROOM) &&
+          disableStart(firstModule)
+        ) {
+          return true; // Disable start for the course
+        }
+        // Otherwise, check if any module can be started
+        return !courseIsNotCrVcOrTimingEnabled(coreContentOfTheCourse);
+      } else {
+        // If order is not enforced, do the normal check
+        return !courseIsNotCrVcOrTimingEnabled(coreContentOfTheCourse);
+      }
+    }
+    //If the course has only one module and its cr/vc then disable it
+    return !courseIsNotCrVcOrTimingEnabled(coreContentOfTheCourse);
+  }
+
+  function disableStartForLPOrCert(training: PrimeLearningObject): boolean {
+    const subLOs = training?.subLOs;
+    // For multiple subLOs, return false if any subLO can be started
+    if (subLOs?.length > 1) {
+      if (training?.isSubLoOrderEnforced) {
+        if (disableStartForLo(subLOs?.[0])) {
+          return true; // Disable start for LP/Cert
+        }
+        return subLOs.every(disableStartForLo);
+      }
+      return subLOs.every(disableStartForLo);
+    }
+    // Check single subLO
+    return disableStartForLo(subLOs?.[0]);
+  }
+
+  function disableStartForLo(subLo: PrimeLearningObject): boolean {
+    return subLo.loType === COURSE ? disableStartForCourse(subLo) : disableStartForLPOrCert(subLo);
+  }
 
   const isButtonDisabled = () => {
     return (
-      (action === "start" &&
-        (isFirstModuleCrOrVc() ||
-          !arePrerequisiteEnforcedAndCompleted(training))) ||
+      (action === START &&
+        (!arePrerequisitesEnforcedAndCompleted(training, user?.account, shouldConsiderPassStatus) ||
+          hasPrerequisites ||
+          disableStartForLo(training))) ||
       courseInstanceNotSelected ||
-      (primaryEnrollment &&
-        isTrainingFlexLP &&
-        !courseInstanceInsideFlexLPSelected) ||
+      (primaryEnrollment && isFlexLPOrContainsFlexLP && !courseInstanceInsideFlexLPSelected) ||
       timeBetweenAttemptEnabled
     );
+  };
+
+  const shouldDisableRevisit = () => {
+    if (!lastPlayedloResource) {
+      return false;
+    }
+    const filteredResourceGrades = enrollment?.loResourceGrades?.filter(
+      loResourceGrade => loResourceGrade.id.search(lastPlayedloResource.id) !== -1
+    );
+
+    if (
+      lastPlayedloResource.multipleAttemptEnabled &&
+      filteredResourceGrades[0].dateStarted &&
+      lastPlayedloResource.multipleAttempt
+    ) {
+      return (
+        !isReattemptAllowed(lastPlayedloResource, filteredResourceGrades[0]) &&
+        !isRevisitAllowed(lastPlayedloResource, filteredResourceGrades[0])
+      );
+    }
+    return false;
   };
 
   const extensionLocalizedMetadata = useMemo(() => {
     if (!overviewExtension) {
       return {} as any;
     }
-    return getPreferredLocalizedMetadata(
-      overviewExtension.localizedMetadata,
-      locale
-    );
-  }, [overviewExtension, locale]);
+    return getPreferredLocalizedMetadata(overviewExtension.localizedMetadata, contentLocale);
+  }, [overviewExtension, contentLocale]);
 
   const handleExtensionClick = (extension: PrimeExtension) => {
     extension && isExtensionAllowed(extension) && setActiveExtension(extension);
@@ -1589,603 +2213,1247 @@ const PrimeTrainingPageMetaData: React.FC<{
   const enrollButtonNotAvailableText =
     !enrollment && isEnrollExtensionAllowed
       ? formatMessage({
-          id: "alm.extension.feature.not.supported",
+          id: 'alm.extension.feature.not.supported',
           defaultMessage:
-            "This feature is currently not available on teams app, please login to ALM to access this feature.",
+            'This feature is currently not available on teams app, please login to ALM to access this feature.',
         })
-      : "";
+      : '';
+  const showCoreContent = isEnrolled && (isCourse ? coreContentModules : isLP);
+  const getTranslatedStringsForCompletionCriteria = (
+    text: string,
+    minimiumCount: number,
+    totalCount: number
+  ) => {
+    return GetTranslationsReplaced(
+      text,
+      {
+        x: minimiumCount,
+        y: totalCount,
+      },
+      true
+    );
+  };
 
-  return (
-    <section className={styles.container}>
-      {enrollButtonNotAvailableText ? (
-        <div className={styles.actionContainer}>
-          <p>{enrollButtonNotAvailableText}</p>
+  const getCompletionStatus = (minimumCount: any, completionTitle: string, totalCount: number) => {
+    const moduleDataForCourse = isCourse
+      ? getTranslatedStringsForCompletionCriteria('alm.modules.required', minimumCount, totalCount)
+      : getTranslatedStringsForCompletionCriteria(
+          'alm.modules.completed',
+          minimumCount,
+          totalCount
+        );
+    const toolTipForCourse = hasOptionalLoResources
+      ? GetTranslation('msg.info.mandatory.module.completion', true)
+      : getTranslatedStringsForCompletionCriteria(
+          'alm.text.required.modules.tooltip',
+          minimumCount,
+          totalCount
+        );
+    const toolTipForCert = getTranslatedStringsForCompletionCriteria(
+      'alm.text.required.courses.tooltip',
+      minimumCount,
+      totalCount
+    );
+    const moduleDataForCert = getTranslatedStringsForCompletionCriteria(
+      'alm.courses.required',
+      minimumCount,
+      totalCount
+    );
+    const moduleData = isCertification ? moduleDataForCert : moduleDataForCourse;
+    const toolTipString = isCertification ? toolTipForCert : toolTipForCourse;
+    return (
+      <>
+        <div className={styles.bodyHeader} data-automationid={completionTitle}>
+          {completionTitle}
         </div>
-      ) : (
-        <div className={styles.actionContainer}>
-          {action === "registerInterest" && (
-            <button className={`almButton secondary ${styles.commonButton}`}>
-              {actionText}
-            </button>
+        <div className={styles.bodyText} data-automationid={moduleData}>
+          {moduleData}
+          {completionTitle === GetTranslation('alm.minimum.module.required', true) && (
+            <ALMTooltip message={toolTipString}></ALMTooltip>
           )}
-          {(action === "enroll" || action === "updateEnrollment") && (
+        </div>
+      </>
+    );
+  };
+  const isCompletionStatusAvailable = useCallback(() => {
+    //Adding true/false because it was rendering the number on UI
+    return showMandatoryModulesCount || showCoreContent || (isLP && alternateCompletedCount > 0)
+      ? true
+      : false;
+  }, [mandatoryModulesCount, coreContentCompleted, isLP, alternateCompletedCount]);
+  const showMetaDataContainer = isCompletionStatusAvailable() || doLoSkillsExist || isCertification;
+  const showCompletionStatus = () => {
+    const totalCount = !isCourse ? training?.subLOs.length : coreContentModules?.length;
+    const mandatoryModules = showMandatoryModulesCount && (
+      <div>
+        {getCompletionStatus(
+          mandatoryModulesCount,
+          GetTranslation('alm.minimum.module.required', true),
+          totalCount
+        )}
+      </div>
+    );
+    const coreContent = !isCertification && showCoreContent && (
+      <div>
+        {getCompletionStatus(
+          coreContentCompleted,
+          GetTranslation('alm.catalog.card.complete.label'),
+          totalCount
+        )}
+      </div>
+    );
+    const alternateCompleted = isLP && alternateCompletedCount > 0 && (
+      <div>
+        {getCompletionStatus(
+          alternateCompletedCount,
+          GetTranslation('alm.catalog.filter.completedViaAlternate', true),
+          totalCount
+        )}
+      </div>
+    );
+    // Return null if neither mandatoryModules nor coreContent nor alternateCompleted is available
+    if (!mandatoryModules && !coreContent && !alternateCompleted) {
+      return null;
+    }
+    return (
+      <div>
+        {mandatoryModules}
+        {coreContent}
+        {alternateCompleted}
+      </div>
+    );
+  };
+
+  const showCertificationType = (
+    certTypeIcon: JSX.Element,
+    certTypeHeader: string,
+    validityText: string,
+    invalidityText: string
+  ) => {
+    return (
+      <>
+        <div className={styles.headerContainer}>
+          <div className={styles.metadataIcons}>{certTypeIcon}</div>
+          <div className={styles.headerText} data-automationid={certTypeHeader}>
+            {certTypeHeader}
+          </div>
+        </div>
+        <div className={styles.bodyText} data-automationid="certification-validity">
+          {trainingInstance?.validity ? validityText : invalidityText}
+        </div>
+      </>
+    );
+  };
+  const showTypeOfCertification = () => {
+    return showCertificationType(
+      CERTIFICATION_TYPE_ICON(),
+      GetTranslation('alm.overview.certification.type', true),
+      GetTranslation('alm.overview.certification.recurring'),
+      GetTranslation('alm.overview.certification.non.recurring')
+    );
+  };
+  const showValidityOfCertification = () => {
+    return showCertificationType(
+      CERTIFICATION_VALIDITY_ICON(),
+      GetTranslation('alm.overview.certification.validity', true),
+      formatMessage(
+        { id: 'alm.overview.certification.durationTime' },
+        { 0: trainingInstance?.validity?.slice(0, -1) }
+      ),
+      formatMessage({
+        id: 'alm.certification.type',
+        defaultMessage: 'Perpetual',
+      })
+    );
+  };
+
+  const getInstanceDetailsHeader = useMemo(
+    () => (
+      <div className={styles.headerContainer}>
+        <div className={styles.metadataIcons}>{INSTANCES_ICON()}</div>
+        <div
+          className={styles.headerText}
+          data-automationid={GetTranslation('alm.instance.details')}
+        >
+          {GetTranslation(`alm.instance.details`, true)}
+        </div>
+      </div>
+    ),
+    []
+  );
+
+  const getAutoInstanceDetails = useMemo(
+    () =>
+      training?.instances.length > 2 ? (
+        <div className={styles.paddingSeperator}>
+          {getInstanceDetailsHeader}
+          <div className={styles.bodyText} data-automationid="instance-name">
+            {GetTranslation(`alm.text.autoInstance`, true)}
+          </div>
+        </div>
+      ) : null,
+    [training?.instances.length, getInstanceDetailsHeader]
+  );
+
+  const getInstanceLanguage = (locale: string): JSX.Element => {
+    const instanceLocale = account.contentLocales?.find(
+      (contentLocale: PrimeLocalizationMetadata) => {
+        if (contentLocale.locale === locale) {
+          return contentLocale;
+        }
+      }
+    );
+    console.log('instanceLocale', instanceLocale);
+    return <>{instanceLocale?.name || ''}</>;
+  };
+
+  const showInstanceConfiguration = () =>
+    isAutoInstanceEnrolled && isCourseEnrolledInstanceAutoInstance
+      ? getAutoInstanceDetails
+      : hasMultipleInstances &&
+        isCourse && (
+          <div className={styles.paddingSeperator}>
+            {getInstanceDetailsHeader}
+            <div className={styles.bodyText} data-automationid="instance-name">
+              {
+                <>
+                  <p className={`${styles.headerText} ${styles.noPadding}`}>
+                    {GetTranslation('alm.text.name', true)}
+                  </p>
+                  <p>{trainingInstance.localizedMetadata[0].name}</p>
+                  {trainingInstance.locale ? (
+                    <>
+                      <p className={`${styles.headerText} ${styles.noPadding}`}>
+                        {GetTranslation('alm.text.language', true)}
+                      </p>
+                      <p>{getInstanceLanguage(trainingInstance.locale)}</p>
+                    </>
+                  ) : null}
+                  <a
+                    className={styles.allInstances}
+                    onClick={event => {
+                      event.preventDefault();
+                      viewAllInstanceHandler();
+                    }}
+                    href=""
+                    tabIndex={0}
+                    aria-label={GetTranslation(`alm.instances`, true)}
+                  >
+                    {GetTranslation(`alm.instances`, true)}
+                  </a>
+                </>
+              }
+            </div>
+            {!isPrimaryEnrollmentWaitlisted && showInstanceContainerDetail()}
+          </div>
+        );
+
+  const showBadgeContainer = () => {
+    return (
+      showBadges && (
+        <div className={styles.paddingSeperator}>
+          <div className={styles.headerContainer}>
+            <div className={styles.metadataIcons}>{BADGES_RECIEVED_ICON()}</div>
+            <div
+              className={styles.headerText}
+              data-automationid={GetTranslation('alm.overview.badge')}
+            >
+              {GetTranslation(`alm.overview.badge`, true)}
+            </div>
+          </div>
+          <div className={styles.bodyText} data-automationid="badgeUrl">
+            {<img src={badge.badgeUrl} alt="badge" width={'35px'} height={'35px'} />}
+          </div>
+        </div>
+      )
+    );
+  };
+  const showLOSkills = () => {
+    return (
+      doLoSkillsExist && (
+        <div className={styles.paddingSeperator}>
+          <div className={styles.headerContainer}>
+            <div className={styles.metadataIcons}>{LO_SKILLS_ICON()}</div>
+            <div className={styles.headerText} data-automationid="skills-achieved">
+              {GetTranslation(`alm.overview.skills.achieve.level.${loType}`, true)}
+            </div>
+          </div>
+          {filteredSkills?.map(skill => {
+            return (
+              <div className={styles.bodyText} key={skill.name} data-automationid={skill.name}>
+                {skill.name} -{' '}
+                <span className={styles.skillLevel}>
+                  {skill.levelName}{' '}
+                  {!isLP &&
+                    formatMessage({ id: 'alm.training.skill.credits' }, { x: skill.credits })}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )
+    );
+  };
+  const isAuthorExternal = (author: any) => {
+    return author.authorType == EXTERNAL_STR;
+  };
+  const navigateToAuthorPage = (author: any) => {
+    if (isAuthorExternal(author)) {
+      alm.navigateToAuthorPage(author.authorId, true, author.authorName);
+    } else {
+      alm.navigateToAuthorPage(author.id);
+    }
+  };
+  const getAuthorDetails = (author: any, isLegacy: boolean) => {
+    const keyValue = isLegacy ? author.authorId : author.id;
+    const authorName = isLegacy ? author.authorName : author.name;
+    return (
+      <div key={keyValue}>
+        <div className={styles.authorHeader} data-automationid="avatar-image">
+          {isLegacy ? (
+            <span className={styles.cpauthorcircle} data-automationid="default-avatar">
+              {DEFAULT_USER_SVG()}
+            </span>
+          ) : (
+            <img
+              className={styles.cpauthorcircle}
+              src={author.avatarUrl}
+              alt={GetTranslation('author.avatar.text')}
+            />
+          )}
+          <a
+            className={styles.authorNames}
+            data-automationid={`author-name- ${authorName}`}
+            onClick={event => {
+              event.preventDefault();
+              navigateToAuthorPage(author);
+            }}
+            href="#"
+            aria-label={authorName}
+            tabIndex={0}
+          >
+            {authorName}
+          </a>
+        </div>
+      </div>
+    );
+  };
+  const showAuthorDetails = () => {
+    return (
+      showAuthors && (
+        <div className={styles.paddingSeperator}>
+          <div className={styles.headerContainer}>
+            <div className={styles.metadataIcons}>{LO_AUTHORS_ICON()}</div>
+            <div
+              className={styles.headerText}
+              data-automationid={GetTranslation('alm.text.author(s)')}
+            >
+              {GetTranslation('alm.text.author(s)')}
+            </div>
+          </div>
+          {renderAuthorDetails()}
+        </div>
+      )
+    );
+  };
+
+  const showWhoShouldAttend = () => {
+    const whoShouldTake =
+      training.loType === COURSE && training?.whoShouldTake && training.whoShouldTake.join(', ');
+    return (
+      whoShouldTake && (
+        <div className={styles.paddingSeperator}>
+          <div className={styles.headerContainer}>
+            <div className={styles.metadataIcons}>{WHO_SHOULD_ATTEND_ICON()}</div>
+            <div className={styles.headerText} data-automationid="who-should-attend">
+              {GetTranslation('alm.overview.who.should.attend')}
+            </div>
+          </div>
+          <div className={styles.bodyText} data-automationid="who-should-attend-text">
+            {whoShouldTake}
+          </div>
+        </div>
+      )
+    );
+  };
+  const getProductOrRoleLevel = (level: string) => {
+    let id = 'alm.catalog.filter.beginner';
+    let defaultMessage = 'Beginner';
+    switch (level) {
+      case INTERMEDIATE:
+        id = 'alm.catalog.filter.intermediate';
+        defaultMessage = 'Intermediate';
+        break;
+      case ADVANCED:
+        id = 'alm.catalog.filter.advanced';
+        defaultMessage = 'Advanced';
+    }
+    return formatMessage({
+      id: id,
+      defaultMessage: defaultMessage,
+    });
+  };
+  const getProductsOrRoles = (
+    productsOrRoles: PrimeRecommendations[],
+    headerText: string,
+    showLevels: boolean
+  ) => {
+    return (
+      <>
+        <div className={styles.metaDataHeader} data-automationid={headerText}>
+          {headerText} {showLevels && GetTranslation('alm.level')}
+        </div>
+        <div className={styles.metaDataText}>
+          {productsOrRoles.map(productsOrRole => {
+            return (
+              <div
+                className={styles.recommendation}
+                key={productsOrRole.id}
+                data-automationid={productsOrRole.name}
+              >
+                <div className={styles.recommendationText}>{productsOrRole.name}</div>
+                {productsOrRole.levels && (
+                  <span> ({getProductOrRoleLevel(productsOrRole.levels[0])})</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </>
+    );
+  };
+  const showLevels = (productsOrRoles: PrimeRecommendations[]): boolean => {
+    return productsOrRoles?.some(item => item.levels !== undefined);
+  };
+  const showRecomendations = () => {
+    const products = training.products;
+    const showProductLevels = showLevels(products);
+    const productsForLo =
+      products &&
+      getProductsOrRoles(products, GetTranslation('alm.lo.products', true), showProductLevels);
+    const roles = training.roles;
+    const showRoleLevels = showLevels(roles);
+    const rolesForLo =
+      roles && getProductsOrRoles(roles, GetTranslation('alm.lo.roles', true), showRoleLevels);
+    if (!productsForLo && !rolesForLo) {
+      return null;
+    }
+    return (
+      <div>
+        {productsForLo}
+        {rolesForLo}
+      </div>
+    );
+  };
+  const isRecommendationAvailable = training.products || training.roles;
+  const getJobAids = (resources: PrimeJobAidTrainingMap[]) => {
+    return resources.map((resource, index) => {
+      return (
+        <PrimeTrainingPageExtraJobAid
+          resource={resource.resource}
+          training={resource.item}
+          key={index}
+          enrollmentHandler={enrollmentHandler}
+          unEnrollmentHandler={unEnrollmentHandler}
+          jobAidClickHandler={jobAidClickHandler}
+        />
+      );
+    });
+  };
+  const getAllJobAidsForTraining = useMemo(() => {
+    const resources: PrimeJobAidTrainingMap[] = [];
+    if (isCourse) {
+      resources.push(...getAllJobAidsInTraining(training));
+    } else if (isLP) {
+      resources.push(...getAllJobAidsInTraining(training));
+      training.subLOs?.forEach(lo => {
+        resources.push(...getAllJobAidsInTraining(lo));
+      });
+    }
+    const uniqueResources = Array.from(new Map(resources.map(r => [r.resource.id, r])).values());
+    const byItemId = new Map<string, PrimeJobAidTrainingMap[]>();
+    uniqueResources.forEach(r => {
+      const id = r.item.id;
+      if (!byItemId.has(id)) {
+        byItemId.set(id, []);
+      }
+      byItemId.get(id)!.push(r);
+    });
+    return Array.from(byItemId.values()).map(jobAidsForLo => {
+      const withLocale = jobAidsForLo.map(ja => ({ ...ja, locale: ja.resource.locale }));
+      return getPreferredLocalizedMetadata(withLocale, contentLocale);
+    });
+  }, [training.supplementaryLOs, contentLocale]);
+  const showJobAidsForLO = () => {
+    return (
+      showJobAids && (
+        <div className={styles.paddingSeperator}>
+          <div className={styles.headerContainer}>
+            <div className={styles.metadataIcons}>{LO_JOBAID_ICON()}</div>
+            <div className={styles.headerText} data-automationid="JobAids">
+              {GetTranslation('alm.training.jobAid', true)}
+            </div>
+          </div>
+          <div className={styles.bodyText}>{getJobAids(getAllJobAidsForTraining)}</div>
+        </div>
+      )
+    );
+  };
+
+  const ratingGiven = primaryEnrollment?.rating || 0;
+  const showRatingDialog = () => {
+    return (
+      <div className={`${styles.submitRatingBox} ${styles.borderContainer}`}>
+        <StarRatingSubmitDialog
+          key={ratingGiven}
+          ratingGiven={ratingGiven}
+          updateRating={updateRating}
+          training={training}
+          trainingInstance={trainingInstance}
+          loType={loType}
+        />
+      </div>
+    );
+  };
+  const displayratingDialog = showRatingDialog();
+  const showLOResources = () => {
+    return (
+      showResource && (
+        <div className={styles.paddingSeperator}>
+          <div className={styles.headerContainer}>
+            <div className={styles.metadataIcons}>{LO_RESOURCES_ICON()}</div>
+            <div
+              className={styles.headerText}
+              data-automationid={formatMessage({
+                id: 'alm.text.resources',
+                defaultMessage: 'Resources',
+              })}
+            >
+              {formatMessage({
+                id: 'alm.text.resources',
+                defaultMessage: 'Resources',
+              })}
+            </div>
+          </div>
+          <div className={styles.bodyText}>
+            {renderResources(training)}
+            {training.showAggregatedResources && renderResourcesFromChildLP(training)}
+          </div>
+        </div>
+      )
+    );
+  };
+  const showNativeExtensions = () => {
+    return (
+      overviewExtension && (
+        <div className={styles.paddingSeperator}>
+          <div className={styles.headerContainer}>
+            <div className={styles.metadataIcons}>{NATIVE_EXTENSIBILITY_ICON()}</div>
+            <div className={styles.headerText}>
+              {GetTranslation('alm.extension.overview.other.details')}
+            </div>
+          </div>
+          <a
+            className={styles.allInstances + ' ' + styles.extensions}
+            role="button"
+            tabIndex={0}
+            href="javascript:void(0)"
+            onClick={() => handleExtensionClick(overviewExtension)}
+          >
+            {extensionLocalizedMetadata?.label}
+          </a>
+        </div>
+      )
+    );
+  };
+  const showAlternateLanguages = () => {
+    return (
+      alternativesLangAvailable.length > 0 && (
+        <div className={styles.paddingSeperator}>
+          <div className={styles.headerContainer} data-automationid="alternate-languages-available">
+            <div className={styles.metadataIcons}>{LO_LANGUAGES_AVAILABLE_ICON()}</div>
+            <div className={styles.headerText}>
+              {formatMessage({
+                id: 'alm.overview.alternativesAvailable',
+                defaultMessage: 'Alternatives Available',
+              })}
+
+              <ALMTooltip
+                message={formatMessage({
+                  id: 'alm.overview.alternativesAvailable.toolTip',
+                  defaultMessage:
+                    'You can change the language or the format of the content in the player.',
+                })}
+              ></ALMTooltip>
+            </div>
+          </div>
+          {alternativesLangAvailable?.map(language => {
+            return (
+              <div className={styles.bodyText} data-automationid={language} key={language}>
+                {language}
+              </div>
+            );
+          })}
+        </div>
+      )
+    );
+  };
+
+  const getFlexLpEnrollmentFailedTitle = () => {
+    if (flexLPCoursesList.enrolledCourses.length > 0) {
+      return GetTranslation('alm.flexlp.text.partial.enrollment');
+    }
+    return GetTranslation('alm.flexlp.text.unsuccess.enrollment');
+  };
+
+  const getFlexLpEnrollmentFailedMessage = () => {
+    return (
+      <>
+        {flexLPCoursesList.enrolledCourses.length > 0 && (
+          <>
+            <p className={styles.flexLpEnrollmentErrorText}>
+              {GetTranslation('alm.flexlp.error.enroll.successCourses', true)}
+            </p>
+            <ul className={styles.flexLpEnrollmentErrorText}>
+              {flexLPCoursesList.enrolledCourses.map(
+                (course: { name: string; id: string }, index: number) => {
+                  return (
+                    <li key={index} data-automationid={course.name}>
+                      {course.name}
+                    </li>
+                  );
+                }
+              )}
+            </ul>
+          </>
+        )}
+        <p className={styles.flexLpEnrollmentErrorText}>
+          {GetTranslation('alm.flexlp.error.enroll', true)}
+        </p>
+        <ul>
+          {flexLPCoursesList.unenrolledCourses.map(
+            (course: { name: string; id: string }, index: number) => {
+              return (
+                <li key={index} data-automationid={course.name}>
+                  {course.name}
+                </li>
+              );
+            }
+          )}
+        </ul>
+        <p className={styles.flexLpRetryEnrollmentText}>
+          {GetTranslation('alm.flexlp.error.retry.enroll', true)}
+        </p>
+      </>
+    );
+  };
+  const handleRegisterInterest = async (
+    method: string,
+    successMessage: string,
+    errorMessage: string
+  ) => {
+    try {
+      await registerInterestHandler(method);
+      almAlert(true, successMessage, AlertType.success);
+    } catch (error) {
+      almAlert(true, errorMessage, AlertType.error);
+    }
+  };
+  const getRelatedLos = (
+    relatedLoList: PrimeLearningObject[],
+    relatedLoText: string,
+    showDescription?: string,
+    totalCount?: number,
+    loadAllItems?: () => Promise<void>
+  ) => {
+    return Object.keys(relatedLoList[0] || {}).length ? (
+      <div className={`${styles.borderContainer} ${styles.paddingSeperatorForBorderContainer}`}>
+        <PrimeTrainingRelatedLoList
+          relatedLOs={relatedLoList}
+          skills={skills}
+          updateBookMark={updateBookMark}
+          relatedLoText={relatedLoText}
+          showDescription={showDescription}
+          totalCount={totalCount}
+          trainingName={name}
+          account={account}
+          loadAllItems={loadAllItems}
+        />
+      </div>
+    ) : null;
+  };
+
+  const showLeaderBoard = () => {
+    const isLp = training.loType === LEARNING_PROGRAM;
+    // const isGamificationEnabled; get this for this training
+    if (guest || !isLp || (isLp && !isEnrolled)) {
+      return;
+    }
+    return <PrimeLoLeaderBoard training={training} trainingInstanceId={trainingInstance} />;
+  };
+  const showCartButton = [
+    ADD_TO_CART_ACTION,
+    ADD_TO_CART_NATIVE_ACTION,
+    BUY_NOW_NATIVE_ACTION,
+  ].includes(action);
+
+  const showLoActionButton = !isExternalCertification && (action === START || action === CONTINUE);
+  const showRevistButton = !isExternalCertification && action === REVISIT;
+
+  const showLoActionHTML = () => {
+    return enrollButtonNotAvailableText ? (
+      <div className={styles.actionContainer}>
+        <p>{enrollButtonNotAvailableText}</p>
+      </div>
+    ) : (
+      <div className={styles.actionContainer}>
+        {action === REGISTER_INTEREST && (
+          <button
+            className={`almButton primary ${styles.commonButton}`}
+            data-automationid={REGISTER_INTEREST}
+            onClick={() =>
+              handleRegisterInterest(
+                POST_REQUEST,
+                GetTranslation('learner.registerInterestSuccessMessage', true),
+                GetTranslation('learner.registerInterestErrorMessage', true)
+              )
+            }
+          >
+            {actionText}
+          </button>
+        )}
+        {action === UNREGISTER_INTEREST && (
+          <button
+            className={`almButton primary ${styles.commonButton}`}
+            data-automationid={UNREGISTER_INTEREST}
+            onClick={() =>
+              handleRegisterInterest(
+                DELETE_REQUEST,
+                GetTranslation('learner.unregisterInterestSuccessMessage', true),
+                GetTranslation('learner.unregisterInterestErrorMessage', true)
+              )
+            }
+          >
+            {actionText}
+          </button>
+        )}
+        {(action === ENROLL_ACTION || action === UPDATE_ENROLLMENT_ACTION) && (
+          <button
+            className={`almButton primary ${styles.commonButton}`}
+            onClick={guest ? () => navigateToLoggedInLO(action) : checkConflictingSessions}
+            disabled={isEnrollButtonDisabled || false}
+            data-automationid={actionText}
+            id={actionButtonId}
+          >
+            {actionText}
+          </button>
+        )}
+        {showLoActionButton && (
+          <>
             <button
               className={`almButton primary ${styles.commonButton}`}
-              onClick={handleEnrollment}
-              disabled={isEnrollButtonDisabled || false}
+              onClick={() => playerHandler()}
+              disabled={isButtonDisabled()}
+              data-automationid={actionText}
+              id={actionButtonId}
             >
               {actionText}
             </button>
-          )}
-          {(action === "start" ||
-            action === "continue" ||
-            action === "revisit") && (
-            <>
-              <button
-                className={`almButton primary ${styles.commonButton}`}
-                onClick={() => playerHandler()}
-                disabled={isButtonDisabled()}
-              >
-                {actionText}
-              </button>
-              {waitListText}
-              {prerequisiteCompletionText}
-            </>
-          )}
-
-          {action === "addToCart" && (
-            <>
-              <button
-                className={`almButton primary ${styles.commonButton}`}
-                onClick={addToCart}
-                disabled={
-                  !isTrainingSynced ||
-                  !isSeatAvailable ||
-                  hasEnrollmentDeadlinePassed ||
-                  (isTrainingFlexLP && courseIdList.length === 0)
-                }
-              >
-                {actionText}
-              </button>
-              {trainingNotAvailableForPurchaseText}
-              {enrollmentDeadlinePassedText}
-              {seatsAvailableText}
-            </>
-          )}
-          {action === "pendingApproval" && (
-            <>
-              <button
-                className={`almButton secondary ${styles.commonButton}`}
-                disabled={true}
-              >
-                {actionText}
-              </button>
-              <div className={styles.mangerPendingApprovalText}>
-                {formatMessage({
-                  id: pendingApprovalMssgId(),
-                })}
-              </div>
-              {seatsAvailableText}
-            </>
-          )}
-
-          {action === "pendingAcceptance" && (
-            <>
-              <button
-                className={`almButton secondary ${styles.commonButton}`}
-                disabled={true}
-              >
-                {actionText}
-              </button>
-
-              {seatsAvailableText}
-            </>
-          )}
-          {action === "waiting" && (
+            {(isDesktop || isTablet) && (
+              <>
+                {waitListText}
+                {prerequisiteCompletionText}
+              </>
+            )}
+          </>
+        )}
+        {showRevistButton && (
+          <button
+            className={`almButton primary ${styles.commonButton}`}
+            onClick={() => launchPlayerForNewEnrollmentOrRevisit()}
+            disabled={isButtonDisabled() || shouldDisableRevisit()}
+            data-automationid={actionText}
+            id={actionButtonId}
+          >
+            {actionText}
+          </button>
+        )}
+        {showCartButton && (
+          <>
+            <button
+              className={`almButton primary ${styles.commonButton}`}
+              onClick={handleCartAction}
+              disabled={!isTrainingSynced || !isSeatAvailable || hasEnrollmentDeadlinePassed}
+              data-automationid={actionText}
+            >
+              {actionText}
+            </button>
+            {(isDesktop || isTablet) && trainingNotAvailableForPurchaseText}
+          </>
+        )}
+        {!isExternalCertification && action === PENDING_APPROVAL_ACTION && (
+          <>
             <button
               className={`almButton secondary ${styles.commonButton}`}
               disabled={true}
+              data-automationid={actionText}
             >
               {actionText}
             </button>
-          )}
-        </div>
-      )}
+            <div className={styles.mangerPendingApprovalText} data-automationid={actionText}>
+              {formatMessage({
+                id: pendingApprovalMssgId(),
+              })}
+            </div>
+            {(isDesktop || isTablet) && seatsAvailableText}
+          </>
+        )}
 
-      {showPreviewButton && (
-        <div
-          className={` ${styles.actionContainer} ${styles.crsStsButtonPreBookSection}`}
-        >
-          <div className={styles.backgroundButton}>
+        {action === PENDING_ACCEPTANCE_ACTION && (
+          <>
             <button
-              className={`${styles.previewButton} almButton secondary`}
-              disabled={!areAllInstancesSelectedHandler()}
-              onClick={previewHandler}
+              className={`almButton primary ${styles.commonButton}`}
+              disabled={true}
+              data-automationid={actionText}
             >
+              {actionText}
+            </button>
+
+            {(isDesktop || isTablet) && seatsAvailableText}
+          </>
+        )}
+        {action === WAITING_ACTION && (
+          <button
+            className={`almButton secondary ${styles.commonButton}`}
+            disabled={true}
+            data-automationid={actionText}
+          >
+            {actionText}
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  const showBookmarkButtonHTML = () => {
+    return !guest && !isCourseNotEnrollable ? (
+      <div className={`${styles.backgroundButton}`}>
+        <button
+          className={`almButton mobile secondary ${styles.bookmarkButton}`}
+          onClick={toggle}
+          data-automationid="bookmark"
+          title={bookmarkTitle}
+        >
+          {getBookMarkStatus()}
+        </button>
+      </div>
+    ) : null;
+  };
+
+  const showPreviewButtonHTML = () => {
+    return !guest ? (
+      <div
+        className={`${styles.backgroundButton} ${isCourseNotEnrollable ? styles.commonContainer : ''}`}
+      >
+        <button
+          className={`almButton mobile secondary ${styles.previewButton}`}
+          disabled={!areAllInstancesSelected()}
+          onClick={previewHandler}
+          data-automationid="preview"
+        >
+          <span className={styles.previewIcon} data-automationid="preview">
+            <Visibility aria-hidden="true" />
+          </span>
+          {(isDesktop || isTablet) && (
+            <span className={styles.previewText} data-automationid="preview">
               {formatMessage({
                 id: `alm.overview.button.preview`,
               })}
-            </button>
-          </div>
-          <div className={styles.preBmSeperator}></div>
-          <div
-            className={`${styles.backgroundButton} ${styles.bookmarkContainer}`}
-          >
-            <button
-              className={`${styles.previewButton} almButton secondary`}
-              onClick={toggle}
+            </span>
+          )}
+        </button>
+      </div>
+    ) : null;
+  };
+
+  const { name, description } = useMemo((): PrimeLocalizationMetadata => {
+    return getPreferredLocalizedMetadata(training.localizedMetadata, contentLocale);
+  }, [training.localizedMetadata, contentLocale]);
+
+  const almTrainingShareInTeams = () => {
+    const shareEvent = {
+      eventType: 'shareLoInTeams',
+      data: {
+        url: getTrainingUrl(window.location.href),
+        name: name,
+        description: description,
+      },
+    };
+    console.log(shareEvent);
+    window.parent.postMessage(shareEvent, '*');
+  };
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const [showCopiedUrlMsg, setShowCopiedUrlMsg] = useState(false);
+  const shareHandler = () => {
+    if (getALMConfig().handleShareExternally) {
+      return almTrainingShareInTeams();
+    }
+    setShowShareMenu(prevState => !prevState);
+  };
+
+  const copyURL = () => {
+    const url = getTrainingLink(training.id, account.id);
+    navigator.clipboard.writeText(url);
+    setShowCopiedUrlMsg(true);
+    setShowShareMenu(false);
+    setTimeout(() => {
+      setShowCopiedUrlMsg(false);
+    }, 2000);
+  };
+
+  useEffect(() => {
+    if (showCopiedUrlMsg) {
+      almAlert(
+        true,
+        formatMessage({
+          id: 'alm.copyUrlSuccess',
+          defaultMessage: 'URL copied successfully',
+        }),
+        AlertType.success
+      );
+    }
+  }, [showCopiedUrlMsg, almAlert, formatMessage]);
+
+  const sendEmail = () => {
+    // const learnerAppOrigin = getALMConfig().almBaseURL;
+    const shareUrlLink = getTrainingLink(training.id, account.id);
+
+    //const shareUrlLink = `${learnerAppOrigin}${trainingOverview}/trainingId/${trainingId}`;
+    const subject = '';
+    window.location.href = `mailto:?subject= ${formatMessage(
+      {
+        id: 'alm.text.training',
+        defaultMessage: 'Training',
+      },
+      {
+        training: GetTranslation(`alm.training.${training.loType}`, true),
+        subject: subject,
+      }
+    )}&body=${formatMessage(
+      {
+        id: 'alm.text.trainingLink',
+        defaultMessage: 'Training Link - ',
+      },
+      {
+        training: GetTranslation(`alm.training.${training.loType}`, true),
+        shareUrlLink: shareUrlLink,
+      }
+    )}`;
+    setShowShareMenu(false);
+  };
+
+  const shareButtonRef = useRef(null);
+
+  const shareButtonHTML = () => {
+    return (
+      <div
+        title={GetTranslation('alm.sharebutton.tooltip')}
+        className={`${styles.backgroundButton}`}
+      >
+        <button
+          className={`almButton mobile secondary ${styles.shareButton}`}
+          onClick={shareHandler}
+          aria-label={formatMessage({
+            id: 'alm.header.text.sharePop',
+            defaultMessage: 'share, menu pop-up',
+          })}
+          ref={shareButtonRef}
+        >
+          <span className={styles.shareIcon} aria-hidden="true" data-automationid="share">
+            <ShareAndroid />
+          </span>
+        </button>
+        {showShareMenu && (
+          <div>
+            <ALMPopup
+              id="share-popup"
+              direction="top"
+              position="right"
+              triggerRef={shareButtonRef}
+              isOpen={showShareMenu}
+              onClose={() => setShowShareMenu(false)}
             >
-              {getBookMarkIcon}
-              {getBookMarkStatusText}
-            </button>
+              <ALMPopupContent>
+                <Flex direction={'column'} justifyContent={'space-between'} alignItems={'start'}>
+                  <ActionButton onPress={sendEmail} isQuiet>
+                    <Flex direction={'row'} gap={'size-100'} alignItems={'center'}>
+                      <Email size={'S'} />
+                      <span>{GetTranslation('alm.text.shareViaEmail')}</span>
+                    </Flex>
+                  </ActionButton>
+                  <Divider size="S" />
+                  <ActionButton onPress={copyURL} isQuiet>
+                    <Flex direction={'row'} gap={'size-100'} alignItems={'center'}>
+                      <Link size={'S'} />
+                      <span>{GetTranslation('alm.text.shareLink')}</span>
+                    </Flex>
+                  </ActionButton>
+                </Flex>
+              </ALMPopupContent>
+            </ALMPopup>
           </div>
+        )}
+      </div>
+    );
+  };
+
+  const startDownload = async (): Promise<void> => {
+    const instanceId = enrollment?.loInstance?.id ?? '';
+    getDownloadLinks(training, instanceId, user).then(offlineLinks => {
+      sendDownloadContentEvent(offlineLinks);
+    });
+  };
+
+  const confirmAndDeleteCompletedDownload = (): void => {
+    const instanceId = enrollment?.loInstance?.id ?? '';
+    deleteDownloadedContentForTraining(training, instanceId, user).catch(() => {});
+  };
+
+  const handleOfflineDownloadControlClick = (
+    downloadCompleted: boolean,
+    isButtonDisabled: boolean
+  ): void => {
+    if (isButtonDisabled) {
+      return;
+    }
+    if (downloadCompleted) {
+      almConfirmationAlert(
+        GetTranslation('alm.app.offline.deleteDownload.title'),
+        GetTranslationsReplaced('alm.app.offline.deleteDownload.confirmMessage', { name }),
+        GetTranslation('alm.app.offline.deleteDownload.ok'),
+        GetTranslation('text.cancel'),
+        confirmAndDeleteCompletedDownload
+      );
+    } else {
+      startDownload();
+    }
+  };
+
+  const downloadProgress = useSelector((state: any) =>
+    state.appState.downloadProgress?.find((item: any) => item.loId === training.id)
+  );
+  const appMode = useSelector((state: any) => state.appState.appMode);
+
+  const allDownloadProgress = useSelector((state: any) => state.appState.downloadProgress);
+
+  const downloadButtonDisplay = () => {
+    const lo = training;
+    if (
+      !account.enableOffline ||
+      AppMode.INSIDEAPP !== appMode ||
+      enrollment === null ||
+      (enrollment && !['ENROLLED', 'COMPLETED', 'STARTED'].includes(enrollment.state))
+    ) {
+      return null;
+    }
+    if (!showDownloadButton(account, lo, trainingInstance)) {
+      return null;
+    }
+    let downloadProgressValue = downloadProgress ? downloadProgress.downloadProgressValue || 0 : 0;
+    const downloadStatus = downloadProgress ? downloadProgress.downloadStatus : '';
+    const isButtonDisabled =
+      (downloadStatus && downloadStatus === DownloadStatus.STARTED) ||
+      (downloadProgressValue > 0 && downloadProgressValue < 100)
+        ? true
+        : false;
+    const downloadCompleted =
+      downloadStatus === DownloadStatus.COMPLETED || downloadProgressValue === 100 ? true : false;
+    if (downloadCompleted) {
+      downloadProgressValue = 100;
+    }
+    const showLoader = downloadProgressValue > 0 && downloadProgressValue < 100;
+    const buttonStyle = showLoader
+      ? {
+          background: `radial-gradient(closest-side, var(--prime-color-neutral-5) 70%, transparent 100%), conic-gradient(var(--prime-success-color) ${downloadProgressValue}%, transparent 0)`,
+          transition: 'background 0.3s',
+        }
+      : {};
+    return (
+      <div className={`${styles.backgroundButton}`}>
+        <button
+          className={`almButton mobile secondary ${styles.bookmarkButton}`}
+          onClick={() => handleOfflineDownloadControlClick(downloadCompleted, isButtonDisabled)}
+          disabled={isButtonDisabled}
+          data-automationid="download-lo"
+          aria-label={GetTranslationsReplaced(
+            'alm.text.downloadTraining',
+            {
+              training: GetTranslation(`alm.training.${training.loType}`),
+            },
+            true
+          )}
+          style={buttonStyle}
+        >
+          <span className={styles.downloadIconWrapper}>
+            <span className={styles.bookmarkIcon}>
+              <ArrowDown />
+            </span>
+            {downloadCompleted && (
+              <span className={styles.downloadCompletedIcon}>
+                <CheckmarkCircle aria-hidden="true" />
+              </span>
+            )}
+          </span>
+        </button>
+      </div>
+    );
+  };
+
+  // Show almAlert on download status change (COMPLETED/FAILED)
+  const prevDownloadStatus = useRef<string | undefined>();
+  useEffect(() => {
+    if (!downloadProgress) {
+      return;
+    }
+    if (prevDownloadStatus.current !== downloadProgress.downloadStatus) {
+      if (downloadProgress.downloadStatus === DownloadStatus.COMPLETED) {
+        almAlert(true, GetTranslation('alm.download.completed'), AlertType.success);
+      } else if (downloadProgress.downloadStatus === DownloadStatus.FAILED) {
+        almAlert(true, GetTranslation('alm.download.failed'), AlertType.error);
+      }
+      prevDownloadStatus.current = downloadProgress.downloadStatus;
+    }
+  }, [downloadProgress?.downloadStatus, almAlert, GetTranslation]);
+
+  return (
+    <section>
+      {(isDesktop || isTablet) && showLoActionHTML()}
+      {/* Enrollment information */}
+      {!isCertification && !isMobile && (
+        <div className={styles.actionContainer}>{showEnrollmentInfoText()}</div>
+      )}
+      {showPreviewButton && (
+        <div className={` ${styles.actionContainer} ${styles.crsStsButtonPreBookSection}`}>
+          {(isDesktop || isTablet) && showBookmarkButtonHTML()}
+          {(isDesktop || isTablet) && showPreviewButtonHTML()}
         </div>
       )}
-
       {primaryEnrollment &&
-      isTrainingFlexLP &&
+      isFlexLPOrContainsFlexLP &&
       !courseInstanceInsideFlexLPSelected &&
-      !updationChecker() &&
+      !flexLpUpdationChecker() &&
       !courseInstanceNotSelected
         ? isInstanceNotSelected
-        : ""}
-
-      {!showPreviewButton && (
+        : ''}
+      {!guest && !showPreviewButton && !isCourseNotEnrollable && (isDesktop || isTablet) && (
         <div className={styles.actionContainer}>
-          <button className={styles.bookMark} onClick={toggle}>
-            {getBookMarkIcon}
-            {getBookMarkStatusText}
+          <button className={styles.bookMark} onClick={toggle} title={bookmarkTitle}>
+            {getBookMarkStatus()}
           </button>
         </div>
       )}
-
-      {/* Enrollment information */}
-      {loType === COURSE && (
-        <div className={styles.actionContainer}>{showEnrollmentInfoText()}</div>
-      )}
-
+      {/* Show leaderboard stats*/}
+      {showLeaderBoard()}
       {/* Rating Container*/}
-      {useCanShowRating(training) && isEnrolled && (
-        <div
-          className={[styles.submitRatingBox, styles.borderContainer].join(" ")}
-        >
-          <StarRatingSubmitDialog
-            ratingGiven={
-              primaryEnrollment.rating ? primaryEnrollment.rating : 0
-            }
-            updateRating={updateRating}
-            training={training}
-            trainingInstance={trainingInstance}
-            loType={loType}
-          />
-        </div>
-      )}
-      <section className={styles.borderContainer}>
+      {useCanShowRating(training) && isEnrolled && displayratingDialog}
+
+      <section className={` ${styles.borderContainer} ${styles.container} ${styles.emptySection}`}>
+        {/* purchase details for LO container*/}
         {showPriceDetails && (
-          <div className={styles.commonContainer}>
-            <span aria-hidden="true" className={styles.icon}>
-              <Money />
-            </span>
-            <div className={styles.innerContainer}>
-              <div>
-                {formatMessage({
-                  id: "alm.purchase.details",
-                  defaultMessage: "Purchase Details",
-                })}
+          <div className={styles.paddingSeperator}>
+            <div className={styles.headerContainer}>
+              <div className={styles.metadataIcons}>{PURCHASE_DETAILS_ICON()}</div>
+              <div
+                className={styles.headerText}
+                data-automationid={GetTranslation('alm.purchase.details')}
+              >
+                {GetTranslation('alm.purchase.details')}
               </div>
-              <div>
-                {formatMessage(
-                  {
-                    id: "alm.training.price",
-                    defaultMessage: "Price",
-                  },
-                  { amount: getFormattedPrice(training.price) }
-                )}
-              </div>
-              <div>{modifyTime(enrollment.dateEnrolled, locale)}</div>
             </div>
+            {getPriceDetails}
           </div>
         )}
 
+        {/* Instances configurations */}
+        {showInstanceConfiguration()}
+        {/* Alternate Languages */}
+        {showAlternateLanguages()}
+        {/* minimum criteria completion container */}
+        {isCompletionStatusAvailable() && (
+          <div className={styles.paddingSeperator}>
+            <div className={styles.headerContainer}>
+              <div className={styles.metadataIcons}>{MODULE_COMPLETION_STATUS_ICON()}</div>
+              <div
+                className={styles.headerText}
+                data-automationid={GetTranslation('alm.module.completion.status')}
+              >
+                {GetTranslation('alm.module.completion.status', true)}
+              </div>
+            </div>
+
+            {showCompletionStatus()}
+          </div>
+        )}
+        {/* Certificate Type container */}
+        {isCertification && (
+          <div className={styles.paddingSeperator}>{showTypeOfCertification()}</div>
+        )}
+        {/* Certificate Validity container */}
+        {isCertification && (
+          <div className={styles.paddingSeperator}>{showValidityOfCertification()}</div>
+        )}
+        {/* Who should Attend */}
+        {showWhoShouldAttend()}
+        {/* Skills Container */}
+        {showLOSkills()}
         {/*Deadline container */}
-        {(enrollmentDeadline || completionDeadline || unenrollmentDeadline) && (
-          <div className={styles.commonContainer}>
-            <span aria-hidden="true" className={styles.icon}>
-              <Calendar />
-            </span>
-            <div className={styles.innerContainer}>
-              <label className={styles.label}>
-                {formatMessage({
-                  id: "alm.overview.deadline",
-                  defaultMessage: "Deadline(s)",
-                })}
-              </label>
+        {!isInstanceRetired &&
+          (showEnrollmentDeadlineData || completionDeadline || showUnenrollmentDeadlineData) && (
+            <div className={styles.paddingSeperator}>
+              <div className={styles.headerContainer} data-automationid="deadlines">
+                {CALENDAR_ICON()}
+                <div className={styles.headerText}>
+                  {GetTranslation('alm.overview.deadline', true)}
+                </div>
+              </div>
               {enrollmentDeadlineContainer}
               {unenrollmentDeadlineContainer}
               {completionDeadlineContainer}
             </div>
-          </div>
-        )}
-
-        {/* Instance Switch Container */}
-        {(hasMultipleInstances || isAutoInstanceEnrolled) &&
-          loType === COURSE && (
-            <div className={styles.commonContainer}>
-              <span className={styles.instanceIcon}>{INSTANCE_ICON()}</span>
-              <div className={styles.innerContainer}>
-                <label className={styles.label}>
-                  {GetTranslation(`alm.instance.details`, true)}
-                </label>
-                <label className={styles.instanceName}>
-                  {isAutoInstanceEnrolled ? (
-                    GetTranslation(`alm.text.autoInstance`, true)
-                  ) : (
-                    <>
-                      {trainingInstance.localizedMetadata[0].name}
-                      <a
-                        className={styles.allInstances}
-                        onClick={viewAllInstanceHandler}
-                      >
-                        {GetTranslation(`alm.instances`, true)}
-                      </a>
-                    </>
-                  )}
-                </label>
-                {!isPrimaryEnrollmentWaitlisted &&
-                  showInstanceContainerDetail()}
-              </div>
-            </div>
           )}
 
-        {/* Alternate Languages */}
-        {alternativesLangAvailable.length > 0 && (
-          <div className={styles.commonContainer}>
-            <span aria-hidden="true" className={styles.altLangIcon}>
-              <GlobeGrid />
-            </span>
-            <div className={styles.innerContainer}>
-              <label className={styles.subtleText}>
-                {formatMessage({
-                  id: "alm.overview.alternativesAvailable",
-                  defaultMessage: "Alternatives Available",
-                })}
-              </label>
-              <ALMTooltip
-                message={formatMessage({
-                  id: "alm.overview.alternativesAvailable.toolTip",
-                  defaultMessage:
-                    "You can change the language or the format of the content in the player.",
-                })}
-              ></ALMTooltip>
-              {alternativesLangAvailable?.map((language) => {
-                return (
-                  <div className={styles.altLang} key={language}>
-                    {language}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Minimum Completion Criteria container */}
-        {showMinimumCompletion && (
-          <div className={styles.commonContainer}>
-            <span aria-hidden="true" className={styles.minimumCriteria}>
-              {minimumCriteria.value}
-            </span>
-            <div className={styles.innerContainer}>
-              <label className={styles.subtleText}>
-                {formatMessage({
-                  id: "alm.overview.minimum.completion.criteria",
-                  defaultMessage: "Minimum Completion Criteria",
-                })}
-              </label>
-              <ALMTooltip message={minimumCriteria.label}></ALMTooltip>
-            </div>
-          </div>
-        )}
-
-        {/* Trainings Completed container */}
-        {isEnrolled && trainingsCompleted && (
-          <div className={styles.commonContainer}>
-            <span aria-hidden="true" className={styles.minimumCriteria}>
-              {trainingsCompleted}
-            </span>
-            <div className={styles.innerContainer}>
-              <label className={styles.subtleText}>
-                {formatMessage({
-                  id: "alm.overview.qminimum.completion.criteria",
-                  defaultMessage: "Trainings Completed",
-                })}
-              </label>
-            </div>
-          </div>
-        )}
-
-        {/* Mandatory Modules container */}
-        {showMandatoryModulesCount && (
-          <div className={styles.commonContainer}>
-            <span aria-hidden="true" className={styles.mandatory}>
-              {mandatoryModulesCount}
-            </span>
-            <div className={styles.innerContainer}>
-              <label className={styles.subtleText}>
-                {GetTranslation("alm.text.required.modules", true)}
-              </label>
-              <ALMTooltip
-                message={GetTranslation(
-                  "alm.text.required.modules.tooltip",
-                  true
-                )}
-              ></ALMTooltip>
-            </div>
-          </div>
-        )}
-
-        {/* CORE content completed container */}
-        {isEnrolled && coreContentCompleted && (
-          <div className={styles.commonContainer}>
-            <span aria-hidden="true" className={styles.minimumCriteria}>
-              {coreContentCompleted}
-            </span>
-            <div className={styles.innerContainer}>
-              <label className={styles.subtleText}>
-                {formatMessage({
-                  id: "alm.overview.course.core.completed",
-                  defaultMessage: "Core Content Completed",
-                })}
-              </label>
-            </div>
-          </div>
-        )}
-
-        {/* Certificate Type container */}
-        {isCertification && (
-          <div className={styles.commonContainer}>
-            <span aria-hidden="true" className={styles.icon}>
-              <Clock />
-            </span>
-            <div className={styles.innerContainer}>
-              <label className={styles.label}>
-                {formatMessage({
-                  id: "alm.overview.certification.type",
-                  defaultMessage: "Type",
-                })}
-              </label>
-              <div>
-                {trainingInstance?.validity ? "Recurring" : "Non Recurring"}
-              </div>
-            </div>
-          </div>
-        )}
-        {/* Certificate Validity container */}
-        {isCertification && (
-          <div className={styles.commonContainer}>
-            <span aria-hidden="true" className={styles.icon}>
-              <ClockCheck />
-            </span>
-            <div className={styles.innerContainer}>
-              <label className={styles.label}>
-                {formatMessage({
-                  id: "alm.overview.certification.validity",
-                  defaultMessage: "Validity",
-                })}
-              </label>
-              <div>
-                {trainingInstance?.validity
-                  ? formatMessage(
-                      { id: "alm.overview.certification.durationTime" },
-                      { 0: trainingInstance?.validity?.slice(0, -1) }
-                    )
-                  : formatMessage({
-                      id: "alm.certification.type",
-                      defaultMessage: "Perpetual",
-                    })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* enrollment container */}
-        {showEnrollmentCount && (
-          <div className={styles.commonContainer}>
-            <span aria-hidden="true" className={styles.icon}>
-              <UserGroup />
-            </span>
-            <div className={styles.innerContainer}>
-              <label className={styles.label}>
-                {formatMessage(
-                  {
-                    id: "alm.overview.enrollment.count",
-                  },
-                  {
-                    0: enrollmentCount,
-                  }
-                )}
-              </label>
-            </div>
-          </div>
-        )}
         {/* Badge Container */}
-        {showBadges && (
-          <div className={styles.commonContainer}>
-            <span
-              aria-hidden="true"
-              className={`${styles.icon} ${styles.badge}`}
-            >
-              {LEARNER_BADGE_SVG()}
-            </span>
-            <div className={styles.innerContainer}>
-              <label className={styles.label}>
-                {GetTranslation("alm.overview.badge", true)}
-              </label>
-              {
-                <img
-                  src={badge.badgeUrl}
-                  alt="badge"
-                  width={"50px"}
-                  height={"50px"}
-                />
-              }
-            </div>
-          </div>
-        )}
-        {/* Modules Completed container */}
-        {/* {showModulesCompleted && (
-        <div className={styles.commonContainer}>
-          <span className={styles.moduleCompleted}>0/1</span>
-          <div className={styles.innerContainer}>
-            <label className={styles.label}>Course completed</label>
-          </div>
-        </div>
-      )} */}
-        {/* Skills Container */}
-        <div className={styles.commonContainer}>
-          <span aria-hidden="true" className={styles.sendIcon}>
-            <Send></Send>
-          </span>
-          <div className={styles.innerContainer}>
-            <label className={styles.label}>
-              {GetTranslation(
-                `alm.overview.skills.achieve.level.${loType}`,
-                true
-              )}
-            </label>
-            {filteredSkills?.map((skill) => {
-              return (
-                <div className={styles.subtleText} key={skill.name}>
-                  {skill.name} - {skill.levelName}{" "}
-                  {formatMessage(
-                    { id: "alm.training.skill.credits" },
-                    { x: skill.credits }
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        {showBadgeContainer()}
 
+        {/* Recommendation container */}
+        {isRecommendationAvailable && (
+          <div className={styles.paddingSeperator}>
+            <div className={styles.headerContainer}>
+              {LO_RECOMMENDATIONS_ICON()}
+              <div className={styles.headerText} data-automationid={recommendationText}>
+                {recommendationText}
+              </div>
+            </div>
+
+            {showRecomendations()}
+          </div>
+        )}
         {/* Extension Details */}
-        {overviewExtension && (
-          <div className={styles.commonContainer}>
-            <span
-              aria-hidden="true"
-              className={styles.sendIcon + " " + styles.extensionIcon}
-            >
-              <Layers />
-            </span>
-            <div className={styles.innerContainer}>
-              <label className={styles.label}>
-                {GetTranslation("alm.extension.overview.other.details")}
-              </label>
-              <div className={styles.subtleText}>
-                <a
-                  className={styles.allInstances}
-                  onClick={() => handleExtensionClick(overviewExtension)}
-                >
-                  {extensionLocalizedMetadata?.label}
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
+        {showNativeExtensions()}
         {/* JOB Aid container */}
-        {showJobAids && (
-          <div className={styles.commonContainer}>
-            <span aria-hidden="true" className={styles.icon}>
-              <PinOff />
-            </span>
-            <div className={styles.innerContainer}>
-              <label className={styles.label}>
-                {GetTranslation("alm.training.jobAid", true)}
-              </label>
-              <div>
-                {training.supplementaryLOs.map((item) => {
-                  return item.instances[0].loResources.map((loResource) => {
-                    return loResource.resources.map((resource) => (
-                      <PrimeTrainingPageExtraJobAid
-                        resource={resource}
-                        training={item}
-                        enrollmentHandler={enrollmentHandler}
-                        key={item.id}
-                        unEnrollmentHandler={unEnrollmentHandler}
-                        jobAidClickHandler={jobAidClickHandler}
-                      />
-                    ));
-                  });
-                })}
-              </div>
-            </div>
-          </div>
-        )}
+        {showJobAidsForLO()}
         {/* Resources container */}
-        {showResource && (
-          <div className={styles.commonContainer}>
-            <span aria-hidden="true" className={styles.icon}>
-              <Download />
-            </span>
-            <div className={styles.innerContainer}>
-              <label className={styles.label}>
-                {formatMessage({
-                  id: "alm.text.resources",
-                  defaultMessage: "Resources",
-                })}
-              </label>
-              <div style={{ display: "grid" }}>
-                {renderResources(training)}
-                {renderResourcesFromChildLP(training)}
-              </div>
-            </div>
-          </div>
-        )}
+        {showLOResources()}
         {/* Author */}
-        {showAuthors && (
-          <div className={styles.authorContainer}>
-            <label className={styles.label}>
-              {GetTranslation("alm.text.author(s)")}
-            </label>
-            {Array.from(legacyAuthorNames).map((legacyAuthorName) => {
-              return (
-                <div
-                  className={styles.authors}
-                  key={`authors-${legacyAuthorName}`}
-                >
-                  <span className={styles.cpauthorcircle}>
-                    {DEFAULT_USER_SVG()}
-                  </span>
-                  <div className={styles.innerContainer}>
-                    <p className={styles.subtleText}>{legacyAuthorName}</p>
-                  </div>
-                </div>
-              );
-            })}
-            {training.authors?.map((author) => {
-              return (
-                <div key={author.id}>
-                  <div className={styles.authors}>
-                    <span aria-hidden="true">
-                      <img src={author.avatarUrl} aria-hidden="true" alt="" />
-                    </span>
-                    <div className={styles.innerContainer}>
-                      <p className={styles.subtleText}>{author.name}</p>
-                    </div>
-                  </div>
-                  {/* <p className={styles.authorName}>{author.bio}</p> */}
-                </div>
-              );
-            })}
-          </div>
-        )}
+        {showAuthorDetails()}
       </section>
 
       {/* UnEnroll button container */}
-      {canUnenroll && (
+      {canUnenroll && !isUnenrollmentDeadlinePassed && (
         <div className={styles.commonContainer}>
           <div className={styles.bottomContainer}>
             <button
               className={`almButton secondary ${styles.unenrollButton}`}
-              disabled={isUnenrollmentDeadlinePassed}
               onClick={
                 hasMultipleInstances && isInstanceSwitchEnabled
                   ? instanceUnenrollConfirmationClickHandler
@@ -2196,6 +3464,69 @@ const PrimeTrainingPageMetaData: React.FC<{
             </button>
           </div>
         </div>
+      )}
+      {/* Source Alternate LOs */}
+      {getRelatedLos(
+        sourceAlternateLOs,
+        GetTranslation('alm.source.alternate.los', true),
+        GetTranslationsReplaced(
+          'alm.source.alternates.description',
+          { trainingType: trainingTypeLabel },
+          true
+        ),
+        sourceAlternateLoCount,
+        loadAllSourceAlternateLOs
+      )}
+      {/* Related Learning paths */}
+      {getRelatedLos(
+        relatedLpList,
+        GetTranslation('alm.related.learning.paths', true),
+        GetTranslation('alm.related.lp.to.take.next')
+      )}
+      {/* Related Courses */}
+      {getRelatedLos(relatedCoursesList, GetTranslation('alm.related.Los', true))}
+      {/* create a floating div at the bottom (bottom sticky) */}
+      {isMobile && (
+        <ALMPopup
+          id="alm-enroll-popup"
+          direction="bottom"
+          borderRadius={'all'}
+          closeOnClickOutside={false}
+          isOpen={true}
+        >
+          <ALMPopupContent>
+            <Flex direction="column" justifyContent="space-between" gap="size-125">
+              <Flex
+                direction="row"
+                justifyContent={'space-between'}
+                alignItems={'center'}
+                gap="size-200"
+              >
+                {showLoActionHTML()}
+                {downloadButtonDisplay()}
+                {!showPreviewButton && !isCourseNotEnrollable && showBookmarkButtonHTML()}
+                {showPreviewButton && showPreviewButtonHTML()}
+                {shareButtonHTML()}
+              </Flex>
+              <Flex
+                direction="column"
+                justifyContent={'space-between'}
+                alignItems={'center'}
+                gap="size-75"
+                UNSAFE_className={styles.almEnrollPopupText}
+              >
+                {!isCertification && showEnrollmentInfoText()}
+                {showLoActionButton && waitListText}
+                {showLoActionButton && prerequisiteCompletionText}
+                {showCartButton && trainingNotAvailableForPurchaseText}
+                {!isExternalCertification &&
+                  action === PENDING_APPROVAL_ACTION &&
+                  seatsAvailableText}
+                {action === PENDING_ACCEPTANCE_ACTION && seatsAvailableText}
+              </Flex>
+            </Flex>
+          </ALMPopupContent>
+        </ALMPopup>
       )}
     </section>
   );

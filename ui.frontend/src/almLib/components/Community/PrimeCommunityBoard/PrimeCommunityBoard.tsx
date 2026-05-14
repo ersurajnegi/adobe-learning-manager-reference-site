@@ -14,43 +14,41 @@ import {
   SOCIAL_ACTIVITY_INDEX_HIGH_SVG,
   SOCIAL_ACTIVITY_INDEX_MEDIUM_SVG,
   SOCIAL_ACTIVITY_INDEX_LOW_SVG,
-} from "../../../utils/inline_svg";
-import { PrimeCommunityBoardOptions } from "../PrimeCommunityBoardOptions";
-import { GetFormattedDate } from "../../../utils/dateTime";
-import GlobeOutline from "@spectrum-icons/workflow/GlobeOutline";
-import LockOpen from "@spectrum-icons/workflow/LockOpen";
-import LockClosed from "@spectrum-icons/workflow/LockClosed";
-import Info from "@spectrum-icons/workflow/Info";
-import FileTxt from "@spectrum-icons/workflow/FileTxt";
-import Visibility from "@spectrum-icons/workflow/Visibility";
-import UserGroup from "@spectrum-icons/workflow/UserGroup";
-import Clock from "@spectrum-icons/workflow/Clock";
-import { getALMObject } from "../../../utils/global";
-import { useRef, useState, useEffect } from "react";
-import { useIntl } from "react-intl";
-import { useBoardOptions } from "../../../hooks/community";
-import { PrimeCommunityObjectBody } from "../PrimeCommunityObjectBody";
-import styles from "./PrimeCommunityBoard.module.css";
-import { AlertType } from "../../../common/Alert/AlertDialog";
-import { useAlert } from "../../../common/Alert/useAlert";
-import { useConfirmationAlert } from "../../../common/Alert/useConfirmationAlert";
-import { BOARD, HIGH, NORMAL, PRIVATE, PUBLIC } from "../../../utils/constants";
-import { GetTranslation } from "../../../utils/translationService";
+} from '../../../utils/inline_svg';
+import { PrimeCommunityBoardOptions } from '../PrimeCommunityBoardOptions';
+import { GetFormattedDate } from '../../../utils/dateTime';
+import GlobeOutline from '@spectrum-icons/workflow/GlobeOutline';
+import LockOpen from '@spectrum-icons/workflow/LockOpen';
+import LockClosed from '@spectrum-icons/workflow/LockClosed';
+import Info from '@spectrum-icons/workflow/Info';
+import FileTxt from '@spectrum-icons/workflow/FileTxt';
+import Visibility from '@spectrum-icons/workflow/Visibility';
+import UserGroup from '@spectrum-icons/workflow/UserGroup';
+import Clock from '@spectrum-icons/workflow/Clock';
+import { getALMObject } from '../../../utils/global';
+import { useRef, useState, useEffect } from 'react';
+import { useIntl } from 'react-intl';
+import { useBoardOptions } from '../../../hooks/community';
+import { PrimeCommunityObjectBody } from '../PrimeCommunityObjectBody';
+import styles from './PrimeCommunityBoard.module.css';
+import { AlertType } from '../../../common/Alert/AlertDialog';
+import { useAlert } from '../../../common/Alert/useAlert';
+import { useConfirmationAlert } from '../../../common/Alert/useConfirmationAlert';
+import { BOARD, HIGH, NORMAL, PRIVATE, PUBLIC } from '../../../utils/constants';
+import { GetTranslation } from '../../../utils/translationService';
 
 const PrimeCommunityBoard = (props: any) => {
   const { formatMessage, locale } = useIntl();
   let board = props.board;
   let showBoardOptions = false;
-  const [isBoardOptionsOpen, setIsBoardOptionsOpen] = useState(
-    showBoardOptions
-  );
+  const [isBoardOptionsOpen, setIsBoardOptionsOpen] = useState(showBoardOptions);
   const { reportBoard } = useBoardOptions();
   const [almAlert] = useAlert();
   const [almConfirmationAlert] = useConfirmationAlert();
   const ref = useRef<any>();
 
   const boardSkills = board.skills?.map((skill: any, index: any) => {
-    return (index ? ", " : "") + skill.name;
+    return (index ? ', ' : '') + skill.name;
   });
 
   useEffect(() => {
@@ -59,14 +57,14 @@ const PrimeCommunityBoard = (props: any) => {
         hideTooltip();
       }
     };
-    document.addEventListener("click", handleClickOutside, true);
+    document.addEventListener('click', handleClickOutside, true);
     return () => {
-      document.removeEventListener("click", handleClickOutside, true);
+      document.removeEventListener('click', handleClickOutside, true);
     };
   });
 
   const toggleBoardOptionsHandler = () => {
-    setIsBoardOptionsOpen((prevState) => !prevState);
+    setIsBoardOptionsOpen(prevState => !prevState);
   };
 
   const boardNameClickHandler = () => {
@@ -76,21 +74,21 @@ const PrimeCommunityBoard = (props: any) => {
   const reportBoardHandler = () => {
     almConfirmationAlert(
       formatMessage({
-        id: "alm.community.board.confirmationRequired",
-        defaultMessage: "Confirmation Required",
+        id: 'alm.community.board.confirmationRequired',
+        defaultMessage: 'Confirmation Required',
       }),
       formatMessage({
-        id: "alm.community.board.reportBoardMessage",
+        id: 'alm.community.board.reportBoardMessage',
         defaultMessage:
-          "Are you sure you want to report this board? A notification will be sent to the board administrator and moderators.",
+          'Are you sure you want to report this board? A notification will be sent to the board administrator and moderators.',
       }),
       formatMessage({
-        id: "alm.community.board.report",
-        defaultMessage: "Report",
+        id: 'alm.community.board.report',
+        defaultMessage: 'Report',
       }),
       formatMessage({
-        id: "alm.community.cancel.label",
-        defaultMessage: "Cancel",
+        id: 'alm.community.cancel.label',
+        defaultMessage: 'Cancel',
       }),
       callReportBoard
     );
@@ -100,8 +98,8 @@ const PrimeCommunityBoard = (props: any) => {
     almAlert(
       true,
       formatMessage({
-        id: "alm.community.board.copyUrlSuccess",
-        defaultMessage: "URL copied successfully",
+        id: 'alm.community.board.copyUrlSuccess',
+        defaultMessage: 'URL copied successfully',
       }),
       AlertType.success
     );
@@ -112,34 +110,28 @@ const PrimeCommunityBoard = (props: any) => {
   };
 
   const getTooltipElement = () => {
-    return document.getElementById(board.id + "-tooltipText");
+    return document.getElementById(board.id + '-tooltipText');
   };
 
   const showTooltip = () => {
     let element = getTooltipElement();
-    element?.setAttribute("style", "display:block;");
+    element?.setAttribute('style', 'display:block;');
   };
 
   const hideTooltip = () => {
     let element = getTooltipElement();
-    element?.setAttribute("style", "display:none;");
+    element?.setAttribute('style', 'display:none;');
   };
 
   return (
     <>
       <div className={styles.primeBoardWrapper}>
-        <div
-          className={
-            props.showBorder
-              ? styles.primeBoardItemWithBorder
-              : styles.primeBoardItem
-          }
-        >
+        <div className={props.showBorder ? styles.primeBoardItemWithBorder : styles.primeBoardItem}>
           <div className="prime-title-skills-container">
             <button
               className={styles.primeBoardOptions}
               onClick={toggleBoardOptionsHandler}
-              id={"prime-board-options-" + board.id}
+              id={'prime-board-options-' + board.id}
             >
               {SOCIAL_MORE_OPTIONS_SVG()}
               {isBoardOptionsOpen && (
@@ -165,8 +157,7 @@ const PrimeCommunityBoard = (props: any) => {
             <div className={styles.primeBoardSkill}>
               {boardSkills && (
                 <span className={styles.primeBoardSkillNames}>
-                  {GetTranslation("alm.community.board.skills", true)}:{" "}
-                  {boardSkills}
+                  {GetTranslation('alm.community.board.skills', true)}: {boardSkills}
                 </span>
               )}
               <div
@@ -174,18 +165,18 @@ const PrimeCommunityBoard = (props: any) => {
                 title={
                   board.visibility === PUBLIC
                     ? formatMessage({
-                        id: "alm.community.board.public",
-                        defaultMessage: "Public Board",
+                        id: 'alm.community.board.public',
+                        defaultMessage: 'Public Board',
                       })
                     : board.visibility === PRIVATE
-                    ? formatMessage({
-                        id: "alm.community.board.private",
-                        defaultMessage: "Private Board",
-                      })
-                    : formatMessage({
-                        id: "alm.community.board.restricted",
-                        defaultMessage: "Restricted Board",
-                      })
+                      ? formatMessage({
+                          id: 'alm.community.board.private',
+                          defaultMessage: 'Private Board',
+                        })
+                      : formatMessage({
+                          id: 'alm.community.board.restricted',
+                          defaultMessage: 'Restricted Board',
+                        })
                 }
               >
                 {board.visibility === PUBLIC ? (
@@ -198,34 +189,31 @@ const PrimeCommunityBoard = (props: any) => {
               </div>
             </div>
           </div>
-          <PrimeCommunityObjectBody
-            object={board}
-            type={BOARD}
-          ></PrimeCommunityObjectBody>
+          <PrimeCommunityObjectBody object={board} type={BOARD}></PrimeCommunityObjectBody>
           <div className={styles.primeBoardActivityPanel}>
             <div className={styles.primeBoardActivityStats}>
               <div className={styles.primeActivityStatsIcon}>
                 {board.activityLevel === HIGH
                   ? SOCIAL_ACTIVITY_INDEX_HIGH_SVG()
                   : board.activityLevel === NORMAL
-                  ? SOCIAL_ACTIVITY_INDEX_MEDIUM_SVG()
-                  : SOCIAL_ACTIVITY_INDEX_LOW_SVG()}
+                    ? SOCIAL_ACTIVITY_INDEX_MEDIUM_SVG()
+                    : SOCIAL_ACTIVITY_INDEX_LOW_SVG()}
               </div>
               <span className={styles.primeActivityStatsText}>
                 {board.activityLevel === HIGH
                   ? formatMessage({
-                      id: "alm.community.board.highActivity",
-                      defaultMessage: "High Activity",
+                      id: 'alm.community.board.highActivity',
+                      defaultMessage: 'High Activity',
                     })
                   : board.activityLevel === NORMAL
-                  ? formatMessage({
-                      id: "alm.community.board.normalActivity",
-                      defaultMessage: "Normal Activity",
-                    })
-                  : formatMessage({
-                      id: "alm.community.board.lowActivity",
-                      defaultMessage: "Low Activity",
-                    })}
+                    ? formatMessage({
+                        id: 'alm.community.board.normalActivity',
+                        defaultMessage: 'Normal Activity',
+                      })
+                    : formatMessage({
+                        id: 'alm.community.board.lowActivity',
+                        defaultMessage: 'Low Activity',
+                      })}
               </span>
               <div
                 className={styles.primeActivityInfoIcon}
@@ -233,22 +221,19 @@ const PrimeCommunityBoard = (props: any) => {
                 data-trigger="hover"
                 data-tooltip-position="right"
                 title={formatMessage({
-                  id: "alm.community.board.activityCalc",
+                  id: 'alm.community.board.activityCalc',
                   defaultMessage:
-                    "Calculated daily based on the number of new posts, comments, participants, views, likes and dislikes",
+                    'Calculated daily based on the number of new posts, comments, participants, views, likes and dislikes',
                 })}
                 onTouchStart={showTooltip}
                 ref={ref}
               >
                 <Info />
-                <span
-                  id={board.id + "-tooltipText"}
-                  className={styles.tooltipText}
-                >
+                <span id={board.id + '-tooltipText'} className={styles.tooltipText}>
                   {formatMessage({
-                    id: "alm.community.board.activityCalc",
+                    id: 'alm.community.board.activityCalc',
                     defaultMessage:
-                      "Calculated daily based on the number of new posts, comments, participants, views, likes and dislikes",
+                      'Calculated daily based on the number of new posts, comments, participants, views, likes and dislikes',
                   })}
                 </span>
               </div>
@@ -257,34 +242,30 @@ const PrimeCommunityBoard = (props: any) => {
             <div className={styles.primeBoardActivityStats}>
               <div className={styles.primeActivityStatsIcon}>{<FileTxt />}</div>
               <span className={styles.primeActivityStatsText}>
-                {board.postCount}{" "}
+                {board.postCount}{' '}
                 {formatMessage({
-                  id: "alm.community.board.post.label",
-                  defaultMessage: "Post(s)",
+                  id: 'alm.community.board.post.label',
+                  defaultMessage: 'Post(s)',
                 })}
               </span>
             </div>
             <div className={styles.primeBoardActivityStats}>
-              <div className={styles.primeActivityStatsIcon}>
-                {<Visibility />}
-              </div>
+              <div className={styles.primeActivityStatsIcon}>{<Visibility />}</div>
               <span className={styles.primeActivityStatsText}>
-                {board.viewsCount}{" "}
+                {board.viewsCount}{' '}
                 {formatMessage({
-                  id: "alm.community.board.view.label",
-                  defaultMessage: "View(s)",
+                  id: 'alm.community.board.view.label',
+                  defaultMessage: 'View(s)',
                 })}
               </span>
             </div>
             <div className={styles.primeBoardActivityStats}>
-              <div className={styles.primeActivityStatsIcon}>
-                {<UserGroup />}
-              </div>
+              <div className={styles.primeActivityStatsIcon}>{<UserGroup />}</div>
               <span className={styles.primeActivityStatsText}>
-                {board.userCount}{" "}
+                {board.userCount}{' '}
                 {formatMessage({
-                  id: "alm.community.board.people.label",
-                  defaultMessage: "People",
+                  id: 'alm.community.board.people.label',
+                  defaultMessage: 'People',
                 })}
               </span>
             </div>
@@ -293,19 +274,19 @@ const PrimeCommunityBoard = (props: any) => {
               <div className={styles.primeActivityStatsIcon}>{<Clock />}</div>
               <span className={styles.primeActivityStatsText}>
                 {formatMessage({
-                  id: "alm.community.board.createdOn.label",
-                  defaultMessage: "Created on ",
+                  id: 'alm.community.board.createdOn.label',
+                  defaultMessage: 'Created on ',
                 })}
                 {GetFormattedDate(board.dateCreated, locale)}
                 {formatMessage({
-                  id: "alm.community.board.by.label",
-                  defaultMessage: " by ",
+                  id: 'alm.community.board.by.label',
+                  defaultMessage: ' by ',
                 })}
-                {board.createdBy.name !== ""
+                {board.createdBy.name !== ''
                   ? board.createdBy.name
                   : formatMessage({
-                      id: "alm.community.board.anoymous.label",
-                      defaultMessage: "Anonymous",
+                      id: 'alm.community.board.anoymous.label',
+                      defaultMessage: 'Anonymous',
                     })}
               </span>
             </div>

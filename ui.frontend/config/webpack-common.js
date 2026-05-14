@@ -260,4 +260,5 @@ WebpackCommon.commonDevPlugins = [
 
 WebpackCommon.srcFolderPath = srcFolderPath;
 WebpackCommon.distFolder = distFolder;
+WebpackCommon.toKebabCase = str => str.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
 module.exports = WebpackCommon;

@@ -9,28 +9,27 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import styles from "./PrimeCommunityBoardFilters.module.css";
-import { useEffect, useRef, useState } from "react";
-import { PrimeDropdown } from "../PrimeDropdown";
-import { DATE_UPDATED } from "../../../utils/constants";
-import { GetTranslation } from "../../../utils/translationService";
-import { useIntl } from "react-intl";
+import styles from './PrimeCommunityBoardFilters.module.css';
+import { useEffect, useRef, useState } from 'react';
+import { PrimeDropdown } from '../PrimeDropdown';
+import { DATE_UPDATED } from '../../../utils/constants';
+import { GetTranslation } from '../../../utils/translationService';
+import { useIntl } from 'react-intl';
 
 const PrimeCommunityBoardFilters = (props: any) => {
   const ref = useRef<any>();
   const { formatMessage } = useIntl();
 
   let defaultSkillFilter = props.selectedSkill;
-  const [selectedSkillFilter, setSelectedSkillFilter] =
-    useState(defaultSkillFilter);
+  const [selectedSkillFilter, setSelectedSkillFilter] = useState(defaultSkillFilter);
   const [showSkillFilter, setShowSkillFilter] = useState(false);
 
   const isSkillEmpty = (value: any) => {
-    return !value || value === "";
+    return !value || value === '';
   };
 
   //populate skill list
-  let skills = props.skills?.split(",");
+  let skills = props.skills?.split(',');
   const [skillList, setSkillList] = useState({});
   const firstRun = useRef(true);
 
@@ -52,29 +51,28 @@ const PrimeCommunityBoardFilters = (props: any) => {
   }, [skills]);
 
   let defaultSortFilter = DATE_UPDATED;
-  const [selectedSortFilter, setSelectedSortFilter] =
-    useState(defaultSortFilter);
+  const [selectedSortFilter, setSelectedSortFilter] = useState(defaultSortFilter);
   const sortFilters: { [key: string]: string } = {
-    "Date Created": "-dateCreated",
-    "Date Updated": "-dateUpdated",
-    Name: "name",
+    'Date Created': '-dateCreated',
+    'Date Updated': '-dateUpdated',
+    Name: 'name',
     // "relevance": "Relavance"
   };
   const sortFilterLabel = {
-    id: "alm.community.board.sortBy",
-    defaultMessage: "Sort by",
+    id: 'alm.community.board.sortBy',
+    defaultMessage: 'Sort by',
   };
 
   const skillClickHandler = (option: any) => {
     setSelectedSkillFilter(option);
-    if (typeof props.skillFilterChangeHandler === "function") {
+    if (typeof props.skillFilterChangeHandler === 'function') {
       props.skillFilterChangeHandler(option);
     }
   };
 
   const sortClickHandler = (option: any) => {
     setSelectedSortFilter(option);
-    if (typeof props.sortFilterChangeHandler === "function") {
+    if (typeof props.sortFilterChangeHandler === 'function') {
       props.sortFilterChangeHandler(sortFilters[option]);
     }
   };
@@ -85,7 +83,7 @@ const PrimeCommunityBoardFilters = (props: any) => {
         <div ref={ref} className={styles.primeBoardFilters}>
           {showSkillFilter && (
             <PrimeDropdown
-              label={GetTranslation("alm.community.board.skills", true)}
+              label={GetTranslation('alm.community.board.skills', true)}
               optionList={Object.keys(skillList)}
               selectedOption={selectedSkillFilter}
               optionClickHandler={skillClickHandler}
@@ -93,8 +91,8 @@ const PrimeCommunityBoardFilters = (props: any) => {
           )}
           <PrimeDropdown
             label={formatMessage({
-              id: "alm.community.board.sortBy",
-              defaultMessage: "Sort by",
+              id: 'alm.community.board.sortBy',
+              defaultMessage: 'Sort by',
             })}
             optionList={Object.keys(sortFilters)}
             selectedOption={selectedSortFilter}

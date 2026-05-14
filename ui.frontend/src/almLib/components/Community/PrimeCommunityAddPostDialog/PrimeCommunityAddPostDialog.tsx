@@ -17,71 +17,62 @@ import {
   Heading,
   ProgressBar,
   Text,
-} from "@adobe/react-spectrum";
-import Close from "@spectrum-icons/workflow/Close";
-import { useEffect, useRef, useState } from "react";
-import { useIntl } from "react-intl";
-import store from "../../../../store/APIStore";
-import { POLL, QUESTION, UPDATE } from "../../../utils/constants";
+} from '@adobe/react-spectrum';
+import Close from '@spectrum-icons/workflow/Close';
+import { useEffect, useRef, useState } from 'react';
+import { useIntl } from 'react-intl';
+import store from '../../../../store/APIStore';
+import { BAD_WORD_FOUND, POLL, QUESTION, UPDATE } from '../../../utils/constants';
 import {
   SOCIAL_CANCEL_SVG,
   SOCIAL_QUESTION_SVG,
   SOCIAL_UPLOAD_SVG,
   SOCIAL_POLL_SVG,
-} from "../../../utils/inline_svg";
-import { cancelUploadFile, uploadFile } from "../../../utils/uploadUtils";
-import { PrimeCommunityObjectInput } from "../PrimeCommunityObjectInput";
-import styles from "./PrimeCommunityAddPostDialog.module.css";
-import { formatMention, processMention } from "../../../utils/mentionUtils";
+} from '../../../utils/inline_svg';
+import { cancelUploadFile, uploadFile } from '../../../utils/uploadUtils';
+import { PrimeCommunityObjectInput } from '../PrimeCommunityObjectInput';
+import styles from './PrimeCommunityAddPostDialog.module.css';
+import { PrimeDispatchEvent } from '../../../utils/widgets/base/EventHandlingBase';
+import { PrimeEvent } from '../../../utils/widgets/common';
+import { getAlmConfirmationBadwordParams } from '../../../utils/social-utils';
+import { useConfirmationAlert } from '../../../common/Alert/useConfirmationAlert';
 
 const PrimeCommunityAddPostDialog = (props: any) => {
   const ref = useRef<any>();
   const { formatMessage } = useIntl();
+  const { saveHandler } = props;
   const state = store.getState(); //TO-DO check why not updating
-  const defaultPostingType = "DEFAULT";
-  const supportedFileTypes =
-    "image/*,video/*,audio/*,.pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx";
-  const inputField = "uploadFile";
+  const defaultPostingType = 'DEFAULT';
+  const supportedFileTypes = 'image/*,video/*,audio/*,.pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx';
+  const inputField = 'uploadFile';
+  const [almConfirmationAlert] = useConfirmationAlert();
   const [postingType, setPostingType] = useState(defaultPostingType);
   const [questionTypeSelected, setQuestionTypeSelected] = useState(false);
   const [pollTypeSelected, setPollTypeSelected] = useState(false);
 
   const isInputFilled = () => {
-    return ref?.current?.value?.trim() !== "" ? true : false;
+    return ref?.current?.value?.trim() !== '' ? true : false;
   };
 
   const [saveEnabled, setSaveEnabled] = useState(isInputFilled());
   const [isUploading, setIsUploading] = useState(false);
-  const [fileUploadProgress, setFileUploadProgress] = useState(
-    state.fileUpload.uploadProgress
-  );
+  const [fileUploadProgress, setFileUploadProgress] = useState(state.fileUpload.uploadProgress);
   const [textMode, setTextMode] = useState(true);
   const [pollOptions, setPollOptions] = useState([] as any);
   const COMMENT_CHAR_LIMIT = 4000;
   const [resource, setResource] = useState({});
   const [isResourceModified, setIsResourceModified] = useState(false);
-  let processedDescription = props.description;
-  const boardId = props.boardId;
-  if(props?.post){
-    const { userMentions } = props.post;
-    const description = props.description || "";
-    if(description && userMentions){
-      processedDescription = processMention(description, userMentions);
-    }
-  }
 
   useEffect(() => {
     if (props.mode === UPDATE) {
       setPostingType(props.post?.postingType);
       if (props.post?.resource?.sourceUrl) {
-        state.fileUpload.fileName = getFileNameFromSourceUrl(
-          props.post?.resource?.sourceUrl
-        );
+        state.fileUpload.fileName = getFileNameFromSourceUrl(props.post?.resource?.sourceUrl);
         setResource(props.post?.resource);
         setFileUploadProgress(100);
         setTextMode(false);
       } else if (textMode) {
-        state.fileUpload.fileName = "";
+        state.fileUpload.fileName = '';
       }
       if (props.post.postingType === QUESTION) {
         setQuestionTypeSelected(true);
@@ -103,7 +94,7 @@ const PrimeCommunityAddPostDialog = (props: any) => {
     } else if (pollTypeSelected) {
       setPostingType(POLL);
       if (pollOptions?.length === 0) {
-        let pollQuestions = ["", ""];
+        let pollQuestions = ['', ''];
         setPollOptions(pollQuestions);
       }
     } else {
@@ -112,37 +103,48 @@ const PrimeCommunityAddPostDialog = (props: any) => {
   }, [questionTypeSelected, pollTypeSelected, textMode]);
 
   const questionButtonClickHandler = () => {
-    setQuestionTypeSelected((questionTypeSelected) => !questionTypeSelected);
+    setQuestionTypeSelected(questionTypeSelected => !questionTypeSelected);
     setPollTypeSelected(false);
   };
 
   const pollButtonClickHandler = () => {
-    setPollTypeSelected((pollTypeSelected) => !pollTypeSelected);
+    setPollTypeSelected(pollTypeSelected => !pollTypeSelected);
     setQuestionTypeSelected(false);
   };
 
   const closeDialogHandler = (close: any) => {
-    if (typeof props.closeHandler === "function") {
+    if (typeof props.closeHandler === 'function') {
       props.closeHandler(close);
     }
   };
 
-  const savePostHandler = (close: any) => {
-    const postText = ref.current.getSemanticHTML();
-    if (postText === "") {
+  const savePostHandler = async (close: any) => {
+    if (ref.current.value === '') {
       return;
     }
-    const formattedPostText = formatMention(postText);
-    if (typeof props.saveHandler === "function") {
-      props.saveHandler(
-        close,
-        formattedPostText,
-        postingType,
-        resource,
-        isResourceModified,
-        pollOptions
-      );
-      onExitActions();
+    if (typeof saveHandler === 'function') {
+      try {
+        await saveHandler(
+          close,
+          ref.current.value,
+          postingType,
+          resource,
+          isResourceModified,
+          pollOptions
+        );
+        onExitActions();
+        props.close && props.close();
+        PrimeDispatchEvent(document, PrimeEvent.ALM_SHOW_POST_CONFIRMATION, false);
+      } catch (error: any) {
+        if (error.message === BAD_WORD_FOUND) {
+          const {
+            title,
+            body: message,
+            actionlabel,
+          } = getAlmConfirmationBadwordParams(BAD_WORD_FOUND);
+          almConfirmationAlert(title, message, actionlabel, '');
+        }
+      }
     }
   };
 
@@ -164,15 +166,13 @@ const PrimeCommunityAddPostDialog = (props: any) => {
     const progressCheck = setInterval(() => {
       updateFileUpdateProgress();
     }, 500);
-    const inputElement = document.getElementById(
-      inputField
-    ) as HTMLInputElement;
+    const inputElement = document.getElementById(inputField) as HTMLInputElement;
     const fileUrl = await uploadFile(
       inputElement!.files!.item(0)!.name,
       inputElement!.files!.item(0)!
     );
     const resource = {
-      contentType: "FILE",
+      contentType: 'FILE',
       data: fileUrl,
     };
     setResource(resource);
@@ -189,9 +189,7 @@ const PrimeCommunityAddPostDialog = (props: any) => {
 
   const fileUploadHandler = async () => {
     //if file empty
-    const inputElement = document.getElementById(
-      inputField
-    ) as HTMLInputElement;
+    const inputElement = document.getElementById(inputField) as HTMLInputElement;
     if (!inputElement!.files!.item(0) && !inputElement!.files!.item(0)!.name) {
       return;
     }
@@ -214,12 +212,12 @@ const PrimeCommunityAddPostDialog = (props: any) => {
   };
 
   const getFileNameFromSourceUrl = (url: any) => {
-    const urlParts = url?.split("/");
-    return urlParts[urlParts.length - 1].split("?")[0];
+    const urlParts = url?.split('/');
+    return urlParts[urlParts.length - 1].split('?')[0];
   };
 
   const addNewPollOption = () => {
-    let newOption = [""];
+    let newOption = [''];
     setPollOptions(pollOptions.concat(newOption));
   };
 
@@ -230,10 +228,8 @@ const PrimeCommunityAddPostDialog = (props: any) => {
   };
 
   const setInputValue = (index: any) => {
-    const inputElement = document.getElementById(
-      "poll-option-" + index
-    ) as HTMLInputElement;
-    pollOptions[index] = inputElement?.value ? inputElement.value : "";
+    const inputElement = document.getElementById('poll-option-' + index) as HTMLInputElement;
+    pollOptions[index] = inputElement?.value ? inputElement.value : '';
     setPollOptions(pollOptions);
   };
 
@@ -247,10 +243,7 @@ const PrimeCommunityAddPostDialog = (props: any) => {
     <Dialog UNSAFE_className={styles.primeConfirmationDialog}>
       <Heading>
         <div className={styles.primeDialogHeaderContainer}>
-          <button
-            className={styles.primeDialogHeader}
-            onClick={fileUploadClickHandler}
-          >
+          <button className={styles.primeDialogHeader} onClick={fileUploadClickHandler}>
             <div className={styles.primeDialogHeaderSvg}>
               {SOCIAL_UPLOAD_SVG()}
               <input
@@ -263,8 +256,8 @@ const PrimeCommunityAddPostDialog = (props: any) => {
             </div>
             <div className={styles.primeDialogHeaderText}>
               {formatMessage({
-                id: "alm.community.upload.label",
-                defaultMessage: "Upload",
+                id: 'alm.community.upload.label',
+                defaultMessage: 'Upload',
               })}
             </div>
           </button>
@@ -274,11 +267,11 @@ const PrimeCommunityAddPostDialog = (props: any) => {
         <PrimeCommunityObjectInput
           ref={ref}
           inputPlaceholder={formatMessage({
-            id: "alm.community.postHere.label",
-            defaultMessage: "Write or paste something here...",
+            id: 'alm.community.postHere.label',
+            defaultMessage: 'Write or paste something here...',
           })}
           characterLimit={COMMENT_CHAR_LIMIT}
-          defaultValue={processedDescription}
+          defaultValue={props.description}
           enablePrimaryAction={() => {
             enableSaveButton();
           }}
@@ -286,8 +279,6 @@ const PrimeCommunityAddPostDialog = (props: any) => {
             setSaveEnabled(false);
           }}
           concisedToolbarOptions={false}
-          object={props.post}
-          boardId={boardId}
         ></PrimeCommunityObjectInput>
         {textMode && (
           <div className={styles.primeOptionsArea}>
@@ -295,32 +286,22 @@ const PrimeCommunityAddPostDialog = (props: any) => {
               <Text>
                 <div className={styles.primeOptionContainer}>
                   {questionTypeSelected ? (
-                    <div
-                      className={styles.primeOption}
-                      onClick={questionButtonClickHandler}
-                    >
-                      <div className={styles.primeOptionSvgFilled}>
-                        {SOCIAL_QUESTION_SVG()}
-                      </div>
+                    <div className={styles.primeOption} onClick={questionButtonClickHandler}>
+                      <div className={styles.primeOptionSvgFilled}>{SOCIAL_QUESTION_SVG()}</div>
                       <div className={styles.primeOptionTextFilled}>
                         {formatMessage({
-                          id: "alm.community.markQuestion.label",
-                          defaultMessage: "Mark Question",
+                          id: 'alm.community.markQuestion.label',
+                          defaultMessage: 'Mark Question',
                         })}
                       </div>
                     </div>
                   ) : (
-                    <div
-                      className={styles.primeOption}
-                      onClick={questionButtonClickHandler}
-                    >
-                      <div className={styles.primeOptionSvg}>
-                        {SOCIAL_QUESTION_SVG()}
-                      </div>
+                    <div className={styles.primeOption} onClick={questionButtonClickHandler}>
+                      <div className={styles.primeOptionSvg}>{SOCIAL_QUESTION_SVG()}</div>
                       <div className={styles.primeOptionText}>
                         {formatMessage({
-                          id: "alm.community.markQuestion.label",
-                          defaultMessage: "Mark Question",
+                          id: 'alm.community.markQuestion.label',
+                          defaultMessage: 'Mark Question',
                         })}
                       </div>
                     </div>
@@ -332,32 +313,22 @@ const PrimeCommunityAddPostDialog = (props: any) => {
               <Text>
                 <div className={styles.primeOptionContainer}>
                   {pollTypeSelected ? (
-                    <div
-                      className={styles.primeOption}
-                      onClick={pollButtonClickHandler}
-                    >
-                      <div className={styles.primeOptionSvgFilled}>
-                        {SOCIAL_POLL_SVG()}
-                      </div>
+                    <div className={styles.primeOption} onClick={pollButtonClickHandler}>
+                      <div className={styles.primeOptionSvgFilled}>{SOCIAL_POLL_SVG()}</div>
                       <div className={styles.primeOptionTextFilled}>
                         {formatMessage({
-                          id: "alm.community.addPoll.label",
-                          defaultMessage: "Add Poll",
+                          id: 'alm.community.addPoll.label',
+                          defaultMessage: 'Add Poll',
                         })}
                       </div>
                     </div>
                   ) : (
-                    <div
-                      className={styles.primeOption}
-                      onClick={pollButtonClickHandler}
-                    >
-                      <div className={styles.primeOptionSvg}>
-                        {SOCIAL_POLL_SVG()}
-                      </div>
+                    <div className={styles.primeOption} onClick={pollButtonClickHandler}>
+                      <div className={styles.primeOptionSvg}>{SOCIAL_POLL_SVG()}</div>
                       <div className={styles.primeOptionText}>
                         {formatMessage({
-                          id: "alm.community.addPoll.label",
-                          defaultMessage: "Add Poll",
+                          id: 'alm.community.addPoll.label',
+                          defaultMessage: 'Add Poll',
                         })}
                       </div>
                     </div>
@@ -367,18 +338,15 @@ const PrimeCommunityAddPostDialog = (props: any) => {
             </div>
             {pollTypeSelected &&
               pollOptions?.map((item: any, index: any) => (
-                <div
-                  className={styles.primeCommunityPollInputContainer}
-                  key={index}
-                >
+                <div className={styles.primeCommunityPollInputContainer} key={index}>
                   <input
-                    id={"poll-option-" + index}
+                    id={'poll-option-' + index}
                     className={styles.primeCommunityPollInput}
                     onKeyUp={() => setInputValue(index)}
                     defaultValue={item}
                     placeholder={formatMessage({
-                      id: "alm.community.pollOptionPlaceholder",
-                      defaultMessage: "Type Option here",
+                      id: 'alm.community.pollOptionPlaceholder',
+                      defaultMessage: 'Type Option here',
                     })}
                   ></input>
                   <Button
@@ -394,13 +362,10 @@ const PrimeCommunityAddPostDialog = (props: any) => {
                 </div>
               ))}
             {pollTypeSelected && (
-              <button
-                className={styles.primeCommunityAddOptionButton}
-                onClick={addNewPollOption}
-              >
+              <button className={styles.primeCommunityAddOptionButton} onClick={addNewPollOption}>
                 {formatMessage({
-                  id: "alm.community.addNewPollOption",
-                  defaultMessage: "Add Option",
+                  id: 'alm.community.addNewPollOption',
+                  defaultMessage: 'Add Option',
                 })}
               </button>
             )}
@@ -410,8 +375,8 @@ const PrimeCommunityAddPostDialog = (props: any) => {
           <div>
             <ProgressBar
               label={formatMessage({
-                id: "alm.uploading.label",
-                defaultMessage: "Uploading...",
+                id: 'alm.uploading.label',
+                defaultMessage: 'Uploading...',
               })}
               value={fileUploadProgress}
             />
@@ -419,14 +384,12 @@ const PrimeCommunityAddPostDialog = (props: any) => {
         )}
         {!textMode && fileUploadProgress === 100 && (
           <div className={styles.primeStatus}>
-            <div className={styles.primeStatusText}>
-              Uploaded: {state.fileUpload.fileName}
-            </div>
+            <div className={styles.primeStatusText}>Uploaded: {state.fileUpload.fileName}</div>
             <button
               className={styles.primeStatusSvg}
               title={formatMessage({
-                id: "alm.removeUpload.label",
-                defaultMessage: "Remove upload",
+                id: 'alm.removeUpload.label',
+                defaultMessage: 'Remove upload',
               })}
               onClick={cancelClickHandler}
             >
@@ -438,33 +401,33 @@ const PrimeCommunityAddPostDialog = (props: any) => {
       <ButtonGroup>
         <div className={styles.primePostButtonGroup}>
           <button
-            onClick={(close) => {
+            onClick={close => {
               closeDialogHandler(close);
             }}
             className={`almButton secondary ${styles.button}`}
           >
             {formatMessage({
-              id: "alm.community.cancel.label",
-              defaultMessage: "Cancel",
+              id: 'alm.community.cancel.label',
+              defaultMessage: 'Cancel',
             })}
           </button>
           {saveEnabled ? (
             <button
-              onClick={(close) => {
+              onClick={close => {
                 savePostHandler(close);
               }}
               className={`almButton primary`}
             >
               {formatMessage({
-                id: "alm.community.post.label",
-                defaultMessage: "Post",
+                id: 'alm.community.post.label',
+                defaultMessage: 'Post',
               })}
             </button>
           ) : (
             <button disabled={true} className={`almButton primary`}>
               {formatMessage({
-                id: "alm.community.post.label",
-                defaultMessage: "Post",
+                id: 'alm.community.post.label',
+                defaultMessage: 'Post',
               })}
             </button>
           )}

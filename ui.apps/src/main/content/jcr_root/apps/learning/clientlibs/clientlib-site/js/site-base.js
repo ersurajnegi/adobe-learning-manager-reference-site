@@ -73,17 +73,26 @@ window.ALM.ALMConfig = window.ALM.ALMConfig || {};
     let { communityBoardDetailsPath } = getALMConfig();
     window.location = getUrl(communityBoardDetailsPath, { boardId: boardId });
   };
-  const navigateToCatalogPage = (catalogIds, isBookmarks = false) => {
+
+  const navigateToCatalogPage = (queryParams) => {
     let { catalogPath } = getALMConfig();
-    let catalogUrl;
-
-    if (isBookmarks) {
-      catalogUrl = catalogPath + "?bookmarks=true";
-    } else {
-      catalogUrl = catalogPath + "?catalogs=" + catalogIds;
+    if (queryParams) {
+      // Handle both string and object formats
+      if (typeof queryParams === 'object') {
+        // Convert object to query string, filtering out empty values
+        const queryString = Object.entries(queryParams)
+          .filter(([key, value]) => value !== '' && value !== null && value !== undefined)
+          .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+          .join('&');
+        if (queryString) {
+          catalogPath += '?' + queryString;
+        }
+      } else {
+        // String format - append directly (legacy support)
+        catalogPath += queryParams;
+      }
     }
-
-    window.location = catalogUrl;
+    window.location = catalogPath;
   };
 
   const navigateToCatalogPageForStates = (learnerStates) => {
@@ -122,6 +131,17 @@ window.ALM.ALMConfig = window.ALM.ALMConfig || {};
     let boardsUrl = communityBoardsPath;
     if (skillNames) boardsUrl += "?skill=" + skillNames;
     window.location = boardsUrl;
+  };
+
+  const navigateToSocialPage = (postUrl) => {
+    let { communityBoardsPath } = getALMConfig();
+    let { communityBoardDetailsPath } = getALMConfig();
+    let url = communityBoardsPath;
+    const boardId = postUrl.split('/')[2];
+    if (post) {
+      url = getUrl(communityBoardDetailsPath, { boardId: boardId })
+    }
+    window.location = url;
   };
 
   const navigateToHomePage = () => {
@@ -227,6 +247,7 @@ window.ALM.ALMConfig = window.ALM.ALMConfig || {};
   window.ALM.navigateToBoardsPage = navigateToBoardsPage;
   window.ALM.navigateToHomePage = navigateToHomePage;
   window.ALM.navigateToLearningPage = navigateToLearningPage;
+  window.ALM.navigateToMyLearningPage = navigateToLearningPage;
   window.ALM.navigateToCommunityPage = navigateToCommunityPage;
   window.ALM.navigateToSupportPage = navigateToSupportPage;
   window.ALM.navigateToCommerceSignInPage = navigateToCommerceSignInPage;
@@ -236,6 +257,7 @@ window.ALM.ALMConfig = window.ALM.ALMConfig || {};
   window.ALM.navigateToCatalogPageFromCategory =
     navigateToCatalogPageFromCategory;
   window.ALM.navigateToCatalogPageForStates = navigateToCatalogPageForStates;
+  window.ALM.navigateToSocial = navigateToSocialPage;
   window.ALM.updateCart = updateCart;
   window.ALM.isProxyEnabled = isProxyEnabled;
   window.ALM.isAuthor = isAuthor;

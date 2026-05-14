@@ -1,4 +1,15 @@
-@import "../../../styles/variables.css";
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+@import '../../../styles/variables.css';
 
 .new {
   border-bottom: 1px solid var(--prime-color-nc6);
@@ -8,14 +19,12 @@
 .badgelist {
   padding-top: 40px;
   font-weight: var(--prime-font-weight-400);
-  font-style: normal;
   color: var(--prime-color-nc3);
   box-sizing: inherit;
 }
 
 .list {
   font-weight: var(--prime-font-weight-400);
-  font-style: normal;
   color: var(--prime-color-nc3);
   list-style: none;
   padding: 0;
@@ -23,6 +32,9 @@
   box-sizing: inherit;
 }
 
+.list:first-child {
+  border-top: 1px solid var(--dark-grey-6);
+}
 .rightpadding {
   padding-right: 10px;
 }
@@ -33,13 +45,8 @@
 
 .rightaligned {
   box-sizing: inherit;
-  float: right;
-}
-
-.pdf {
-  padding-left: 10px;
-  color: var(--prime-color-primary);
-  cursor: pointer;
+  width: 100%;
+  text-align: right;
 }
 
 .alignRight {
@@ -48,12 +55,12 @@
   margin-left: 5px;
   margin-right: 3px;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .downloadicons {
   padding-left: 20px;
-  float: right;
-  margin-top: 7px;
+  display: inline-block;
 }
 
 .downloadoptions {
@@ -67,16 +74,12 @@
 
 @media (max-width: 768px) {
   .rightaligned {
-    font-size: 14px;
+    font-size: var(--prime-font-size-14);
     display: grid;
-    justify-items: flex-start;
     float: left;
   }
   .downloadicons {
     padding-left: 0%;
     float: left;
-  }
-  .badgelist {
-    padding-top: 80px;
   }
 }

@@ -9,10 +9,9 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import ReactDOM from "react-dom";
-import { Suspense } from "react";
+import ReactDOM from 'react-dom';
+import { Suspense } from 'react';
 import 'react-quill/dist/quill.snow.css';
-
 
 const withSuspense = (Component: any) => {
   let WithSuspense: any = (props: any) => {
@@ -22,9 +21,7 @@ const withSuspense = (Component: any) => {
       </Suspense>
     );
   };
-  WithSuspense.displayName = `withSuspense(${
-    Component.displayName || Component.name
-  })`;
+  WithSuspense.displayName = `withSuspense(${Component.displayName || Component.name})`;
   return WithSuspense;
 };
 
@@ -34,7 +31,7 @@ const Portal = (props: any) => {
   let elem;
   if (selector instanceof HTMLElement) {
     elem = selector;
-  } else if (typeof selector === "string") {
+  } else if (typeof selector === 'string') {
     elem = document.querySelector(selector);
   }
 
@@ -47,3 +44,4 @@ const Portal = (props: any) => {
 };
 
 export default withSuspense(Portal);
+export { withSuspense };

@@ -316,8 +316,7 @@ public class EmbeddableLrngWidgetDatasource extends SlingAllMethodsServlet {
 
   private List<EmbeddableLrngWidgetConfig> getAvailableWidgets(
       List<EmbeddableLrngWidgetConfig> widgets) {
-    return widgets
-        .stream()
+    return widgets.stream()
         .filter(widget -> widget.getType().equals("widget"))
         .collect(Collectors.toList());
   }

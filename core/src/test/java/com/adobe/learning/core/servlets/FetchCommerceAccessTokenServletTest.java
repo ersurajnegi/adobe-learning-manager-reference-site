@@ -1,3 +1,14 @@
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
 package com.adobe.learning.core.servlets;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -109,8 +120,11 @@ public class FetchCommerceAccessTokenServletTest {
 
   @Test
   public void testGetAccessTokenWithExpiry()
-      throws NoSuchMethodException, SecurityException, IllegalAccessException,
-          IllegalArgumentException, InvocationTargetException {
+      throws NoSuchMethodException,
+          SecurityException,
+          IllegalAccessException,
+          IllegalArgumentException,
+          InvocationTargetException {
     Class[] args = new Class[1];
     args[0] = String.class;
     Method method =
@@ -127,8 +141,11 @@ public class FetchCommerceAccessTokenServletTest {
 
   @Test
   public void testContainValidAccessToken()
-      throws NoSuchMethodException, SecurityException, IllegalAccessException,
-          IllegalArgumentException, InvocationTargetException {
+      throws NoSuchMethodException,
+          SecurityException,
+          IllegalAccessException,
+          IllegalArgumentException,
+          InvocationTargetException {
     Class[] args = new Class[1];
     args[0] = String.class;
     Method method =
@@ -147,8 +164,11 @@ public class FetchCommerceAccessTokenServletTest {
 
   @Test
   public void testCreateALMUser()
-      throws NoSuchMethodException, SecurityException, IllegalAccessException,
-          IllegalArgumentException, InvocationTargetException {
+      throws NoSuchMethodException,
+          SecurityException,
+          IllegalAccessException,
+          IllegalArgumentException,
+          InvocationTargetException {
     Class[] args = new Class[7];
     args[0] = args[1] = args[2] = args[3] = args[4] = args[5] = args[6] = String.class;
     Method method = FetchCommerceAccessTokenServlet.class.getDeclaredMethod("createALMUser", args);
@@ -170,8 +190,11 @@ public class FetchCommerceAccessTokenServletTest {
 
   @Test
   public void testUserNotPresent()
-      throws NoSuchMethodException, SecurityException, IllegalAccessException,
-          IllegalArgumentException, InvocationTargetException {
+      throws NoSuchMethodException,
+          SecurityException,
+          IllegalAccessException,
+          IllegalArgumentException,
+          InvocationTargetException {
     Class[] args = new Class[1];
     args[0] = String.class;
     Method method = FetchCommerceAccessTokenServlet.class.getDeclaredMethod("userNotPresent", args);
@@ -193,8 +216,11 @@ public class FetchCommerceAccessTokenServletTest {
 
   @Test
   public void testGetCustomerFromCommerce()
-      throws NoSuchMethodException, SecurityException, IllegalAccessException,
-          IllegalArgumentException, InvocationTargetException {
+      throws NoSuchMethodException,
+          SecurityException,
+          IllegalAccessException,
+          IllegalArgumentException,
+          InvocationTargetException {
     Class[] args = new Class[2];
     args[0] = args[1] = String.class;
     Method method =
@@ -209,8 +235,11 @@ public class FetchCommerceAccessTokenServletTest {
 
   @Test
   public void testSetAccessTokenCookie()
-      throws NoSuchMethodException, SecurityException, IllegalAccessException,
-          IllegalArgumentException, InvocationTargetException {
+      throws NoSuchMethodException,
+          SecurityException,
+          IllegalAccessException,
+          IllegalArgumentException,
+          InvocationTargetException {
     Class[] args = new Class[7];
     args[0] = SlingHttpServletRequest.class;
     args[1] = SlingHttpServletResponse.class;

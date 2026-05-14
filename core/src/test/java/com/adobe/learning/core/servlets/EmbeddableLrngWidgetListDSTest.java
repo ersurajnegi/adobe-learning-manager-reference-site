@@ -1,3 +1,14 @@
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
 package com.adobe.learning.core.servlets;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -7,6 +18,7 @@ import static org.mockito.Mockito.lenient;
 import com.adobe.granite.ui.components.ds.DataSource;
 import com.adobe.granite.ui.components.ds.SimpleDataSource;
 import com.adobe.learning.core.services.GlobalConfigurationService;
+import com.adobe.learning.core.utils.HttpClientBuilderFactoryMock;
 import com.google.gson.JsonObject;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
@@ -14,6 +26,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.http.osgi.services.HttpClientBuilderFactory;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +48,12 @@ public class EmbeddableLrngWidgetListDSTest {
   public void setUp() throws Exception {
     dsServlet = new EmbeddableLrngWidgetListDS();
 
+    HttpClientBuilderFactory clientBuilderFactory = new HttpClientBuilderFactoryMock();
+    Field clientBuilderFactoryField =
+        EmbeddableLrngWidgetListDS.class.getDeclaredField("clientBuilderFactory");
+    clientBuilderFactoryField.setAccessible(true);
+    clientBuilderFactoryField.set(null, clientBuilderFactory);
+
     JsonObject adminConfigs = new JsonObject();
     adminConfigs.addProperty("almBaseURL", "https://learningmanagerstage1.adobe.com");
     adminConfigs.addProperty("theme.background", "transparent");
@@ -43,6 +62,8 @@ public class EmbeddableLrngWidgetListDSTest {
     Field replicatorField = EmbeddableLrngWidgetListDS.class.getDeclaredField("configService");
     replicatorField.setAccessible(true);
     replicatorField.set(dsServlet, configService);
+
+    ctx.registerService(HttpClientBuilderFactory.class, clientBuilderFactory);
 
     ctx.registerService(
         GlobalConfigurationService.class,

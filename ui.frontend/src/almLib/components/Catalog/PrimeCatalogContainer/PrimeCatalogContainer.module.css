@@ -9,7 +9,7 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-@import "../../../styles/variables.css";
+@import '../../../styles/variables.css';
 .headerContainer {
   margin-bottom: 15px;
   padding-top: 20px;
@@ -24,20 +24,33 @@ governing permissions and limitations under the License.
   letter-spacing: 0px;
   color: var(--prime-color-black);
   margin: 0;
-  font-family: "source-sans-pro" !important;
+}
+.searchHeader {
+  font-size: var(--prime-font-size-24);
+  font-weight: var(--prime-font-weight-400);
+  max-width: 70%;
+}
+.queryText {
+  font-weight: var(--prime-font-weight-700);
+  margin-bottom: 5px;
+}
+.andText {
+  color: var(--prime-color-black);
+  margin: 0 5px;
 }
 .searchContainer {
   width: 265px;
 }
 .filtersAndListConatiner {
   display: flex;
+  justify-content: space-between;
 }
 .filtersContainer {
-  width: 256px;
+  width: 240px;
 }
 .listContainer {
   width: calc(100% - 256px);
-  padding-left: 20px;
+  padding-left: 52px;
 }
 .listContainer.full {
   width: 100%;
@@ -52,7 +65,6 @@ governing permissions and limitations under the License.
   display: flex;
   align-items: center;
 }
-
 .searchAppliedLabel {
   text-align: left;
   font-size: var(--prime-font-size-14);
@@ -83,8 +95,9 @@ governing permissions and limitations under the License.
   width: 16px;
   height: 16px;
 }
-.button {
-  display: none !important;
+.filterAndSortButton {
+  display: none;
+  border: none;
 }
 .closeIcon {
   display: none !important;
@@ -92,10 +105,93 @@ governing permissions and limitations under the License.
 .loader {
   margin: 20px 0;
 }
-
 .pageContainer {
-  max-width: var(--prime-container-max-width-desktop);
+  max-width: var(--prime-catalog-container-max-width-desktop);
   margin: 0 auto;
+}
+.filterAndSort {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+.catalogDescription {
+  font-size: var(--prime-font-size-14);
+  letter-spacing: 0;
+  padding-right: 1rem;
+}
+.searchLink {
+  font-size: var(--prime-font-size-16);
+  line-height: 20.8px;
+  margin-bottom: 5px;
+  display: inline-block;
+}
+.searchLink a,
+.searchLink a:visited {
+  color: var(--prime-color-link);
+}
+.picker {
+  min-height: 1px;
+  padding: 0px 10px;
+  height: 32px;
+}
+.sortAndChangeLayoutContainer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+.sortContainer {
+  display: flex;
+  align-items: center;
+}
+.viewButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 6px 6px;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  background: none;
+  color: inherit;
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+.selectedView {
+  border: 1.5px solid var(--prime-color-primary);
+  color: var(--prime-color-primary);
+  border-radius: 4px;
+}
+.descriptionContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+.changeLayoutContainer {
+  display: flex;
+}
+.sortText {
+  white-space: nowrap;
+}
+.searchQuery {
+  font-weight: var(--prime-font-weight-700);
+}
+.clearSearch {
+  cursor: pointer;
+  border: 0px;
+  background-color: transparent;
+  padding: 0px;
+  margin-left: 10px;
+}
+
+.clearSearch.withQuery {
+  svg {
+    width: 10px;
+    height: 10px;
+  }
 }
 @media screen and (max-width: 1024px) {
   .pageContainer {
@@ -103,7 +199,83 @@ governing permissions and limitations under the License.
     /* width: var(--prime-container-width); */
     padding: 0;
   }
+  .searchContainer {
+    display: none;
+  }
+  .catalogDescription {
+    width: 100%;
+  }
+  .mobileButtonsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
+  }
+  .filterAndSortContainer {
+    display: flex;
+  }
+  .filterAndSortButton {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 6px 6px;
+    cursor: pointer;
+    background: none;
+    color: inherit;
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+  .filterCount {
+    display: flex;
+    position: absolute;
+    justify-content: center;
+    align-items: center;
+    font-size: smaller;
+    top: 0.25rem;
+    right: 0.25rem;
+    background-color: var(--prime-color-primary);
+    border-radius: 50%;
+    padding: 0.25rem;
+    height: 0.75rem;
+    width: 0.75rem;
+    color: var(--prime-color-white);
+    z-index: 1;
+  }
+  .filterAndSortButton:hover,
+  .filterAndSortButton:focus,
+  .filterAndSortButton:focus-visible {
+    border: 1.5px solid var(--prime-color-primary);
+    color: var(--prime-color-primary);
+    border-radius: 4px;
+  }
+  .filtersContainer {
+    left: 0;
+    top: 0;
+    z-index: 16;
+    position: fixed;
+    box-sizing: border-box;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  .sortContainer {
+    display: none;
+  }
+  .listContainer {
+    width: 100%;
+    padding-left: 0;
+  }
+  .pageContainer {
+    width: 100%;
+    max-width: var(--prime-container-max-width-mobile);
+    padding: 0 20px;
+  }
 }
+
 @media screen and (max-width: 450px) {
   .headerContainer {
     margin-bottom: 10px;
@@ -116,83 +288,75 @@ governing permissions and limitations under the License.
     margin-bottom: 20px;
   }
   .searchContainer {
-    width: 100%;
-    align-items: center;
-    padding: 0;
+    display: none;
   }
-  .button {
-    cursor: pointer;
-    border: 2px solid var(--prime-color-primary);
-    color: var(--prime-color-primary);
-    background-color: var(--prime-color-white);
-    font-size: var(--prime-font-size-14);
-    min-height: 28px;
-    font-weight: normal;
-    padding: 5px 12px;
-    min-width: 70px;
-    display: block !important;
-    margin-bottom: 10px !important;
+  .mobileButtonsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
   }
-  .button:hover,
-  .button:focus,
-  .button:focus-visible {
-    color: var(--prime-color-white);
-    background-color: var(--prime-color-primary);
-    border-color: var(--prime-color-primary);
-    outline: none;
+  .filterAndSortContainer {
+    display: flex;
   }
-  .button svg {
-    width: 14px;
-    height: 14px;
-    padding-left: 2px;
-    top: 2px;
+  .filterAndSortButton {
+    display: flex;
     position: relative;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 6px 6px;
+    cursor: pointer;
+    background: none;
+    color: inherit;
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+  .filterCount {
+    display: flex;
+    position: absolute;
+    justify-content: center;
+    align-items: center;
+    font-size: smaller;
+    top: 0.25rem;
+    right: 0.25rem;
+    background-color: var(--prime-color-primary);
+    border-radius: 50%;
+    padding: 0.25rem;
+    height: 0.75rem;
+    width: 0.75rem;
+    color: var(--prime-color-white);
+    z-index: 1;
+  }
+  .filterAndSortButton:hover,
+  .filterAndSortButton:focus,
+  .filterAndSortButton:focus-visible {
+    border: 1.5px solid var(--prime-color-primary);
+    color: var(--prime-color-primary);
+    border-radius: 4px;
   }
   .searchAppliedLabel {
     margin: 0;
     padding: 15px 0 5px 0;
   }
+  .sortContainer {
+    display: none;
+  }
   .filtersContainer {
     left: 0;
-    border: 1px solid var(--prime-color-white);
-    border-radius: 1rem 1rem 0 0;
-    background-color: var(--prime-color-white);
+    top: 0;
+    z-index: 16;
     position: fixed;
-    bottom: 0;
-    width: 100%;
     box-sizing: border-box;
-    z-index: 5;
-    visibility: hidden;
-    pointer-events: none;
-    transform: translate(-100%, 0);
-    -webkit-transition: transform 250ms ease-in-out, visibility 0ms linear 130ms;
-    -moz-transition: transform 250ms ease-in-out, visibility 0ms linear 130ms;
-    -ms-transition: transform 250ms ease-in-out, visibility 0ms linear 130ms;
-    -o-transition: transform 250ms ease-in-out, visibility 0ms linear 130ms;
-    transition: transform 250ms ease-in-out, visibility 0ms linear 130ms;
+    background-color: rgba(0, 0, 0, 0.5);
   }
   .listContainer {
     width: 100%;
     padding-left: 0;
-  }
-  .filtersContainer.onMobile {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    background: var(--prime-color-white);
-    z-index: 1;
-    padding: 20px;
-    overflow: auto;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translate(0, 0);
-    -webkit-transition: transform 250ms ease-in 0ms;
-    -moz-transition: transform 250ms ease-in 0ms;
-    -ms-transition: transform 250ms ease-in 0ms;
-    -o-transition: transform 250ms ease-in 0ms;
-    transition: transform 250ms ease-in 0ms;
   }
   .teamsExtraTopMargin {
     margin-top: 30px;
@@ -209,12 +373,19 @@ governing permissions and limitations under the License.
     max-width: var(--prime-container-max-width-mobile);
     padding: 0 20px;
   }
+  .filterAndSort {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+  .catalogDescription {
+    width: 100%;
+  }
 }
 
-.catalogDescription {
-  color: var(--prime-color-nc1);
-  font-size: var(--prime-font-size-18);
-  letter-spacing: 0;
-  margin-bottom: 10px;
-  font-family: "source-sans-pro" !important;
+@media screen and (max-width: 768px) {
+  .descriptionContainer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

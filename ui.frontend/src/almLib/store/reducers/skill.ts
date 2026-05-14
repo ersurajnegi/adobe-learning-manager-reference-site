@@ -9,9 +9,9 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { AnyAction, combineReducers, Reducer } from "redux";
-import { GET_SKILLS, PAGINATE_SKILLS } from "../actions/user/actionTypes";
-import { PrimeSkill } from "../../models/PrimeModels";
+import { AnyAction, combineReducers, Reducer } from 'redux';
+import { GET_SKILLS, PAGINATE_SKILLS } from '../actions/user/actionTypes';
+import { PrimeSkill } from '../../models/PrimeModels';
 
 export interface SkillState {
   items: PrimeSkill[];
@@ -26,18 +26,13 @@ const items: Reducer<PrimeSkill[], AnyAction> = (
     case GET_SKILLS:
       return action?.payload.items;
     case PAGINATE_SKILLS:
-      return action.payload.items
-        ? [...state!, ...action.payload.items]
-        : state;
+      return action.payload.items ? [...state!, ...action.payload.items] : state;
     default:
       return state || {};
   }
 };
 
-const next: Reducer<string, AnyAction> = (
-  state: string | undefined,
-  action: AnyAction
-) => {
+const next: Reducer<string, AnyAction> = (state: string | undefined, action: AnyAction) => {
   switch (action.type) {
     case GET_SKILLS:
     case PAGINATE_SKILLS:

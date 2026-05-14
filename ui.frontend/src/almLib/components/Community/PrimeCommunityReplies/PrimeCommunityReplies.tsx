@@ -9,29 +9,28 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useReplies } from "../../../hooks/community";
-import { PrimeCommunityReply } from "../PrimeCommunityReply";
-import styles from "./PrimeCommunityReplies.module.css";
-import { useIntl } from "react-intl";
+import { useReplies } from '../../../hooks/community';
+import { PrimeCommunityReply } from '../PrimeCommunityReply';
+import styles from './PrimeCommunityReplies.module.css';
+import { useIntl } from 'react-intl';
+import { useConfirmationAlert } from '../../../common/Alert/useConfirmationAlert';
+import { getAlmConfirmationBadwordParams } from '../../../utils/social-utils';
 
 const PrimeCommunityReplies = (props: any) => {
   const { formatMessage } = useIntl();
   const commentId = props.object.id;
-  const { items, patchReply, loadMoreReplies, hasMoreItems } =
-    useReplies(commentId);
+  const { items, patchReply, loadMoreReplies, hasMoreItems } = useReplies(commentId);
+  const [almConfirmationAlert] = useConfirmationAlert();
+  const EMPTY = '';
 
   const deleteReplyHandler = async () => {
-    if (typeof props.deleteReplyHandler === "function") {
+    if (typeof props.deleteReplyHandler === 'function') {
       props.deleteReplyHandler();
     }
   };
 
   const updateReply = async (replyId: any, value: any) => {
-    try {
-      await patchReply(replyId, value);
-    } catch (exception) {
-      console.log("error while updating reply");
-    }
+    await patchReply(replyId, value);
   };
 
   return (
@@ -39,8 +38,8 @@ const PrimeCommunityReplies = (props: any) => {
       <div className={styles.primeReplySectionWrapper}>
         <div className={styles.primeReplySection}>
           {items
-            ?.filter((reply) => reply.parent.id === commentId)
-            .map((reply) => (
+            ?.filter(reply => reply.parent.id === commentId)
+            .map(reply => (
               <PrimeCommunityReply
                 reply={reply}
                 key={reply.id}
@@ -49,13 +48,10 @@ const PrimeCommunityReplies = (props: any) => {
               ></PrimeCommunityReply>
             ))}
           {hasMoreItems && (
-            <button
-              className={styles.showMoreRepliesButton}
-              onClick={loadMoreReplies}
-            >
+            <button className={styles.showMoreRepliesButton} onClick={loadMoreReplies}>
               {formatMessage({
-                id: "alm.community.showMoreReplies",
-                defaultMessage: "Show more replies",
+                id: 'alm.community.showMoreReplies',
+                defaultMessage: 'Show more replies',
               })}
             </button>
           )}

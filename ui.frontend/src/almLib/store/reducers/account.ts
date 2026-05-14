@@ -9,9 +9,9 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { AnyAction, Reducer } from "redux";
-import { PrimeAccount } from "../../models";
-import { LOAD_ACCOUNT_AND_USER } from "../actions";
+import { AnyAction, Reducer } from 'redux';
+import { PrimeAccount } from '../../models';
+import { LOAD_ACCOUNT_AND_USER } from '../actions';
 
 const account: Reducer<PrimeAccount, AnyAction> = (
   state: PrimeAccount | undefined,

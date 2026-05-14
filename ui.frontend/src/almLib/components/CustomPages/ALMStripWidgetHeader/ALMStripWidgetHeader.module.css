@@ -1,0 +1,100 @@
+/**
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+@import '../../../styles/variables.css';
+
+.stripHeader {
+  display: block;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 10px;
+  width: 80%;
+}
+.stripDescription {
+  font-size: var(--prime-font-size-14);
+  font-weight: var(--prime-font-weight-400);
+  line-height: 130%;
+  color: var(--prime-color-body);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 4px;
+}
+
+.stripHeader h2 {
+  padding: 0;
+  margin: 0;
+  font-weight: 700;
+  font-size: var(--prime-font-size-22);
+  font-weight: 700;
+  line-height: 28.6px;
+  text-align: left;
+  color: var(--prime-color-body);
+}
+
+.stripHeaderLeft,
+.stripHeaderRight {
+  display: flex;
+  align-items: flex-end;
+}
+
+.stripHeaderLeft {
+  margin-right: 12px;
+}
+
+.stripHeaderLeft .stripheaderLinks {
+  position: relative;
+  bottom: 3px;
+}
+
+.stripContainerName {
+  text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--prime-color-body);
+  display: inline-block;
+}
+
+.navIcon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: var(--prime-color-neutral-4);
+  cursor: pointer;
+}
+
+.left {
+  margin-right: 8px;
+  transform: rotate(180deg);
+}
+
+.navIcon:disabled {
+  background: var(--prime-color-neutral-3);
+  opacity: 0.5;
+}
+
+.stripHeaderContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.stripHeaderNavIcons {
+  display: block;
+  margin-top: auto;
+}

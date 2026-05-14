@@ -9,28 +9,25 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { PrimeCommunityObjectHeader } from "../PrimeCommunityObjectHeader";
-import { PrimeCommunityObjectBody } from "../PrimeCommunityObjectBody";
-import { PrimeCommunityObjectActions } from "../PrimeCommunityObjectActions";
-import { PrimeCommunityObjectInput } from "../PrimeCommunityObjectInput";
-import { useReply } from "../../../hooks/community";
-import { useRef, useEffect, useState } from "react";
-import styles from "./PrimeCommunityReply.module.css";
-import { useIntl } from "react-intl";
-import { DOWN, DOWNVOTE, REPLY, UP, UPVOTE } from "../../../utils/constants";
-import { formatMention } from "../../../utils/mentionUtils";
+import { PrimeCommunityObjectHeader } from '../PrimeCommunityObjectHeader';
+import { PrimeCommunityObjectBody } from '../PrimeCommunityObjectBody';
+import { PrimeCommunityObjectActions } from '../PrimeCommunityObjectActions';
+import { PrimeCommunityObjectInput } from '../PrimeCommunityObjectInput';
+import { useReply } from '../../../hooks/community';
+import { useRef, useEffect, useState } from 'react';
+import styles from './PrimeCommunityReply.module.css';
+import { useIntl } from 'react-intl';
+import { DOWN, DOWNVOTE, REPLY, UP, UPVOTE } from '../../../utils/constants';
 
 const PrimeCommunityReply = (props: any) => {
   const { formatMessage } = useIntl();
   const ref = useRef<any>();
   const reply = props.reply;
   const { voteReply, deleteReplyVote } = useReply();
-  const myVoteStatus = reply.myVoteStatus ? reply.myVoteStatus : "";
+  const myVoteStatus = reply.myVoteStatus ? reply.myVoteStatus : '';
   const [myUpVoteStatus, setMyUpVoteStatus] = useState(myVoteStatus === UPVOTE);
   const [upVoteCount, setUpVoteCount] = useState(reply.upVote);
-  const [myDownVoteStatus, setMyDownVoteStatus] = useState(
-    myVoteStatus === DOWNVOTE
-  );
+  const [myDownVoteStatus, setMyDownVoteStatus] = useState(myVoteStatus === DOWNVOTE);
   const [downVoteCount, setDownVoteCount] = useState(reply.downVote);
   const firstRunForUpvote = useRef(true);
   const firstRunForDownvote = useRef(true);
@@ -42,9 +39,7 @@ const PrimeCommunityReply = (props: any) => {
       firstRunForUpvote.current = false;
       return;
     }
-    myUpVoteStatus === true
-      ? setUpVoteCount(upVoteCount + 1)
-      : setUpVoteCount(upVoteCount - 1);
+    myUpVoteStatus === true ? setUpVoteCount(upVoteCount + 1) : setUpVoteCount(upVoteCount - 1);
   }, [myUpVoteStatus]);
 
   useEffect(() => {
@@ -61,33 +56,30 @@ const PrimeCommunityReply = (props: any) => {
     //if already upVoted, delete vote
     myUpVoteStatus ? deleteReplyVote(reply.id, UP) : voteReply(reply.id, UP);
     if (!myUpVoteStatus && myDownVoteStatus) {
-      setMyDownVoteStatus((myDownVoteStatus) => !myDownVoteStatus);
+      setMyDownVoteStatus(myDownVoteStatus => !myDownVoteStatus);
     }
-    setMyUpVoteStatus((myUpVoteStatus) => !myUpVoteStatus);
+    setMyUpVoteStatus(myUpVoteStatus => !myUpVoteStatus);
   };
 
   const downVoteButtonClickHandler = () => {
     //if already downVoted, delete vote
-    myDownVoteStatus
-      ? deleteReplyVote(reply.id, DOWN)
-      : voteReply(reply.id, DOWN);
+    myDownVoteStatus ? deleteReplyVote(reply.id, DOWN) : voteReply(reply.id, DOWN);
     if (!myDownVoteStatus && myUpVoteStatus) {
-      setMyUpVoteStatus((myUpVoteStatus) => !myUpVoteStatus);
+      setMyUpVoteStatus(myUpVoteStatus => !myUpVoteStatus);
     }
-    setMyDownVoteStatus((myDownVoteStatus) => !myDownVoteStatus);
+    setMyDownVoteStatus(myDownVoteStatus => !myDownVoteStatus);
   };
 
   const deleteReplyHandler = async () => {
-    if (typeof props.deleteReplyHandler === "function") {
+    if (typeof props.deleteReplyHandler === 'function') {
       props.deleteReplyHandler();
     }
   };
 
-  const updateReply = (value: any) => {
-    const formattedValue = formatMention(value);
-    if (typeof props.updateReply === "function") {
-      props.updateReply(reply.id, formattedValue);
-      setReplyText(formattedValue);
+  const updateReply = async (value: any) => {
+    if (typeof props.updateReply === 'function') {
+      await props.updateReply(reply.id, value);
+      setReplyText(value);
       setShowEditReplyView(false);
     }
   };
@@ -127,8 +119,8 @@ const PrimeCommunityReply = (props: any) => {
           ref={ref}
           object={reply}
           inputPlaceholder={formatMessage({
-            id: "alm.community.comment.replyHere",
-            defaultMessage: "Reply here",
+            id: 'alm.community.comment.replyHere',
+            defaultMessage: 'Reply here',
           })}
           defaultValue={reply.richText}
           primaryActionHandler={(value: any) => updateReply(value)}

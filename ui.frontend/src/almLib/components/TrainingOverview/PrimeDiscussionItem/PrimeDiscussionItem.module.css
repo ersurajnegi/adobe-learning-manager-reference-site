@@ -1,0 +1,77 @@
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+.discussProfileImage {
+  display: flex;
+  width: 60px;
+  height: 30px;
+  margin-left: 5px;
+  margin-right: 10px;
+}
+
+.discussProfileImage img {
+  border-radius: 50%;
+  max-width: inherit;
+  width: 30px;
+}
+
+.discussCommentContainer {
+  position: relative;
+  padding-bottom: 10px;
+  border-bottom: 0.5px solid var(--prime-author-color);
+  align-items: left;
+}
+
+.discussCommentHeader {
+  padding-bottom: 5px;
+  padding-top: 10px;
+  display: flex;
+}
+
+.discussLearnerName {
+  display: flex;
+  font-weight: var(--prime-font-weight-600);
+  width: 100%;
+  padding-top: 5px;
+}
+
+.removeItem {
+  display: flex;
+  justify-content: flex-end;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+}
+
+.discussionsCommentBody {
+  position: relative;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  padding-left: 45px;
+  word-wrap: break-word;
+}
+
+.discussionsCommentTime {
+  position: relative;
+  padding-bottom: 10px;
+  padding-top: 8px;
+  padding-left: 45px;
+  font-size: var(--prime-font-size-12);
+}
+
+.deleteDiscussContainer {
+  display: flex;
+  justify-content: flex-end;
+  align-self: right;
+  width: 100%;
+}

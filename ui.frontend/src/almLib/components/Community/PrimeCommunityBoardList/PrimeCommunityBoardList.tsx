@@ -9,43 +9,38 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useEffect, useState } from "react";
-import { useIntl } from "react-intl";
-import { useBoards, usePosts } from "../../../hooks/community";
-import { SKILL } from "../../../utils/constants";
-import { getQueryParamsFromUrl } from "../../../utils/global";
-import { ALMErrorBoundary } from "../../Common/ALMErrorBoundary";
-import { ALMLoader } from "../../Common/ALMLoader";
-import { PrimeCommunityBoardFilters } from "../PrimeCommunityBoardFilters";
-import { PrimeCommunityBoardsContainer } from "../PrimeCommunityBoardsContainer";
-import { PrimeCommunityMobileBackBanner } from "../PrimeCommunityMobileBackBanner";
-import { PrimeCommunityMobileScrollToTop } from "../PrimeCommunityMobileScrollToTop";
-import { PrimeCommunityPost } from "../PrimeCommunityPost";
-import { PrimeCommunitySearch } from "../PrimeCommunitySearch";
-import styles from "./PrimeCommunityBoardList.module.css";
+import { useEffect, useState } from 'react';
+import { useIntl } from 'react-intl';
+import { useBoards, usePosts } from '../../../hooks/community';
+import { SKILL } from '../../../utils/constants';
+import { getQueryParamsFromUrl } from '../../../utils/global';
+import { ALMErrorBoundary } from '../../Common/ALMErrorBoundary';
+import { ALMLoader } from '../../Common/ALMLoader';
+import { PrimeCommunityBoardFilters } from '../PrimeCommunityBoardFilters';
+import { PrimeCommunityBoardsContainer } from '../PrimeCommunityBoardsContainer';
+import { PrimeCommunityMobileBackBanner } from '../PrimeCommunityMobileBackBanner';
+import { PrimeCommunityMobileScrollToTop } from '../PrimeCommunityMobileScrollToTop';
+import { PrimeCommunityPost } from '../PrimeCommunityPost';
+import { PrimeCommunitySearch } from '../PrimeCommunitySearch';
+import styles from './PrimeCommunityBoardList.module.css';
 
 const PrimeCommunityBoardList = () => {
   const queryParams = getQueryParamsFromUrl();
-  const DEFAULT_SORT_VALUE = "-dateUpdated";
-  const DEFAULT_SKILL = queryParams ? queryParams.skill : "";
+  const DEFAULT_SORT_VALUE = '-dateUpdated';
+  const DEFAULT_SKILL = queryParams ? queryParams.skill : '';
 
-  const {
-    items,
-    fetchBoards,
-    loadMoreBoards,
-    hasMoreItems,
-    skills,
-    currentSkill,
-  } = useBoards(DEFAULT_SORT_VALUE, DEFAULT_SKILL);
+  const { items, fetchBoards, loadMoreBoards, hasMoreItems, skills, currentSkill } = useBoards(
+    DEFAULT_SORT_VALUE,
+    DEFAULT_SKILL
+  );
   const { posts } = usePosts();
   const { formatMessage } = useIntl();
-  const [selectedSortFilter, setSelectedSortFilter] =
-    useState(DEFAULT_SORT_VALUE);
+  const [selectedSortFilter, setSelectedSortFilter] = useState(DEFAULT_SORT_VALUE);
   const [selectedSkill, setSelectedSkill] = useState(currentSkill);
   const [showLoader, setShowLoader] = useState(true);
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [searchResult, setSearchResult] = useState(0);
-  const [searchString, setSearchString] = useState("");
+  const [searchString, setSearchString] = useState('');
 
   useEffect(() => {
     if (items) {
@@ -62,8 +57,8 @@ const PrimeCommunityBoardList = () => {
       results
         ? results.length
         : formatMessage({
-            id: "alm.community.search.no.label",
-            defaultMessage: "No",
+            id: 'alm.community.search.no.label',
+            defaultMessage: 'No',
           })
     );
     setSearchString(queryString);
@@ -121,8 +116,8 @@ const PrimeCommunityBoardList = () => {
                 searchModeHandler={searchModeHandler}
                 resetSearchHandler={resetSearchHandler}
                 placeHolderText={formatMessage({
-                  id: "alm.community.search.placeholder",
-                  defaultMessage: "Search within community",
+                  id: 'alm.community.search.placeholder',
+                  defaultMessage: 'Search within community',
                 })}
               ></PrimeCommunitySearch>
             </div>
@@ -137,21 +132,18 @@ const PrimeCommunityBoardList = () => {
           <div className={styles.primeCommunitySearchStatusWrapper}>
             <div className={styles.primeCommunitySearchStatus}>
               <div className={styles.primeCommunitySearchCount}>
-                {searchResult}{" "}
+                {searchResult}{' '}
                 {formatMessage({
-                  id: "alm.community.search.resultFound",
-                  defaultMessage: "result(s) found for",
-                })}{" "}
+                  id: 'alm.community.search.resultFound',
+                  defaultMessage: 'result(s) found for',
+                })}{' '}
                 '{searchString}'
               </div>
-              <button
-                className={styles.primeCommunitySearchClear}
-                onClick={resetSearchHandler}
-              >
+              <button className={styles.primeCommunitySearchClear} onClick={resetSearchHandler}>
                 (
                 {formatMessage({
-                  id: "alm.community.search.clear.label",
-                  defaultMessage: "Clear",
+                  id: 'alm.community.search.clear.label',
+                  defaultMessage: 'Clear',
                 })}
                 )
               </button>
@@ -160,13 +152,9 @@ const PrimeCommunityBoardList = () => {
         )}
         {isSearchMode &&
           posts?.length > 0 &&
-          posts.map((post) => (
+          posts.map(post => (
             <div className={styles.primeCommunitySearchResultContainer}>
-              <PrimeCommunityPost
-                post={post}
-                key={post.id}
-                showBorder={true}
-              ></PrimeCommunityPost>
+              <PrimeCommunityPost post={post} key={post.id} showBorder={true}></PrimeCommunityPost>
             </div>
           ))}
         {!isSearchMode && items?.length > 0 && (
@@ -179,8 +167,8 @@ const PrimeCommunityBoardList = () => {
         {!isSearchMode && items?.length === 0 && (
           <div className={styles.primeCommunityNoBoardFound}>
             {formatMessage({
-              id: "alm.community.noBoardMessage",
-              defaultMessage: "No boards found",
+              id: 'alm.community.noBoardMessage',
+              defaultMessage: 'No boards found',
             })}
           </div>
         )}

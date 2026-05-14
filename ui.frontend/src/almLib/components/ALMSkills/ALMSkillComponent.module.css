@@ -9,103 +9,150 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-@import "../../styles/variables.css";
+@import '../../styles/variables.css';
 
 .skillsArea {
   margin: 0 auto;
-  padding: 40px 0;
+  padding: 40px 16px;
+  max-width: 982px;
 }
 
-@media screen and (min-width: 1024px) {
-  .skillsArea,
-  .skillsContainer {
-    width: 930px;
-  }
-}
-@media screen and (min-width: 1366px) {
-  .skillsArea,
-  .skillsContainer {
-    width: 1084px;
-  }
-}
-@media (max-width: 450px) {
-  .skillsArea,
-  .skillsContainer {
-    padding-left: 20px;
-  }
+.interestsArea {
+  width: 100%;
+  border-radius: 4px;
+  margin-bottom: 30px;
 }
 
-@media screen and (max-width: 1024px) {
-  .skillsArea,
-  .skillsContainer {
-    padding-left: 20px;
-  }
-}
-
-.skillsHeading {
+.skillHeading {
+  display: flex;
   font-size: var(--prime-font-size-18);
-  font: normal normal bold 21px/27px Source Sans Pro;
+  font-weight: 700;
+  color: var(--prime-color-black);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--prime-color-neutral-2);
+  margin-bottom: 16px;
+}
+
+.skillIcons {
+  margin-left: auto;
+  display: flex;
+  padding-right: 30px;
+}
+.skillIcons span {
+  width: 25px;
+  height: 25px;
+}
+
+.skillsContainer {
+  margin-bottom: 2px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.noSkillsContainer {
+  margin-top: 48px;
+  text-align: center;
+  align-content: center;
+}
+
+.skillsHeading,
+.skillsPageHeading {
+  font-size: var(--prime-font-size-22);
+  font-weight: 400;
   letter-spacing: 0px;
-  color: var(--prime-color-nc1);
+  color: var(--prime-color-black);
+}
+
+.skillsPageHeading {
+  font-weight: 700;
+}
+
+.extraMargin {
+  margin-bottom: 43px;
 }
 
 .skillsDescription {
-  margin-bottom: 60px;
+  margin-top: 12px;
+  margin-bottom: 48px;
+  color: var(--prime-color-neutral-1);
 }
 
 .skillBox,
 .skillBoxSelectable {
-  width: 256px;
-  height: 90px;
-  line-height: 90px;
+  height: 32px;
   border-radius: 4px;
-  border: solid 1px var(--prime-color-nc2);
-  background-color: var(--prime-color-nc4);
-  margin-right: 20px;
-  display: inline-block;
-  margin-bottom: 20px;
-  text-align: center;
+  border: solid 1px var(--prime-color-body);
+  margin: 0 14px 14px 0;
+  display: flex;
+  flex-direction: row;
+  font-size: var(--prime-font-size-14);
+  background: var(--prime-color-white);
   position: relative;
-  box-shadow: 0 2px 10px 1px rgba(0, 0, 0, 0.11);
-  font-size: 13px;
+  max-width: 100%;
 }
 
 .skillBoxSelectable {
+  padding: 0;
+}
+
+.skillBoxSelectable:hover {
   cursor: pointer;
+  border: solid 1px var(--prime-color-primary);
+  color: var(--prime-color-primary);
 }
 
 .skillName,
 .skillNameSelectable {
-  display: inline-block;
-  vertical-align: middle;
-  line-height: normal;
   color: var(--prime-color-black);
+  font-size: var(--prime-font-size-14);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  line-height: 100%;
+  padding: 7px 10px;
 }
 
-.modifyInterest .actionButton {
-  margin-top: 20px;
-  margin-right: 25px;
-  display: inline-block;
+.actionButtonArea,
+.editActionButtonArea {
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid var(--prime-color-neutral-2);
+  padding-top: 16px;
+  margin-top: 48px;
+}
+
+.actionButtonArea,
+.editActionButtonArea {
+  justify-content: flex-end;
+}
+
+.actionButton,
+.editActionButton {
+  min-width: 122px;
+  padding: 0 15px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: var(--prime-font-size-13);
+  margin-left: 41px;
 }
 
 .removeInterestButton {
-  background-color: #858585;
-  color: var(--prime-color-white);
-  z-index: 10;
+  background: transparent;
   cursor: auto;
-  display: none;
-  position: absolute;
-  right: 10px;
-  width: 20px;
-  height: 20px;
   border: none;
-  padding: 0;
-  font-weight: 700;
-  margin-top: -90px;
+  padding-left: 0;
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
 .removeInterestButton:hover {
   cursor: pointer;
+}
+
+.removeInterestButton svg {
+  width: 14px;
 }
 
 .arrowUp {
@@ -114,34 +161,25 @@ governing permissions and limitations under the License.
   z-index: 10;
   width: 0;
   height: 0;
-  margin-left: 100px;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
   border-bottom: 10px solid;
-  border-bottom-color: #858585;
-  margin-top: -15px;
+  border-bottom-color: var(--prime-color-neutral-1);
 }
 
 .skillDataTooltip {
   display: none;
-  background-color: #858585;
+  background-color: var(--prime-color-neutral-1);
   color: var(--prime-color-white);
   z-index: 1;
-  padding: 10px;
-  font-size: 13px;
+  padding: 9px;
+  font-size: var(--prime-font-size-12);
   position: absolute;
-  width: 256px;
+  min-width: 169px;
   text-align: left;
   line-height: normal;
-  margin-top: -5px;
-}
-
-.skillBox:hover .removeInterestButton {
-  display: block;
-}
-
-.skillBox:focus-within .removeInterestButton {
-  display: block;
+  margin-top: 45px;
+  border-radius: 4px;
 }
 
 .skillBox:hover .skillDataTooltip {
@@ -160,17 +198,162 @@ governing permissions and limitations under the License.
   display: block;
 }
 
-.removeInterestButton::after {
-  content: "\00d7";
-  fill: var(--prime-color-white);
-}
-
 .showMoreButton {
   background: none;
   border: none;
-  color: var(--prime-color-primary);
+  color: var(--prime-color-link);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  font-size: var(--prime-font-size-13);
 }
 
 .showMoreButton:hover {
   cursor: pointer;
+}
+
+.skillTab,
+.activeSkillTab {
+  font-size: var(--prime-font-size-16);
+  font-weight: 500;
+  display: flex;
+  margin-bottom: 16px;
+}
+
+.skillTab:hover,
+.activeSkillTab:hover {
+  cursor: pointer;
+}
+
+.skillsTabRow {
+  padding: 0px;
+}
+
+.activeSkillTab {
+  padding: 7px 0;
+  border-bottom-style: solid;
+  border-bottom-color: var(--prime-color-primary);
+}
+
+.primeLoaderWrapper {
+  width: 100%;
+  max-width: 950px;
+  height: 50%;
+  position: absolute;
+  justify-content: center;
+  display: flex;
+  z-index: 100;
+  margin-top: 40px;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 25px;
+  height: 40px;
+}
+
+.skillInput {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--prime-color-neutral-2);
+  background: var(--prime-color-white);
+  font-size: var(--prime-font-size-14);
+  border-radius: 4px;
+}
+
+.searchIcon {
+  width: 18px;
+  display: flex;
+  margin-left: -29px;
+}
+
+.selectedSkillBox {
+  border: 2px solid var(--prime-color-primary);
+  color: var(--prime-color-primary);
+}
+
+.primeDownCaret {
+  font-size: var(--prime-font-size-11);
+  margin: 1px 0 0 0;
+  display: flex;
+}
+
+.primeDownCaret svg {
+  width: 18px;
+}
+
+.errorMsg {
+  color: var(--prime-error-color);
+  font-size: var(--prime-font-size-16);
+  margin: 5px 15px 0 0;
+}
+
+.skillTab > div[role='tablist'] {
+  border-bottom-color: var(--prime-color-neutral-3);
+  border-radius: 1px;
+  max-width: fit-content !important;
+}
+
+.selectedTick {
+  display: none;
+  align-items: center;
+  width: 18px;
+  height: 100%;
+  margin-right: 10px;
+}
+
+.selectedTick svg {
+  fill: var(--prime-color-primary);
+}
+
+.secondaryButton {
+  border: none;
+  background: none;
+  color: var(--prime-color-link);
+  min-width: 0;
+  padding: 0;
+}
+
+.externalFrame {
+  display: block;
+  border: none;
+  width: 100%;
+  max-width: 950px;
+  height: 750px;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+@media (max-width: 767px) {
+  .actionButton,
+  .editActionButton {
+    min-width: 72px;
+  }
+  .arrowUp {
+    margin: 40px 0 0 70px;
+  }
+  .skillInput {
+    font-size: var(--prime-font-size-16);
+  }
+}
+
+@media (min-width: 767px) {
+  .arrowUp {
+    left: 50%;
+    top: 130%;
+    transform: translate(-50%);
+  }
+  .skillDataTooltip {
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }

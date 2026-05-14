@@ -9,13 +9,13 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useCallback } from "react";
-import { COMMENT, POLL, POST } from "../../utils/constants";
-import { addHttpsToHref, getALMConfig } from "../../utils/global";
-import { RestAdapter } from "../../utils/restAdapter";
-import { JsonApiParse } from "../../utils/jsonAPIAdapter";
-import { useDispatch } from "react-redux";
-import { updatePost } from "../../store/actions/social/action";
+import { useCallback } from 'react';
+import { BAD_WORD_FOUND, COMMENT, POLL, POST } from '../../utils/constants';
+import { addHttpsToHref, getALMConfig } from '../../utils/global';
+import { RestAdapter } from '../../utils/restAdapter';
+import { JsonApiParse } from '../../utils/jsonAPIAdapter';
+import { useDispatch } from 'react-redux';
+import { updatePost } from '../../store/actions/social/action';
 
 export const usePost = () => {
   const dispatch = useDispatch();
@@ -28,38 +28,42 @@ export const usePost = () => {
       isResourceModified: any,
       pollOptions: any
     ) => {
-      // try {
-      const baseApiUrl = getALMConfig().primeApiURL;
-      const updatedInput = addHttpsToHref(input);
-      const postBody: any = {
-        data: {
-          type: POST,
-          attributes: {
-            postingType: postingType,
-            resource: resource,
-            state: "ACTIVE",
-            text: updatedInput,
+      try {
+        const baseApiUrl = getALMConfig().primeApiURL;
+        const updatedInput = addHttpsToHref(input);
+        const postBody: any = {
+          data: {
+            type: POST,
+            attributes: {
+              postingType: postingType,
+              resource: resource,
+              state: 'ACTIVE',
+              text: updatedInput,
+            },
           },
-        },
-      };
+        };
 
-      if (isResourceModified) {
-        postBody.data.attributes.resource = resource;
+        if (isResourceModified) {
+          postBody.data.attributes.resource = resource;
+        }
+
+        if (postingType === POLL) {
+          postBody.data.attributes.otherData = JSON.stringify(getPollPostObject(pollOptions));
+        }
+
+        const headers = { 'content-type': 'application/json' };
+        await RestAdapter.ajax({
+          url: `${baseApiUrl}/boards/${boardId}/posts`,
+          method: 'POST',
+          body: JSON.stringify(postBody),
+          headers: headers,
+        });
+      } catch (exception: any) {
+        const responseObject = JSON.parse(exception.responseText);
+        if (responseObject.title === BAD_WORD_FOUND) {
+          throw new Error(BAD_WORD_FOUND);
+        }
       }
-
-      if (postingType === POLL) {
-        postBody.data.attributes.otherData = JSON.stringify(
-          getPollPostObject(pollOptions)
-        );
-      }
-
-      const headers = { "content-type": "application/json" };
-      await RestAdapter.ajax({
-        url: `${baseApiUrl}/boards/${boardId}/posts`,
-        method: "POST",
-        body: JSON.stringify(postBody),
-        headers: headers,
-      });
     },
     []
   );
@@ -68,7 +72,7 @@ export const usePost = () => {
     let otherData = [] as any;
     let index = 1;
     pollOptions.map((value: any) => {
-      if (value !== "") {
+      if (value !== '') {
         let data = {
           id: index++,
           text: value,
@@ -89,72 +93,83 @@ export const usePost = () => {
       isResourceModified: any,
       pollOptions
     ) => {
-      const baseApiUrl = getALMConfig().primeApiURL;
-      const updatedInput = addHttpsToHref(input);
-      const postBody: any = {
-        data: {
-          type: POST,
-          id: postId,
-          attributes: {
-            postingType: postingType,
-            state: "ACTIVE",
-            text: updatedInput,
+      try {
+        const baseApiUrl = getALMConfig().primeApiURL;
+        const updatedInput = addHttpsToHref(input);
+        const postBody: any = {
+          data: {
+            type: POST,
+            id: postId,
+            attributes: {
+              postingType: postingType,
+              state: 'ACTIVE',
+              text: updatedInput,
+            },
           },
-        },
-      };
+        };
 
-      if (isResourceModified) {
-        postBody.data.attributes.resource = resource;
+        if (isResourceModified) {
+          postBody.data.attributes.resource = resource;
+        }
+
+        if (postingType === POLL) {
+          postBody.data.attributes.otherData = JSON.stringify(getPollPostObject(pollOptions));
+        }
+        const headers = { 'content-type': 'application/json' };
+        const result = await RestAdapter.ajax({
+          url: `${baseApiUrl}/posts/${postId}`,
+          method: 'PATCH',
+          body: JSON.stringify(postBody),
+          headers: headers,
+        });
+        const parsedResponse = JsonApiParse(result);
+        const data = {
+          item: parsedResponse.post,
+        };
+        dispatch(updatePost(data));
+      } catch (error: any) {
+        const res = JSON.parse(error.responseText).title;
+        if (res === BAD_WORD_FOUND) {
+          throw new Error(BAD_WORD_FOUND);
+        }
       }
-
-      if (postingType === POLL) {
-        postBody.data.attributes.otherData = JSON.stringify(
-          getPollPostObject(pollOptions)
-        );
-      }
-
-      const headers = { "content-type": "application/json" };
-      const result = await RestAdapter.ajax({
-        url: `${baseApiUrl}/posts/${postId}`,
-        method: "PATCH",
-        body: JSON.stringify(postBody),
-        headers: headers,
-      });
-      const parsedResponse = JsonApiParse(result);
-      const data = {
-        item: parsedResponse.post,
-      };
-      dispatch(updatePost(data));
     },
     []
   );
 
   const addComment = useCallback(async (postId: any, input: any) => {
-    const baseApiUrl = getALMConfig().primeApiURL;
-    const updatedInput = addHttpsToHref(input);
-    const postBody = {
-      data: {
-        type: COMMENT,
-        attributes: {
-          state: "ACTIVE",
-          text: updatedInput,
+    try {
+      const baseApiUrl = getALMConfig().primeApiURL;
+      const updatedInput = addHttpsToHref(input);
+      const postBody = {
+        data: {
+          type: COMMENT,
+          attributes: {
+            state: 'ACTIVE',
+            text: updatedInput,
+          },
         },
-      },
-    };
-    const headers = { "content-type": "application/json" };
-    await RestAdapter.ajax({
-      url: `${baseApiUrl}/posts/${postId}/comments`,
-      method: "POST",
-      body: JSON.stringify(postBody),
-      headers: headers,
-    });
+      };
+      const headers = { 'content-type': 'application/json' };
+      await RestAdapter.ajax({
+        url: `${baseApiUrl}/posts/${postId}/comments`,
+        method: 'POST',
+        body: JSON.stringify(postBody),
+        headers: headers,
+      });
+    } catch (error: any) {
+      const res = JSON.parse(error.responseText).title;
+      if (res === BAD_WORD_FOUND) {
+        throw new Error(BAD_WORD_FOUND);
+      }
+    }
   }, []);
 
   const votePost = useCallback(async (postId: any, action: any) => {
     const baseApiUrl = getALMConfig().primeApiURL;
     await RestAdapter.ajax({
       url: `${baseApiUrl}/posts/${postId}/vote?action=${action}`,
-      method: "POST",
+      method: 'POST',
     });
   }, []);
 
@@ -162,7 +177,7 @@ export const usePost = () => {
     const baseApiUrl = getALMConfig().primeApiURL;
     await RestAdapter.ajax({
       url: `${baseApiUrl}/posts/${postId}/vote?action=${action}`,
-      method: "DELETE",
+      method: 'DELETE',
     });
   }, []);
 
@@ -170,7 +185,7 @@ export const usePost = () => {
     const baseApiUrl = getALMConfig().primeApiURL;
     await RestAdapter.ajax({
       url: `${baseApiUrl}/posts/${postId}/pollvote?optionId=${optionId}`,
-      method: "POST",
+      method: 'POST',
     });
   }, []);
 

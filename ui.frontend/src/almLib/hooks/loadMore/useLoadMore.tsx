@@ -9,7 +9,7 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useEffect } from "react";
+import { useEffect } from 'react';
 export interface Options {
   root?: null | Element;
   rootMargin?: string;
@@ -17,32 +17,36 @@ export interface Options {
 }
 let options: Options = {
   root: null,
-  rootMargin: "100px",
+  rootMargin: '100px',
   threshold: 1.0,
 };
 const useLoadMore = (props: any) => {
-  const { items, callback, containerId, elementRef } = props;
+  const { items, callback, containerId, elementRef, options: propOptions } = props;
 
   useEffect(() => {
     const localRef = elementRef?.current!;
     let observer: IntersectionObserver;
     if (localRef) {
-      options = containerId
-        ? { ...options, root: document.getElementById(containerId) }
-        : options;
+      let mergedOptions: Options = {
+        ...options,
+        ...(propOptions || {}),
+      };
+      if (containerId) {
+        mergedOptions.root = document.getElementById(containerId);
+      }
 
-      observer = new IntersectionObserver((entities) => {
+      observer = new IntersectionObserver(entities => {
         const isIntersecting = entities[0].isIntersecting;
         if (isIntersecting) {
           callback instanceof Function && callback();
         }
-      }, options);
+      }, mergedOptions);
       observer.observe(localRef);
     }
     return () => {
       if (observer) observer.unobserve(localRef);
     };
-  }, [callback, items, containerId, elementRef]);
+  }, [callback, items, containerId, elementRef, propOptions]);
 
   return [elementRef];
 };

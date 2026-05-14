@@ -10,8 +10,8 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-export const OPEN_SEARCH = "OPEN_SEARCH";
-export const CLOSE_SEARCH = "CLOSE_SEARCH";
-export const SET_SEARCH_SUGGESTIONS = "SET_SEARCH_SUGGESTIONS";
-export const CLOSE_AUTOCOMPLETE = "CLOSE_AUTOCOMPLETE";
-export const SET_SEARCH_TERM = "SET_SEARCH_TERM";
+export const OPEN_SEARCH = 'OPEN_SEARCH';
+export const CLOSE_SEARCH = 'CLOSE_SEARCH';
+export const SET_SEARCH_SUGGESTIONS = 'SET_SEARCH_SUGGESTIONS';
+export const CLOSE_AUTOCOMPLETE = 'CLOSE_AUTOCOMPLETE';
+export const SET_SEARCH_TERM = 'SET_SEARCH_TERM';

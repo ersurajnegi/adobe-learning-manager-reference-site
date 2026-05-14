@@ -9,12 +9,8 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { AnyAction } from "redux";
-import {
-    SET_UPLOAD_NAME,
-    SET_UPLOAD_PROGRESS,
-    RESET_UPLOAD
-} from "./actionTypes";
+import { AnyAction } from 'redux';
+import { SET_UPLOAD_NAME, SET_UPLOAD_PROGRESS, RESET_UPLOAD } from './actionTypes';
 
 export const setUploadName = (payload: any): AnyAction => ({
   type: SET_UPLOAD_NAME,

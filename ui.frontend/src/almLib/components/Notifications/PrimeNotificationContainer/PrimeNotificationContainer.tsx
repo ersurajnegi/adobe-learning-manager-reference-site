@@ -9,15 +9,15 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import Bell from "@spectrum-icons/workflow/Bell";
-import { useEffect, useRef, useState } from "react";
-import { useIntl } from "react-intl";
-import { useNotifications } from "../../../hooks";
-import { ALMErrorBoundary } from "../../Common/ALMErrorBoundary";
-import { PrimeNotificationList } from "../PrimeNotificationList";
-import { PrimeAnnouncementContainer } from "../PrimeAnnoucementContainer";
-import styles from "./PrimeNotificationContainer.module.css";
-import { PrimeUserNotification } from "../../../models";
+import Bell from '@spectrum-icons/workflow/Bell';
+import { useEffect, useRef, useState } from 'react';
+import { useIntl } from 'react-intl';
+import { useNotifications } from '../../../hooks';
+import { ALMErrorBoundary } from '../../Common/ALMErrorBoundary';
+import { PrimeNotificationList } from '../PrimeNotificationList';
+import { PrimeAnnouncementContainer } from '../PrimeAnnoucementContainer';
+import styles from './PrimeNotificationContainer.module.css';
+import { PrimeUserNotification } from '../../../models';
 
 const POLLING_INTERVAL = 60000; //1 MIN
 const PrimeNotificationContainer = () => {
@@ -35,10 +35,11 @@ const PrimeNotificationContainer = () => {
   } = useNotifications();
 
   const [showNotifications, setShowNotifications] = useState(false);
-  const [openAnnouncement , setAnnouncementOpen] = useState(false);
-  const [announcementData , setAnnouncementData] = useState({} as PrimeUserNotification);
+  const [openAnnouncement, setAnnouncementOpen] = useState(false);
+  const [announcementData, setAnnouncementData] = useState({} as PrimeUserNotification);
+
   const toggleShowNotifications = () => {
-    setShowNotifications((prevState) => !prevState);
+    setShowNotifications(prevState => !prevState);
   };
 
   const handleClickOutside = (event: any) => {
@@ -51,11 +52,11 @@ const PrimeNotificationContainer = () => {
   const redirectToLoPage = async (notif: any) => {
     await markReadNotification();
     redirectOverviewPage(notif);
-  }
+  };
 
   useEffect(() => {
     let timer: any;
-    document.addEventListener("click", handleClickOutside, false);
+    document.addEventListener('click', handleClickOutside, false);
 
     if (showNotifications) {
       fetchNotifications();
@@ -65,14 +66,10 @@ const PrimeNotificationContainer = () => {
     }
     return () => {
       timer && clearInterval(timer);
-      document.removeEventListener("click", handleClickOutside, false);
+      document.removeEventListener('click', handleClickOutside, false);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    fetchNotifications,
-    pollUnreadNotificationCount,
-    showNotifications,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchNotifications, pollUnreadNotificationCount, showNotifications]);
 
   return (
     <ALMErrorBoundary>
@@ -81,16 +78,14 @@ const PrimeNotificationContainer = () => {
           type="button"
           className={styles.notificationBellIcon}
           title={formatMessage({
-            id: "alm.notifications.icon",
-            defaultMessage: "User Notifications",
+            id: 'alm.notifications.icon',
+            defaultMessage: 'User Notifications',
           })}
           id="userNotificationIcon"
           onClick={toggleShowNotifications}
         >
           {<Bell />}
-          {unreadCount > 0 && (
-            <div className={styles.notificationCountStyle}>{unreadCount}</div>
-          )}
+          {unreadCount > 0 && <div className={styles.notificationCountStyle}>{unreadCount}</div>}
         </button>
         {showNotifications && (
           <PrimeNotificationList
@@ -105,7 +100,12 @@ const PrimeNotificationContainer = () => {
           />
         )}
       </div>
-      { openAnnouncement && <PrimeAnnouncementContainer setAnnouncementOpen={setAnnouncementOpen}  notifications={announcementData}/>}
+      {openAnnouncement && (
+        <PrimeAnnouncementContainer
+          setAnnouncementOpen={setAnnouncementOpen}
+          notifications={announcementData}
+        />
+      )}
     </ALMErrorBoundary>
   );
 };

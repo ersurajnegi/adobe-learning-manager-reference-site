@@ -9,6 +9,6 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-export const SET_UPLOAD_NAME = "SET_UPLOAD_NAME";
-export const SET_UPLOAD_PROGRESS = "SET_UPLOAD_PROGRESS";
-export const RESET_UPLOAD = "RESET_UPLOAD";
+export const SET_UPLOAD_NAME = 'SET_UPLOAD_NAME';
+export const SET_UPLOAD_PROGRESS = 'SET_UPLOAD_PROGRESS';
+export const RESET_UPLOAD = 'RESET_UPLOAD';

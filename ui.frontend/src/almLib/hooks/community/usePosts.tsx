@@ -9,33 +9,33 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useCallback, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import APIServiceInstance from "../../common/APIService";
-import { loadPosts, paginatePosts } from "../../store/actions/social/action";
-import { State } from "../../store/state";
-import { BOARD, POST, SKILL } from "../../utils/constants";
-import { getALMConfig } from "../../utils/global";
-import { JsonApiParse } from "../../utils/jsonAPIAdapter";
-import { QueryParams, RestAdapter } from "../../utils/restAdapter";
+import { useCallback, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import APIServiceInstance from '../../common/APIService';
+import { loadPosts, paginatePosts } from '../../store/actions/social/action';
+import { State } from '../../store/state';
+import { BOARD, POST, SKILL } from '../../utils/constants';
+import { getALMConfig } from '../../utils/global';
+import { JsonApiParse } from '../../utils/jsonAPIAdapter';
+import { QueryParams, RestAdapter } from '../../utils/restAdapter';
 
 export const usePosts = (boardId?: any) => {
-  const DEFAULT_SORT_VALUE = "-dateCreated";
+  const DEFAULT_SORT_VALUE = '-dateCreated';
   const { items, next } = useSelector((state: State) => state.social.posts);
   const dispatch = useDispatch();
 
   //Fort any page load or filterchanges
   const fetchPosts = useCallback(
-    async (boardId: any, sortFilter?: any, ids="") => {
+    async (boardId: any, sortFilter?: any, ids = '') => {
       const baseApiUrl = getALMConfig().primeApiURL;
       const params: QueryParams = {};
-      params["sort"] = sortFilter ? sortFilter : DEFAULT_SORT_VALUE;
-      params["filter.state"] = "ACTIVE";
-      params["page[offset]"] = "0";
-      params["page[limit]"] = "10";
-      params["include"] = "parent,createdBy";
-      if(ids!== ""){
-        params["ids"] = ids;
+      params['sort'] = sortFilter ? sortFilter : DEFAULT_SORT_VALUE;
+      params['filter.state'] = 'ACTIVE';
+      params['page[offset]'] = '0';
+      params['page[limit]'] = '10';
+      params['include'] = 'parent,createdBy';
+      if (ids !== '') {
+        params['ids'] = ids;
       }
       const response = await RestAdapter.get({
         url: `${baseApiUrl}/boards/${boardId}/posts?`,
@@ -44,7 +44,7 @@ export const usePosts = (boardId?: any) => {
       const parsedResponse = JsonApiParse(response);
       const data = {
         items: parsedResponse.postList,
-        next: parsedResponse.links?.next || "",
+        next: parsedResponse.links?.next || '',
       };
 
       dispatch(loadPosts(data));
@@ -55,8 +55,8 @@ export const usePosts = (boardId?: any) => {
   const fetchBoardModerators = useCallback(async (boardId: any) => {
     const baseApiUrl = getALMConfig().primeApiURL;
     let params: QueryParams = {};
-    params["page[offset]"] = "0";
-    params["page[limit]"] = "10";
+    params['page[offset]'] = '0';
+    params['page[limit]'] = '10';
     const response = await RestAdapter.get({
       url: `${baseApiUrl}/boards/${boardId}/moderators?`,
       params: params,
@@ -85,7 +85,7 @@ export const usePosts = (boardId?: any) => {
     dispatch(
       paginatePosts({
         items: parsedResponse!.postList,
-        next: parsedResponse!.links?.next || "",
+        next: parsedResponse!.links?.next || '',
       })
     );
   }, [dispatch, next]);
@@ -94,18 +94,18 @@ export const usePosts = (boardId?: any) => {
     async (queryStr: any, object: any, type: any) => {
       const baseApiUrl = getALMConfig().primeApiURL;
       const params: QueryParams = {};
-      params["query"] = queryStr;
-      params["filter.state"] = "ACTIVE";
-      params["page[limit]"] = "10";
-      params["autoCompleteMode"] = "true";
-      params["filter.socialTypes"] = POST;
-      params["sort"] = "relevance";
+      params['query'] = queryStr;
+      params['filter.state'] = 'ACTIVE';
+      params['page[limit]'] = '10';
+      params['autoCompleteMode'] = 'true';
+      params['filter.socialTypes'] = POST;
+      params['sort'] = 'relevance';
       if (type === BOARD) {
-        params["boardId"] = object;
-      } else if (type === SKILL && object && object !== "") {
-        params["filter.skills"] = object;
+        params['boardId'] = object;
+      } else if (type === SKILL && object && object !== '') {
+        params['filter.skills'] = object;
       }
-      params["include"] = "model.createdBy";
+      params['include'] = 'model.createdBy';
 
       const response = await RestAdapter.get({
         url: `${baseApiUrl}/social/search`,
@@ -114,7 +114,7 @@ export const usePosts = (boardId?: any) => {
       const parsedResponse = JsonApiParse(response);
       const data = {
         items: parsedResponse.postList,
-        next: parsedResponse.links?.next || "",
+        next: parsedResponse.links?.next || '',
       };
       dispatch(loadPosts(data));
       return parsedResponse.postList;

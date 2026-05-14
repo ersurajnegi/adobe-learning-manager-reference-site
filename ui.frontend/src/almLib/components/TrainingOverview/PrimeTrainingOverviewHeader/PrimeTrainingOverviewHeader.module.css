@@ -9,31 +9,24 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-@import "../../../styles/variables.css";
+@import '../../../styles/variables.css';
 
-.header {
-  -webkit-transition: height 0.2s;
-  -ms-transition: height 0.2s;
-  -moz-transition: height 0.2s;
-  -o-transition: height 0.2s;
-  transition: height 0.2s;
-  height: 140px;
-  width: 100%;
-  background-image: linear-gradient(
-    to right,
-    rgba(0, 0, 0, 1),
-    rgba(0, 0, 0, 0)
-  );
-  background-size: cover !important;
-}
 .left {
-  width: calc(100% - 256px);
+  flex: 1;
+  padding: 1rem 0 1rem;
   float: left;
+  gap: 0.125rem;
+  width: 100%;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
 }
 .right {
-  width: 256px;
-  padding: 20px 0;
+  width: 280px;
+  padding: 1.75rem 0;
   float: right;
+  position: relative;
+  z-index: 1;
 }
 .tbInfo {
   display: flex;
@@ -46,7 +39,7 @@ governing permissions and limitations under the License.
 }
 .icon svg,
 .shareIcon svg {
-  stroke: var(--prime-color-white);
+  stroke: var(--prime-color-nc9);
   fill: transparent;
   width: 13px;
   height: 15px;
@@ -71,20 +64,28 @@ governing permissions and limitations under the License.
   margin-top: 8px;
 }
 .shareButton {
-  border: 0.1rem solid var(--prime-color-nc4);
-  background-color: transparent;
+  border: 1.8px solid var(--prime-color-primary);
+  background-color: var(--prime-color-neutral-5);
+  opacity: 0.9;
+  display: flex;
   align-items: center;
-  min-width: 280px !important;
-  border-radius: 24px;
+  justify-content: center;
+  min-width: 280px;
+  border-radius: 40px;
   font-size: var(--prime-font-size-14);
-  font-weight: 400;
+  font-weight: var(--prime-font-weight-400);
   min-height: 30px;
-  color: var(--prime-color-white);
+  color: var(--prime-color-primary);
   cursor: pointer;
   padding: 0 10px;
-  font-family: "source-sans-pro";
 }
-
+.shareText {
+  color: var(--prime-color-primary);
+  padding-left: 2px;
+}
+.shareMenu {
+  position: relative;
+}
 .enrollmentCountButton {
   border: 0.1rem solid var(--prime-color-nc4);
   background-color: var(--prime-color-white);
@@ -97,58 +98,65 @@ governing permissions and limitations under the License.
   color: var(--prime-color-white);
   cursor: pointer;
   padding: 0 10px;
-  font-family: "source-sans-pro";
 }
 
 .boxButton {
-  border: 0.1rem solid var(--prime-color-nc2);
+  border: 0.1rem solid var(--prime-color-primary);
   background-color: var(--prime-color-white);
   align-items: center;
-  min-width: 280px !important;
+  min-width: 280px;
   font-size: var(--prime-font-size-14);
-  font-weight: 200;
+  font-weight: var(--prime-font-weight-200);
   min-height: 30px;
   color: var(--prime-color-nc3);
-  border-bottom: 0.05rem solid var(--prime-color-nc2);
+  border-bottom: 0.05rem solid var(--prime-color-primary);
   float: left;
   text-align: left;
 }
 .boxButton:hover,
 .boxButton:focus,
 .boxButton:focus-visible {
-  background: var(--prime-color-nc4);
+  background: var(--prime-color-neutral-3);
 }
 
 .format {
-  letter-spacing: 1px;
   color: var(--prime-color-white);
-  line-height: 1.42857;
   font-size: var(--prime-font-size-14);
+  font-weight: var(--prime-font-weight-400);
+  margin-top: 4px;
 }
 
 .title {
-  margin-top: 35px;
-  margin-bottom: 0px;
+  margin: 0;
   text-align: left;
   color: var(--prime-color-white);
   line-height: 120%;
   vertical-align: bottom;
-  font-size: var(--prime-font-size-24);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: 100%;
+  font-size: var(--prime-font-size-22);
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  font-weight: var(--prime-font-weight-700);
 }
 .titleBlock {
   display: flex;
+  flex: 1;
   flex-direction: column;
+  overflow: visible;
   position: relative;
 }
 .progressContainer {
-  width: 80%;
+  width: 100%;
   display: flex;
   align-items: flex-start;
-  padding-top: 40px;
+  padding-top: 0.75rem;
+  position: relative;
+}
+.certificationStatus {
+  color: var(--prime-color-white);
+  font-size: var(--prime-font-size-14);
+  font-weight: var(--prime-font-weight-400);
+  margin-top: 4px;
 }
 .progressBar {
   width: 95%;
@@ -160,12 +168,8 @@ governing permissions and limitations under the License.
   color: var(--prime-color-white);
   text-shadow: var(--prime-text-shadow);
 }
-.progressBar div[class^="spectrum-BarLoader-fill"] {
-  background: var(--prime-color-nc4);
-}
-
-.progressBar div[class^="spectrum-BarLoader-track"] {
-  background: var(--prime-color-nc3);
+.progressBar div[class^='spectrum-BarLoader-fill'] {
+  background: var(--prime-color-neutral-5);
 }
 
 .ratingText {
@@ -174,9 +178,9 @@ governing permissions and limitations under the License.
   margin-top: 2px;
 }
 
-.avgRatingOverview {
+.ratingAndEnrollment {
   min-width: 280px;
-  padding: 0 10px;
+  padding: 4px 11px 6px 16px;
   display: flex;
   justify-content: center;
   background: var(--prime-color-white);
@@ -184,20 +188,54 @@ governing permissions and limitations under the License.
   border-radius: 15px;
   height: 30px;
   margin-bottom: 1rem;
+  position: relative;
+}
+
+.ratingAndEnrollmentText {
+  display: flex;
+  align-items: center;
 }
 
 .headingContainer {
-  margin: 0 auto;
   display: flex;
   max-width: var(--prime-container-max-width-desktop);
   width: var(--prime-container-width);
+  margin: 0 auto;
+  gap: 50px;
+  min-height: 140px;
+  position: relative;
+  -webkit-transition: height 0.2s;
+  -ms-transition: height 0.2s;
+  -moz-transition: height 0.2s;
+  -o-transition: height 0.2s;
+  transition: height 0.2s;
 }
-.share, .disableShareInTeamsMobile  {
+
+/* Full-width background layer that inherits height */
+.headingContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  right: 50%;
+  bottom: 0;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  width: 100vw;
+  z-index: -1;
+  background: var(
+    --header-background,
+    linear-gradient(to right, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0))
+  );
+  background-color: var(--header-background-color);
+  background-size: cover !important;
+  transition: inherit;
+}
+
+.disableShareInTeamsMobile {
   display: none;
 }
-.box {
-  display: none;
-}
+
 .avgRatingOverviewMobile {
   display: none;
 }
@@ -209,7 +247,7 @@ governing permissions and limitations under the License.
 }
 .breadcrumbParent {
   display: flex;
-  position: absolute;
+  flex-wrap: wrap;
   margin-top: 5px;
 }
 .breadcrumbLink {
@@ -220,8 +258,11 @@ governing permissions and limitations under the License.
   overflow: hidden;
   text-overflow: ellipsis;
   text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0px;
 }
-.breadcrumbLink:hover  {
+.breadcrumbLink:hover {
   text-decoration: underline;
 }
 .breadcrumbArrow {
@@ -230,6 +271,7 @@ governing permissions and limitations under the License.
 }
 .breadcrumbDesktop {
   display: flex;
+  margin-bottom: 0.25rem;
 }
 .breadcrumbMobile {
   display: none;
@@ -239,49 +281,67 @@ governing permissions and limitations under the License.
   color: var(--prime-color-white);
   word-break: keep-all;
 }
-
-.enrollmentLabel{
-  color: var(--prime-color-black);
+.enrollmentHeader {
+  padding: 4px 6px;
+  font-weight: var(--prime-font-weight-700);
 }
-
-.enrollmentCountButtonGroup{
+.ratingsText {
+  font-weight: var(--prime-font-weight-400);
+  padding: 2px;
+}
+.ratingContainer {
+  display: inline-flex;
+  color: var(--prime-color-black);
+  align-items: center;
+}
+.enrollmentLabel {
+  color: var(--prime-color-black);
+  padding: 4px;
+  font-weight: var(--prime-font-weight-400);
+  font-size: var(--prime-font-size-14);
+}
+.averageRatingCount {
+  display: inline-flex;
+  float: right;
+  padding: 4px 6px;
+  color: var(--prime-color-black);
+  font-weight: var(--prime-font-weight-700);
+  align-items: center;
+}
+.enrollmentCountButtonGroup {
   margin-bottom: 0.5rem;
 }
 
 @media screen and (max-width: 1024px) {
-  .headingContainer {
-    max-width: var(--prime-container-max-width-tablet);
-    width: var(--prime-container-width);
-    padding: 0;
-  }
   .title {
     font-size: var(--prime-font-size-20);
   }
 }
 
 @media screen and (max-width: 450px) {
-  .header {
-    padding: 0 20px;
-  }
-
   .progressBar {
     width: 100%;
-    background-color: var(--prime-color-white);
-    opacity: 0.2;
     border-radius: 2px;
   }
+
   .headingContainer {
     width: 100%;
     max-width: var(--prime-container-max-width-mobile);
+    min-height: 100%;
+    padding: 0 20px;
+  }
+
+  .headingContainer::before {
+    background: var(
+      --header-background,
+      linear-gradient(to right, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85))
+    );
   }
   .percent {
     bottom: 10px;
     font-size: var(--prime-font-size-14);
   }
-  .shareButton {
-    display: none;
-  }
-  .share, .disableShareInTeamsMobile {
+  .disableShareInTeamsMobile {
     display: block;
     height: 3rem;
     width: 3rem;
@@ -292,6 +352,9 @@ governing permissions and limitations under the License.
     float: right;
     margin-bottom: 0.5rem;
   }
+  .ratingAndEnrollment {
+    display: none;
+  }
   /*CPRIME-64683*/
   .disableShareInTeamsMobile {
     pointer-events: none;
@@ -301,18 +364,9 @@ governing permissions and limitations under the License.
   .boxButton {
     display: none;
   }
-  .box {
-    display: block;
-    height: 3rem;
-    width: 3rem;
-    border-radius: 3rem;
-    margin-top: 0.5rem;
-    background-color: var(--prime-color-white);
-    border: 0.1rem solid var(--prime-color-primary);
-  }
 
   .xshare {
-    display: flex;
+    display: none;
     flex-direction: column;
     width: 3rem;
     position: absolute;
@@ -341,24 +395,23 @@ governing permissions and limitations under the License.
   .avgRatingOverviewMobile {
     display: block;
     margin-bottom: 5px;
+    order: 2;
   }
 
   .avgRatingOverview {
     display: none;
   }
 
-  .shareButton {
-    display: none;
-  }
-
   .left {
     width: 100%;
+    padding: 0.75rem 20px 0 1rem;
+    min-height: 130px;
   }
 
   .titleBlock {
     flex-direction: column;
     align-items: flex-start;
-    margin: 2rem 0 1rem 0;
+    margin: 0 0 1rem 0;
   }
 
   .title {
@@ -370,18 +423,6 @@ governing permissions and limitations under the License.
     width: 100%;
   }
 
-  .format {
-    display: none;
-  }
-
-  .formatMobile {
-    display: flex;
-    letter-spacing: 1px;
-    color: var(--prime-color-white);
-    line-height: 1.42857;
-    font-size: var(--prime-font-size-14);
-    margin-top: 10px;
-  }
   .bookMark {
     display: inline-block;
     width: 3rem;
@@ -399,39 +440,22 @@ governing permissions and limitations under the License.
     fill: var(--prime-color-white);
     stroke: var(--prime-color-white);
   }
-
-  .breadcrumbParent {
-    display: flex;
-    overflow: hidden;
-    white-space: nowrap;
-    position: relative;
-    padding-left: 13px;
-    margin-bottom: 10px;
-  }
-  .breadcrumbLink {
-    color: var(--prime-color-black);
-    max-width: 135px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-decoration: none;
-  }
-  
-  .breadcrumbArrow {
-    color: var(--prime-color-black);
-    padding-right: 5px;
-  }
   .breadcrumbMobile {
-    display: block;
-  }
-  .breadcrumbDesktop {
     display: none;
   }
-  .breadcrumbLink {
-    color: var(--prime-color-black);
-  }
-
-  .enrollmentCountButtonGroup{
+  .enrollmentCountButtonGroup {
     display: none;
+  }
+  .right {
+    display: none;
+  }
+  .avgRatingOverviewMobile {
+    align-items: center;
+    background: var(--prime-color-white);
+    border-radius: 15px;
+    height: 30px;
+    padding: 4px 11px 6px 16px;
+    margin: 16px 0 8px 0;
+    display: flex;
   }
 }

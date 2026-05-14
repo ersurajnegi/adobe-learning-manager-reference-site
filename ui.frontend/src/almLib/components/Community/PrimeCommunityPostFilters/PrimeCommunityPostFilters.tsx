@@ -9,24 +9,23 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useEffect, useState } from "react";
-import { useIntl } from "react-intl";
-import { DATE_CREATED } from "../../../utils/constants";
-import { PrimeDropdown } from "../PrimeDropdown";
+import { useEffect, useState } from 'react';
+import { useIntl } from 'react-intl';
+import { DATE_CREATED } from '../../../utils/constants';
+import { PrimeDropdown } from '../PrimeDropdown';
 
 const PrimeCommunityPostFilters = (props: any) => {
   let defaultSortFilter = DATE_CREATED;
   const { formatMessage } = useIntl();
-  const [selectedSortFilter, setSelectedSortFilter] =
-    useState(defaultSortFilter);
+  const [selectedSortFilter, setSelectedSortFilter] = useState(defaultSortFilter);
   const sortFilters: { [key: string]: string } = {
-    "Date Created": "-dateCreated",
-    "Date Updated": "-dateUpdated",
+    'Date Created': '-dateCreated',
+    'Date Updated': '-dateUpdated',
   };
 
   const sortClickHandler = (option: any) => {
     setSelectedSortFilter(option);
-    if (typeof props.sortFilterChangeHandler === "function") {
+    if (typeof props.sortFilterChangeHandler === 'function') {
       props.sortFilterChangeHandler(sortFilters[option]);
     }
   };
@@ -41,8 +40,8 @@ const PrimeCommunityPostFilters = (props: any) => {
     <>
       <PrimeDropdown
         label={formatMessage({
-          id: "alm.community.board.sortBy",
-          defaultMessage: "Sort by",
+          id: 'alm.community.board.sortBy',
+          defaultMessage: 'Sort by',
         })}
         optionList={Object.keys(sortFilters)}
         selectedOption={selectedSortFilter}

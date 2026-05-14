@@ -1,0 +1,20 @@
+{
+  "data": {
+    "id": "12345",
+    "type": "account",
+    "attributes": {
+      "locale": "en-US",
+      "recommendationAccountType": "CPE",
+      "accountTerminologies": [
+        {"entityType": "course", "locale": "en-US", "name": "Course", "pluralName": "Courses"},
+        {"entityType": "course", "locale": "fr-FR", "name": "Cours", "pluralName": "Les Cours"},
+        {"entityType": "learningProgram", "locale": "en-US", "name": "Learning Path", "pluralName": "Learning Paths"}
+      ],
+      "prlCriteria": {
+        "enabled": true,
+        "products": {"enabled": true, "levelsEnabled": false},
+        "roles": {"enabled": false, "levelsEnabled": false}
+      }
+    }
+  }
+}

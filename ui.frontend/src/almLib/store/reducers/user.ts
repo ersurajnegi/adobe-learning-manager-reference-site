@@ -9,14 +9,11 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { AnyAction, Reducer } from "redux";
-import { PrimeUser } from "../../models";
-import { LOAD_USER, LOAD_ACCOUNT_AND_USER } from "../actions";
+import { AnyAction, Reducer } from 'redux';
+import { PrimeUser } from '../../models';
+import { LOAD_USER, LOAD_ACCOUNT_AND_USER } from '../actions';
 
-const user: Reducer<PrimeUser, AnyAction> = (
-  state: PrimeUser | undefined,
-  action: any
-) => {
+const user: Reducer<PrimeUser, AnyAction> = (state: PrimeUser | undefined, action: any) => {
   switch (action.type) {
     case LOAD_USER: {
       return action?.payload;

@@ -1,0 +1,110 @@
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+@import '../../../styles/variables.css';
+
+.prlLevelSelectContainer {
+  box-sizing: border-box;
+  width: 100%;
+}
+.prlLevelSelectContainer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.prlLevelContainer {
+  border-radius: 12px;
+  color: var(--prime-color-neutral-1);
+  margin-bottom: 10px;
+  padding: 10px;
+  flex-shrink: 0;
+  width: 376px;
+}
+.prlDarkBackground {
+  background-color: var(--prime-color-neutral-4);
+}
+.prlLevelHeader {
+  font-size: var(--prime-font-size-14);
+  line-height: 20px;
+  font-weight: normal;
+  margin-bottom: 20px;
+  color: var(--prime-color-neutral-1);
+}
+.prlLevelContainer h3 {
+  margin: 0px;
+  font-size: var(--prime-font-size-14);
+  line-height: 14px;
+  padding-bottom: 8px;
+  font-weight: 600;
+  letter-spacing: 0px;
+  color: var(--prime-color-neutral-1);
+  opacity: 1;
+  border-bottom: 1px solid var(--prime-color-neutral-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prlRadioGroup {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 10px;
+  flex-wrap: wrap;
+}
+.prlRadio {
+  background-image: url("data:image/svg+xml,<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='92' height='20' viewBox='0 0 92 20'><svg id='icon-gen_radio' automationid='icon-gen_radio' width='20' height='20' viewBox='0 0 20 20' x='0' y='0'><path fill='rgba(153, 153, 153, 0.75)' d='M10 2.4c-4.191 0-7.6 3.409-7.6 7.6s3.409 7.6 7.6 7.6 7.6-3.409 7.6-7.6-3.409-7.6-7.6-7.6zM10 16.376c-3.516 0-6.376-2.86-6.376-6.376s2.86-6.376 6.376-6.376 6.376 2.86 6.376 6.376-2.86 6.376-6.376 6.376z'></path></svg><svg id='icon-gen_radio_selec' width='20' height='20' viewBox='0 0 20 20' x='36' y='0'><path fill='rgb(66, 131, 208)' d='M14 10c0 2.209-1.791 4-4 4s-4-1.791-4-4c0-2.209 1.791-4 4-4s4 1.791 4 4z'></path><path fill='rgba(153, 153, 153, 0.75)' d='M10 2.4c-4.191 0-7.6 3.409-7.6 7.6s3.409 7.6 7.6 7.6 7.6-3.409 7.6-7.6-3.409-7.6-7.6-7.6zM10 16.376c-3.516 0-6.376-2.86-6.376-6.376s2.86-6.376 6.376-6.376 6.376 2.86 6.376 6.376-2.86 6.376-6.376 6.376z'></path></svg></svg>");
+  background-repeat: no-repeat;
+  content: '';
+  display: inline-block;
+  height: 20px;
+  padding: 0;
+  vertical-align: middle;
+  width: 20px;
+  cursor: pointer;
+  z-index: 2;
+  position: relative;
+  top: -2px;
+}
+
+input[type='radio'] {
+  opacity: 0.01;
+  margin: 0;
+  padding: 0;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+.prlRadioLabel {
+  position: relative;
+  color: var(--prime-color-neutral-1);
+}
+.prlRadioLabel:focus-within > label.prlRadio {
+  outline: 3px auto -webkit-focus-ring-color;
+}
+input.prlInputRadio:checked + label.prlRadio {
+  background-position: -36px 0;
+}
+@media screen and (max-width: 767px) {
+  .prlLevelSelectContainer {
+    padding-right: 0;
+  }
+  .prlLevelHeader {
+    margin: 0 5px 10px 5px;
+  }
+  .prlLevelContainer {
+    background: var(--prime-color-neutral-4) 0% 0% no-repeat padding-box;
+    border-radius: 12px;
+  }
+  .prlDarkBackground {
+    width: auto;
+  }
+}

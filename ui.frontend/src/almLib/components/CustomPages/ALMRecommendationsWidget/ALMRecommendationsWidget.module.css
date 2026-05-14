@@ -1,0 +1,63 @@
+/**
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+@import '../../../styles/variables.css';
+
+.recoStripContainer {
+  margin-bottom: 40px;
+}
+
+.extraActionContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.extraActionContainer span {
+  margin-bottom: 20px;
+}
+
+.extraActionContainer span a:first-child {
+  margin-left: 10px;
+}
+
+.skillLinkReco {
+  margin: 0px 5px;
+  text-decoration: none;
+  position: relative;
+  color: var(--prime-color-primary);
+  font-family: var(--prime-font-family);
+  display: inline-block;
+}
+
+.loadMoreButtonContainer {
+  margin: 20px 0px 0px 0px;
+  padding: 0px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loadMoreButton {
+  color: var(--prime-color-primary);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  z-index: 1;
+  font-size: 16px;
+  font-family: var(--prime-font-family);
+}
+
+.loadMoreButton svg {
+  margin-left: 5px;
+}

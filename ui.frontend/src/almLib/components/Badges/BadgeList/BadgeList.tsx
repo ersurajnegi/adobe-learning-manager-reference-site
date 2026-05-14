@@ -1,110 +1,107 @@
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
 /***
  *
  * Please Do not use this Component.
  */
-import styles from "./BadgeList.module.css";
-import { BadgeElement } from "../BadgeElement";
-import { useIntl } from "react-intl";
-import { SKILL_LEVEL } from "../../../utils/constants";
-import { Badgr } from "../Badgr";
-import { useState } from "react";
+import styles from './BadgeList.module.css';
+import { BadgeElement } from '../BadgeElement';
+import { useState } from 'react';
+import {
+  GetTranslation,
+  GetTranslationReplaced,
+  GetTranslationsReplaced,
+} from '../../../utils/translationService';
+import { useUserContext } from '../../../contextProviders/userContextProvider';
+import { RestAdapter } from '../../../utils/restAdapter';
+import { getALMConfig } from '../../../utils/global';
+import { BADGE_DOWNLOAD_PDF_ENDPOINT, BADGE_DOWNLOAD_IMG_ENDPOINT } from '../../../utils/constants';
 
 const BadgeList = (props: any) => {
   const { badges, handleDownloadPdfClick, handleDownloadImgClick } = props;
-  const { formatMessage } = useIntl();
   const [downloadNum, setDownloadNum] = useState(0);
+  const { user } = useUserContext();
+  const accountId = user.account?.id;
+  const userId = user?.id;
+  const HOST_URL = getALMConfig().almBaseURL;
+  const isMobileWeb = getALMConfig().learnerMobileApp;
 
   return (
     <>
-      <div className={styles.rightaligned}>
-        <Badgr />
-        <div className={styles.downloadicons}>
-          {!downloadNum
-            ? formatMessage({ id: "alm.text.downloadAll" })
-            : formatMessage({ id: "alm.text.download" })}
-          :
-          <div className={styles.downloadoptions}>
-            <div className={styles.downloadlink}>
-              <a
-                className={styles.pdf}
-                tabIndex={0}
-                aria-label={
-                  downloadNum
-                    ? formatMessage(
-                        { id: "alm.badge.downloadNumPdf" },
-                        { downloadNum }
-                      )
-                    : formatMessage({ id: "alm.badge.downloadAllPdf" })
-                }
-              >
-                {downloadNum
-                  ? formatMessage(
-                      { id: "alm.text.pdfNum" },
-                      { num: downloadNum }
-                    )
-                  : formatMessage({ id: "alm.text.pdf" })}
-              </a>
+      {!isMobileWeb && (
+        <div className={styles.rightaligned}>
+          <div className={styles.downloadicons}>
+            {!downloadNum
+              ? GetTranslation('alm.text.downloadAll')
+              : GetTranslation('alm.text.download')}
+            <div className={styles.downloadoptions}>
+              <div className={styles.downloadlink}>
+                <a
+                  href={`${HOST_URL}${BADGE_DOWNLOAD_PDF_ENDPOINT.replace('{accountId}', accountId).replace('{userId}', userId)}`}
+                  target="_blank"
+                  className={styles.alignRight}
+                  tabIndex={0}
+                  aria-label={
+                    downloadNum
+                      ? GetTranslationsReplaced('alm.badge.downloadNumPdf', { downloadNum })
+                      : GetTranslation('alm.badge.downloadAllPdf', true)
+                  }
+                >
+                  {downloadNum
+                    ? GetTranslationsReplaced('alm.text.pdfNum', { num: downloadNum })
+                    : GetTranslation('alm.text.pdf', true)}
+                </a>
+              </div>
+              <div className={styles.downloadlink}>
+                <span>| </span>
+                <a
+                  href={`${HOST_URL}${BADGE_DOWNLOAD_IMG_ENDPOINT.replace('{accountId}', accountId).replace('{userId}', userId)}`}
+                  target="_blank"
+                  className={styles.alignRight}
+                  tabIndex={0}
+                  aria-label={
+                    downloadNum
+                      ? GetTranslationsReplaced('alm.badge.downloadNumImg', { downloadNum })
+                      : GetTranslation('alm.badge.downloadAllImg', true)
+                  }
+                >
+                  {downloadNum
+                    ? GetTranslationsReplaced('alm.text.badgeNum', { num: downloadNum })
+                    : GetTranslation('alm.text.badge', true)}
+                </a>
+              </div>
             </div>
-            <div className={styles.downloadlink}>
-              <span>| </span>
-              <a
-                className={styles.alignRight}
-                tabIndex={0}
-                aria-label={
-                  downloadNum
-                    ? formatMessage(
-                        { id: "alm.badge.downloadNumImg" },
-                        { downloadNum }
-                      )
-                    : formatMessage({ id: "alm.badge.downloadAllImg" })
-                }
-              >
-                {downloadNum
-                  ? formatMessage(
-                      { id: "alm.text.badgeNum" },
-                      { num: downloadNum }
-                    )
-                  : formatMessage({ id: "alm.text.badge" })}
-              </a>
-            </div>
-            {downloadNum > 0 && (
-              <a
-                className={styles.alignRight}
-                tabIndex={0}
-                aria-label={formatMessage({ id: "alm.badge.update" })}
-              >
-                {formatMessage({ id: "alm.text.update" })}
-              </a>
-            )}
           </div>
         </div>
-      </div>
+      )}
       <div className={styles.badgelist}>
         <ul className={styles.list}>
           {badges?.map((el: any) => (
-            <BadgeElement
-              key={el.id}
-              id={el.id}
-              loDetails={el.model.id}
-              badge={el.badge}
-              dateAchieved={el.dateAchieved}
-              badgeAquiredForType={
-                el.model.loType
-                  ? formatMessage({ id: `alm.text.${el.model.loType}` })
-                  : formatMessage({ id: "alm.text.skill" })
-              }
-              badgeTypeName={
-                el.model.type === SKILL_LEVEL
-                  ? el.model.skill.name
-                  : el.model.localizedMetadata[0].name
-              }
-              num={downloadNum}
-              setNum={setDownloadNum}
-              handleDownloadPdfClick={handleDownloadPdfClick}
-              handleDownloadImgClick={handleDownloadImgClick}
-            />
+            <li key={el.id}>
+              <BadgeElement
+                id={el.id}
+                badge={el.badge}
+                dateAchieved={el.dateAchieved}
+                loModel={el.model}
+                num={downloadNum}
+                setNum={setDownloadNum}
+                handleDownloadPdfClick={handleDownloadPdfClick}
+                handleDownloadImgClick={handleDownloadImgClick}
+              />
+            </li>
           ))}
-          <div className={styles.new}></div>
+          <li>
+            <div className={styles.new}></div>
+          </li>
         </ul>
       </div>
     </>

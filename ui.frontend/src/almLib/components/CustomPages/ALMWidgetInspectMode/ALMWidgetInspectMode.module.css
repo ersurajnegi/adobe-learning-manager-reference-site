@@ -1,0 +1,90 @@
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+.tooltip {
+  position: absolute;
+  top: -50px;
+  background-color: var(--prime-color-white);
+  padding: 8px 16px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px var(--prime-color-box-shadow);
+  font-size: var(--prime-font-size-14);
+  color: var(--prime-color-black);
+  z-index: 1000;
+  white-space: nowrap;
+  pointer-events: none;
+  font-weight: var(--prime-font-weight-500);
+  width: auto;
+  bottom: auto;
+  left: 0px;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid var(--prime-color-white);
+}
+
+.widgetOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #0265dc;
+  opacity: 0.3;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 20px;
+  border-radius: 4px;
+}
+
+.overlayText {
+  font-weight: var(--prime-font-weight-700);
+  font-size: var(--prime-font-size-22);
+  line-height: 28.6px;
+  color: var(--prime-color-black);
+}
+
+.overlayDescription {
+  margin: 0;
+  font-size: var(--prime-font-size-14);
+  line-height: 18.2px;
+  color: var(--prime-color-black);
+}
+
+.widgetType {
+  font-size: var(--prime-font-size-12);
+}
+
+.widgetType::after {
+  content: '|';
+  padding-left: 3px;
+}
+
+.widgetDimensions {
+  font-size: var(--prime-font-size-12);
+  font-weight: var(--prime-font-weight-600);
+  padding-left: 3px;
+}
+
+.widgetDimensionsValue {
+  padding-left: 3px;
+}

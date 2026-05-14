@@ -9,7 +9,7 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { combineReducers } from "redux";
+import { combineReducers } from 'redux';
 import {
   accessToken,
   user,
@@ -19,10 +19,13 @@ import {
   fileUpload,
   notification,
   userSkillInterest,
+  userRecommendationPreference,
   skill,
   search,
   badge,
-} from "./reducers";
+  authorTrainings,
+  appState,
+} from './reducers';
 
 const reducer = combineReducers({
   accessToken,
@@ -33,8 +36,11 @@ const reducer = combineReducers({
   social,
   fileUpload,
   userSkillInterest,
+  userRecommendationPreference,
   skill,
   search,
   badge,
+  authorTrainings,
+  appState,
 });
 export default reducer;

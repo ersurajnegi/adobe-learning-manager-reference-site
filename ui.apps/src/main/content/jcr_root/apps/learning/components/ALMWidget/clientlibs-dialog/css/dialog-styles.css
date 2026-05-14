@@ -1,0 +1,199 @@
+/**
+ * Custom styles for ALM Widget Dialog
+ * Increases dialog height to 80vh
+ */
+
+coral-checkbox.hideOption {
+    display: none !important;
+}
+
+/* Target the dialog by its tracking feature */
+coral-dialog[trackingfeature*="learning:almwidget"] .coral3-Dialog-wrapper {
+    height: 80vh !important;
+    max-height: 90vh !important;
+    margin-top: -40vh;
+}
+
+/* Ensure content area is properly sized and scrollable */
+coral-dialog[trackingfeature*="learning:almwidget"] .cq-dialog-content {
+    height: calc(80vh - 120px) !important;
+    overflow-y: auto !important;
+}
+
+/* ========================================
+ * Radio Button Styles
+ * Make radio buttons in RadioGroup display side-by-side
+ * ======================================== */
+coral-radiogroup {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 20px !important;
+}
+
+coral-radiogroup coral-radio {
+    margin-bottom: 0 !important;
+}
+
+/* ========================================
+ * Autocomplete Field Styles
+ * ======================================== */
+.alm-autocomplete-wrapper {
+    position: relative;
+}
+
+.alm-field-container {
+    position: relative;
+    display: block;
+}
+
+/* Invalid readonly textfield styling */
+.alm-field-container .coral3-Textfield[readonly]:invalid,
+.alm-field-container .coral3-Textfield[readonly].is-invalid {
+    border-color: #e14132;
+    color: #bb121a;
+}
+.alm-field-container .coral3-Icon--alert {
+    top: -27px !important;
+}
+
+.alm-autocomplete-wrapper.is-open .alm-autocomplete-field {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.alm-selection-list {
+    margin-top: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    max-height: 250px;
+    overflow-y: auto;
+    background: #fff;
+    clear: both;
+    transition: margin-top 0.2s ease;
+}
+
+.alm-selection-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    cursor: move;
+    background: #fff;
+    transition: background-color 0.2s;
+}
+
+.alm-selection-item:last-child {
+    border-bottom: none;
+}
+
+.alm-selection-item:hover {
+    background-color: #f5f5f5;
+}
+
+.alm-selection-item.dragging {
+    opacity: 0.5;
+    background-color: #e0e0e0;
+}
+
+.alm-selection-item.drag-over {
+    border-top: 2px solid #0070d2;
+}
+
+.alm-drag-handle {
+    margin-right: 10px;
+    cursor: grab;
+    color: #999;
+    font-size: 16px;
+    user-select: none;
+}
+
+.alm-drag-handle:active {
+    cursor: grabbing;
+}
+
+.alm-selection-text {
+    flex: 1;
+    font-size: 14px;
+    color: #333;
+}
+
+.alm-remove-btn {
+    cursor: pointer;
+    padding: 2px 8px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #666;
+    line-height: 1;
+}
+
+.alm-remove-btn:hover {
+    color: #d00;
+}
+
+.alm-autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 300px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 10000;
+    display: none;
+    margin-top: -1px;
+}
+
+.alm-autocomplete-list.is-visible {
+    display: block;
+}
+
+.alm-autocomplete-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.alm-autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.alm-autocomplete-item:hover,
+.alm-autocomplete-item.is-active {
+    background-color: #e0e0e0;
+}
+
+.alm-autocomplete-item.selected {
+    background-color: #f5f5f5;
+}
+
+.alm-autocomplete-item-checkbox {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.alm-autocomplete-item-text {
+    flex: 1;
+}
+
+/* Empty state */
+.alm-autocomplete-item.no-results {
+    color: #999;
+    cursor: default;
+    font-style: italic;
+}
+
+.alm-autocomplete-item.no-results:hover {
+    background-color: transparent;
+}
+

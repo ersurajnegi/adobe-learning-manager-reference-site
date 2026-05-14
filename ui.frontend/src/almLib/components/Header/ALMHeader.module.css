@@ -1,0 +1,264 @@
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+@import '../../styles/variables.css';
+
+.headerContainer {
+  width: 100%;
+  background: var(--top-bar-background-color);
+  box-shadow: 0 2px 4px var(--prime-color-box-shadow);
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 64px;
+}
+
+/* Left side - Logo Section (companyBranding) */
+.logoSection {
+  height: 42px;
+  display: inline-flex;
+  overflow: hidden;
+  vertical-align: middle;
+  align-items: center;
+  margin-left: 22px;
+  cursor: pointer;
+  flex-shrink: 0;
+  max-width: 392px;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+}
+
+/* Middle - Navigation Section */
+.navSection {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  overflow: visible;
+  margin: 0 20px;
+}
+
+.companyLogo {
+  max-height: 42px;
+  max-width: 210px;
+  object-fit: contain;
+  width: auto;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.companyName {
+  font-size: var(--prime-font-size-22);
+  font-weight: var(--prime-font-weight-700);
+  padding-left: 12px;
+  vertical-align: middle;
+  display: inline-block;
+  line-break: anywhere;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--top-bar-text-color);
+}
+
+.companyNameWithoutLogo {
+  font-size: var(--prime-font-size-22);
+  font-weight: var(--prime-font-weight-700);
+  vertical-align: middle;
+  display: inline-block;
+  line-break: anywhere;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--top-bar-text-color);
+}
+
+/* Right side - Actions Section */
+.actionsSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Search Container */
+.searchContainer {
+  display: flex;
+  align-items: center;
+}
+
+.searchInputWrapper {
+  display: flex;
+  align-items: center;
+  background: var(--text-input-bg-color);
+  border: 1px solid var(--light-grey-4);
+  border-radius: 200px;
+  padding: 0;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  height: 32px;
+  width: 332px;
+}
+
+.searchInputWrapper:focus-within {
+  border-color: var(--prime-color-primary);
+  box-shadow: 0 0 0 2px rgba(2, 101, 220, 0.2);
+}
+
+.searchInput {
+  border: none;
+  background: transparent;
+  font-size: var(--prime-font-size-14);
+  width: 280px;
+  outline: none;
+  font-family: inherit;
+}
+
+.searchInput::placeholder {
+  color: var(--text-input-color);
+}
+
+.searchButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  order: -1;
+}
+
+.searchButton:hover .searchIcon {
+  opacity: 0.7;
+}
+
+.searchIcon {
+  width: 16px;
+  height: 16px;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.searchClearButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  margin-left: 4px;
+  cursor: pointer;
+}
+
+.searchClearButton:hover {
+  opacity: 0.7;
+}
+
+.searchClearButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Sign Up Button */
+.signUpButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--prime-color-primary);
+  color: var(--prime-color-white);
+  border: none;
+  border-radius: 60px;
+  padding: 0 20px;
+  height: 32px;
+  font-size: var(--prime-font-size-14);
+  font-weight: var(--prime-font-weight-600);
+  cursor: pointer;
+  transition: filter 0.2s ease;
+  white-space: nowrap;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.signUpButton:hover {
+  filter: brightness(0.85);
+}
+
+.signUpButton:focus-visible {
+  outline: 2px solid var(--prime-color-primary);
+  outline-offset: 2px;
+}
+
+/* Responsive - Extra Large screens (≥1768px) */
+@media screen and (min-width: 1768px) {
+  .logoSection {
+    width: 902px;
+  }
+}
+
+/* Responsive - Medium screens / Tablet (768px - 1279px) */
+@media screen and (min-width: 768px) and (max-width: 1279px) {
+  .companyName {
+    display: none;
+  }
+
+  .searchInputWrapper {
+    width: 200px;
+  }
+
+  .searchInput {
+    width: 150px;
+  }
+
+  .navSection {
+    margin: 0 12px;
+  }
+}
+
+/* Responsive - Mobile (≤767px) */
+@media screen and (max-width: 767px) {
+  .logoSection {
+    display: none !important;
+  }
+
+  .navSection {
+    display: none;
+  }
+
+  .searchInputWrapper {
+    width: 150px;
+  }
+
+  .searchInput {
+    width: 100px;
+  }
+
+  .actionsSection {
+    gap: 8px;
+  }
+
+  .signUpButton {
+    padding: 0 12px;
+    font-size: var(--prime-font-size-12);
+  }
+}

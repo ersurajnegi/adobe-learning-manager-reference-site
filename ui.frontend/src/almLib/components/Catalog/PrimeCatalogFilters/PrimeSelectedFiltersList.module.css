@@ -1,0 +1,73 @@
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+.removeFilterButton {
+  cursor: pointer;
+  border: 0px;
+  background: inherit;
+  padding: 0px;
+}
+
+.selectedFilter {
+  display: flex;
+  max-width: 160px;
+  height: 24px;
+  padding: 4px 10px;
+  font-size: var(--prime-font-size-12);
+  border: 1.5px solid var(--prime-color-body);
+  border-radius: 4px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+  background-color: var(--prime-color-white);
+}
+
+.selectedFiltersContainer {
+  display: flex;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  max-width: 904px;
+}
+
+.selectedFilterText {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 100px;
+  padding-right: 5px;
+}
+
+.showFiltersButton {
+  color: var(--prime-color-primary);
+  height: 24px;
+  font-size: var(--prime-font-size-12);
+  border: 1.5px solid var(--prime-color-primary);
+  border-radius: 4px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  background-color: inherit;
+}
+
+@media screen and (max-width: 1024px) {
+  .selectedFiltersContainer {
+    margin-bottom: 0;
+    max-height: 160px;
+    overflow-y: scroll;
+    scrollbar-color: var(--prime-color-neutral-2) transparent;
+    scrollbar-width: thin;
+  }
+}
+
+@media screen and (max-width: 450px) {
+  .selectedFiltersContainer {
+    margin-bottom: 0;
+  }
+}

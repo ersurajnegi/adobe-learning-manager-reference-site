@@ -9,40 +9,38 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import Evaporate from "evaporate";
+import Evaporate from 'evaporate';
 
 import { sha256 as SHA256 } from 'js-sha256';
-import store from "../../store/APIStore";
-import { PrimeUploadInfo } from "../models/PrimeModels";
+import store from '../../store/APIStore';
+import { PrimeUploadInfo } from '../models/PrimeModels';
 
 import {
   RESET_UPLOAD,
   SET_UPLOAD_NAME,
   SET_UPLOAD_PROGRESS,
-} from "../store/actions/fileUpload/actionTypes";
-import { getALMConfig, getALMObject } from "./global";
-import { RestAdapter } from "./restAdapter";
+} from '../store/actions/fileUpload/actionTypes';
+import { getALMConfig, getAccessToken, getCsrfToken } from './global';
+import { RestAdapter } from './restAdapter';
 
-const sparkMD5 =require('spark-md5');
+const sparkMD5 = require('spark-md5');
 
 let evaporateInstance: any;
 let awsCredJsonObj: PrimeUploadInfo = {
-  awsKey: "",
-  bucket: "",
-  region: "",
-  key: "",
-  awsUrl: "",
+  awsKey: '',
+  bucket: '',
+  region: '',
+  key: '',
+  awsUrl: '',
 };
 
 async function uploadInfo() {
   const baseApiUrl = getALMConfig().primeApiURL;
   const response = await RestAdapter.ajax({
     url: `${baseApiUrl}/uploadInfo`,
-    method: "GET",
+    method: 'GET',
   });
-  const parsedResponse = JSON.parse(
-    typeof response === "string" ? response : ""
-  );
+  const parsedResponse = JSON.parse(typeof response === 'string' ? response : '');
   const data = {
     awsKey: parsedResponse.awsKey,
     bucket: parsedResponse.bucket,
@@ -58,8 +56,8 @@ export async function getUploadInfo() {
     const data: PrimeUploadInfo = await uploadInfo();
     awsCredJsonObj = data;
     const awsRegionUrl =
-      awsCredJsonObj && awsCredJsonObj.region!.indexOf("us-") === 0
-        ? ".s3.amazonaws.com/"
+      awsCredJsonObj && awsCredJsonObj.region!.indexOf('us-') === 0
+        ? '.s3.amazonaws.com/'
         : `.s3.${awsCredJsonObj.region}.amazonaws.com/`;
     awsCredJsonObj.awsUrl = `https://${awsCredJsonObj.bucket}${awsRegionUrl}${awsCredJsonObj.key}`;
     await initEvaporate(getEvaporateConfig());
@@ -67,8 +65,14 @@ export async function getUploadInfo() {
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getEvaporateConfig(): any {
-  const baseApiUrl = getALMConfig().primeApiURL;
-  const accessTokenString = "oauth " + getALMObject().getAccessToken();
+  const almConfig = getALMConfig();
+  const baseApiUrl = almConfig.primeApiURL;
+  const headers: any = { 'Content-Type': 'application/json' };
+  if (almConfig.csrfToken) {
+    headers['X-CSRF-TOKEN'] = getCsrfToken();
+  } else {
+    headers['authorization'] = `oauth ${getAccessToken()}`;
+  }
 
   return {
     aws_key: awsCredJsonObj.awsKey, // REQUIRED
@@ -77,12 +81,9 @@ function getEvaporateConfig(): any {
     cloudfront: true,
     xhrWithCredentials: true,
     signerUrl: `${baseApiUrl}uploadSigner`,
-    awsSignatureVersion: "4",
+    awsSignatureVersion: '4',
     computeContentMd5: true,
-    signHeaders: {
-      "Content-Type": "application/json",
-      authorization: accessTokenString,
-    },
+    signHeaders: headers,
     aws_url: awsCredJsonObj.awsUrl,
     cryptoMd5Method: (data: any) => btoa(sparkMD5.ArrayBuffer.hash(data, true)),
     cryptoHexEncodedHash256: SHA256,
@@ -101,10 +102,11 @@ async function initEvaporate(config: any): Promise<any> {
 
 export async function uploadFile(name: string, file: File) {
   const state = store.getState();
+  const fileName = name.replace(/[^a-zA-Z0-9.]/g, '');
   try {
-    store.dispatch({ value: name, type: SET_UPLOAD_NAME });
+    store.dispatch({ value: fileName, type: SET_UPLOAD_NAME });
     const result = await evaporateInstance.add({
-      name,
+      name: fileName,
       file,
       progress: (progressValue: never) => {
         if (state.fileUpload.uploadProgress !== progressValue) {
@@ -115,21 +117,19 @@ export async function uploadFile(name: string, file: File) {
         }
       },
     });
-    return awsCredJsonObj.awsUrl + "/" + result;
+    return awsCredJsonObj.awsUrl + '/' + result;
   } catch (err) {
     // TODO: replace with real logging
     console.error(err);
     store.dispatch({ type: RESET_UPLOAD });
-    return "";
+    return '';
   }
 }
 export async function cancelUploadFile(name: string) {
   try {
-    await evaporateInstance
-      .cancel(awsCredJsonObj.bucket + "/" + name)
-      .then(function () {
-        console.log("Canceled file upload");
-      });
+    await evaporateInstance.cancel(awsCredJsonObj.bucket + '/' + name).then(function () {
+      console.log('Canceled file upload');
+    });
     return {
       type: RESET_UPLOAD,
     };

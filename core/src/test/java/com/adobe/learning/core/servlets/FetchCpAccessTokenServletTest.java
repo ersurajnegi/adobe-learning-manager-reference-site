@@ -1,3 +1,14 @@
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
 package com.adobe.learning.core.servlets;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -32,7 +43,9 @@ public class FetchCpAccessTokenServletTest {
 
   @BeforeEach
   public void setUp()
-      throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException,
+      throws IllegalArgumentException,
+          IllegalAccessException,
+          NoSuchFieldException,
           SecurityException {
     cpServlet = new FetchCpAccessTokenServlet();
 
@@ -80,7 +93,9 @@ public class FetchCpAccessTokenServletTest {
 
   @Test
   public void testDoPostAuthorModeCommerceUsage()
-      throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException,
+      throws IllegalArgumentException,
+          IllegalAccessException,
+          NoSuchFieldException,
           SecurityException {
     // Since code, clientId, clientSecret info is invalid, we'll get error in response
     // status received in response will be 500.
@@ -93,7 +108,9 @@ public class FetchCpAccessTokenServletTest {
 
   @Test
   public void testDoPostAuthorModeNonCommerceUsage()
-      throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException,
+      throws IllegalArgumentException,
+          IllegalAccessException,
+          NoSuchFieldException,
           SecurityException {
     setUpNonCommerceUsage();
     ctx.request().addRequestParameter("mode", "author");
@@ -104,7 +121,9 @@ public class FetchCpAccessTokenServletTest {
 
   @Test
   public void testDoPostPublishMode()
-      throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException,
+      throws IllegalArgumentException,
+          IllegalAccessException,
+          NoSuchFieldException,
           SecurityException {
     setUpNonCommerceUsage();
     ctx.request().addRequestParameter("pagePath", "/content/mypage");
@@ -128,7 +147,9 @@ public class FetchCpAccessTokenServletTest {
   }
 
   private void setUpCommerceUsage()
-      throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException,
+      throws IllegalArgumentException,
+          IllegalAccessException,
+          NoSuchFieldException,
           SecurityException {
     JsonObject adminConfigs = getAdminConfigs();
     adminConfigs.addProperty("usageType", "aem-commerce");
@@ -136,7 +157,9 @@ public class FetchCpAccessTokenServletTest {
   }
 
   private void setUpNonCommerceUsage()
-      throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException,
+      throws IllegalArgumentException,
+          IllegalAccessException,
+          NoSuchFieldException,
           SecurityException {
     JsonObject adminConfigs = getAdminConfigs();
     adminConfigs.addProperty("usageType", "aem-sites");
@@ -144,7 +167,9 @@ public class FetchCpAccessTokenServletTest {
   }
 
   private void setUpConfigService(JsonObject adminConfigs)
-      throws NoSuchFieldException, SecurityException, IllegalArgumentException,
+      throws NoSuchFieldException,
+          SecurityException,
+          IllegalArgumentException,
           IllegalAccessException {
     lenient().when(configService.getAdminConfigs(any(Page.class))).thenReturn(adminConfigs);
     Field configField = FetchCpAccessTokenServlet.class.getDeclaredField("configService");

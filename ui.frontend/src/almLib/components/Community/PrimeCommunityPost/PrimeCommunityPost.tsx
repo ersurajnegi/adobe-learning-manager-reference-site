@@ -9,49 +9,46 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { PrimeCommunityObjectHeader } from "../PrimeCommunityObjectHeader";
-import { PrimeCommunityObjectBody } from "../PrimeCommunityObjectBody";
-import { PrimeCommunityObjectActions } from "../PrimeCommunityObjectActions";
-import { PrimeCommunityObjectInput } from "../PrimeCommunityObjectInput";
-import { PrimeCommunityComments } from "../PrimeCommunityComments";
-import { useIntl } from "react-intl";
-import { useComments, usePost } from "../../../hooks/community";
-import { useRef, useEffect, useState } from "react";
-import { useConfirmationAlert } from "../../../common/Alert/useConfirmationAlert";
-import { DOWN, DOWNVOTE, POST, UP, UPVOTE } from "../../../utils/constants";
-import styles from "./PrimeCommunityPost.module.css";
-import { formatMention } from "../../../utils/mentionUtils";
+import { PrimeCommunityObjectHeader } from '../PrimeCommunityObjectHeader';
+import { PrimeCommunityObjectBody } from '../PrimeCommunityObjectBody';
+import { PrimeCommunityObjectActions } from '../PrimeCommunityObjectActions';
+import { PrimeCommunityObjectInput } from '../PrimeCommunityObjectInput';
+import { PrimeCommunityComments } from '../PrimeCommunityComments';
+import { useIntl } from 'react-intl';
+import { useComments, usePost } from '../../../hooks/community';
+import { useRef, useEffect, useState } from 'react';
+import { useConfirmationAlert } from '../../../common/Alert/useConfirmationAlert';
+import { getAlmConfirmationBadwordParams } from '../../../utils/social-utils';
+import { DOWN, DOWNVOTE, POST, UP, UPVOTE } from '../../../utils/constants';
+import styles from './PrimeCommunityPost.module.css';
 
 const PrimeCommunityPost = (props: any) => {
   const { formatMessage } = useIntl();
   const ref = useRef<any>();
   const post = props.post;
-  const { addComment, votePost, deletePostVote, patchPost, submitPollVote } =
-    usePost();
+  const { addComment, votePost, deletePostVote, patchPost, submitPollVote } = usePost();
   const { fetchComments } = useComments();
-  const myVoteStatus = post.myVoteStatus ? post.myVoteStatus : "";
+  const myVoteStatus = post.myVoteStatus ? post.myVoteStatus : '';
   const [myUpVoteStatus, setMyUpVoteStatus] = useState(myVoteStatus === UPVOTE);
   const [upVoteCount, setUpVoteCount] = useState(post.upVote);
-  const [myDownVoteStatus, setMyDownVoteStatus] = useState(
-    myVoteStatus === DOWNVOTE
-  );
+  const [myDownVoteStatus, setMyDownVoteStatus] = useState(myVoteStatus === DOWNVOTE);
   const [downVoteCount, setDownVoteCount] = useState(post.downVote);
   const firstRunForUpvote = useRef(true);
   const firstRunForDownvote = useRef(true);
   const [showComments, setShowComments] = useState(false);
   const showCommentsLabel = formatMessage({
-    id: "alm.community.post.showComments",
-    defaultMessage: "Show Comments",
+    id: 'alm.community.post.showComments',
+    defaultMessage: 'Show Comments',
   });
   const hideCommentsLabel = formatMessage({
-    id: "alm.community.post.hideComments",
-    defaultMessage: "Hide Comments",
+    id: 'alm.community.post.hideComments',
+    defaultMessage: 'Hide Comments',
   });
   const [buttonLabel, setButtonLabel] = useState(showCommentsLabel);
   const [commentCount, setCommentCount] = useState(post.commentCount);
   const [postDescription, setPostDescription] = useState(post.richText);
   const [almConfirmationAlert] = useConfirmationAlert();
-  const EMPTY = "";
+  const EMPTY = '';
 
   const viewButtonClickHandler = () => {
     if (!showComments) {
@@ -79,9 +76,7 @@ const PrimeCommunityPost = (props: any) => {
       firstRunForUpvote.current = false;
       return;
     }
-    myUpVoteStatus === true
-      ? setUpVoteCount(upVoteCount + 1)
-      : setUpVoteCount(upVoteCount - 1);
+    myUpVoteStatus === true ? setUpVoteCount(upVoteCount + 1) : setUpVoteCount(upVoteCount - 1);
   }, [myUpVoteStatus]);
 
   useEffect(() => {
@@ -105,30 +100,25 @@ const PrimeCommunityPost = (props: any) => {
     //if already upVoted, delete vote
     myUpVoteStatus ? deletePostVote(post.id, UP) : votePost(post.id, UP);
     if (!myUpVoteStatus && myDownVoteStatus) {
-      setMyDownVoteStatus((myDownVoteStatus) => !myDownVoteStatus);
+      setMyDownVoteStatus(myDownVoteStatus => !myDownVoteStatus);
     }
-    setMyUpVoteStatus((myUpVoteStatus) => !myUpVoteStatus);
+    setMyUpVoteStatus(myUpVoteStatus => !myUpVoteStatus);
   };
 
   const downVoteButtonClickHandler = () => {
     //if already downVoted, delete vote
     myDownVoteStatus ? deletePostVote(post.id, DOWN) : votePost(post.id, DOWN);
     if (!myDownVoteStatus && myUpVoteStatus) {
-      setMyUpVoteStatus((myUpVoteStatus) => !myUpVoteStatus);
+      setMyUpVoteStatus(myUpVoteStatus => !myUpVoteStatus);
     }
-    setMyDownVoteStatus((myDownVoteStatus) => !myDownVoteStatus);
+    setMyDownVoteStatus(myDownVoteStatus => !myDownVoteStatus);
   };
 
   const saveCommentHandler = async (value: any) => {
-    try {
-      const formattedValue = formatMention(value);
-      await addComment(post.id, formattedValue);
-      setCommentCount(commentCount + 1);
-      fetchComments(post.id);
-      showCommentsSection();
-    } catch (exception) {
-      console.log("not updating comment count");
-    }
+    await addComment(post.id, value);
+    setCommentCount(commentCount + 1);
+    fetchComments(post.id);
+    showCommentsSection();
   };
 
   const deleteCommentHandler = () => {
@@ -142,35 +132,24 @@ const PrimeCommunityPost = (props: any) => {
     isResourceModified: any,
     pollOptions: any
   ) => {
-    try {
-      await patchPost(
-        post.id,
-        input,
-        postingType,
-        resource,
-        isResourceModified,
-        pollOptions
-      );
-      showConfirmationDialog(input);
-    } catch (exception) {
-      console.log("Error in creating Post");
-    }
+    await patchPost(post.id, input, postingType, resource, isResourceModified, pollOptions);
+    showConfirmationDialog(input);
   };
 
   const showConfirmationDialog = (input: any) => {
     almConfirmationAlert(
       formatMessage({
-        id: "alm.community.postPublished.label",
-        defaultMessage: "Post Published",
+        id: 'alm.community.postPublished.label',
+        defaultMessage: 'Post Published',
       }),
       formatMessage({
-        id: "alm.community.postPublished.successMessage",
+        id: 'alm.community.postPublished.successMessage',
         defaultMessage:
-          "Your post has been published. It may take some time to appear on the board.",
+          'Your post has been published. It may take some time to appear on the board.',
       }),
       formatMessage({
-        id: "alm.community.ok.label",
-        defaultMessage: "Ok",
+        id: 'alm.community.ok.label',
+        defaultMessage: 'Ok',
       }),
       EMPTY,
       () => setPostText(input)
@@ -188,31 +167,13 @@ const PrimeCommunityPost = (props: any) => {
   return (
     <>
       <div
-        className={
-          props.showBorder
-            ? styles.primePostWrapperWithBorder
-            : styles.primePostWrapper
-        }
+        className={props.showBorder ? styles.primePostWrapperWithBorder : styles.primePostWrapper}
       >
         <PrimeCommunityObjectHeader
           object={post}
           type={POST}
           description={postDescription}
-          updateObjectHandler={(
-            input: any,
-            postingType: any,
-            resource: any,
-            isResourceModified: any,
-            pollOptions: any
-          ) => {
-            updatePostHandler(
-              input,
-              postingType,
-              resource,
-              isResourceModified,
-              pollOptions
-            );
-          }}
+          updateObjectHandler={updatePostHandler}
         ></PrimeCommunityObjectHeader>
         <PrimeCommunityObjectBody
           object={post}
@@ -239,8 +200,8 @@ const PrimeCommunityPost = (props: any) => {
             ref={ref}
             object={post}
             inputPlaceholder={formatMessage({
-              id: "alm.community.post.commentHere",
-              defaultMessage: "Comment here",
+              id: 'alm.community.post.commentHere',
+              defaultMessage: 'Comment here',
             })}
             primaryActionHandler={(value: any) => saveCommentHandler(value)}
             concisedToolbarOptions={true}
@@ -253,7 +214,7 @@ const PrimeCommunityPost = (props: any) => {
           ></PrimeCommunityComments>
         )}
       </div>
-      {!props.showBorder && <hr className={styles.postSeperator} />}{" "}
+      {!props.showBorder && <hr className={styles.postSeperator} />}{' '}
     </>
   );
 };

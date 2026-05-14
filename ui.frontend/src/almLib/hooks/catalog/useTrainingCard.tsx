@@ -9,39 +9,49 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useCallback, useMemo } from "react";
-import { useIntl } from "react-intl";
-import { AlertType } from "../../common/Alert/AlertDialog";
-import { useAlert } from "../../common/Alert/useAlert";
-import APIServiceInstance from "../../common/APIService";
-import {
-  PrimeLearningObject,
-  PrimeLocalizationMetadata,
-} from "../../models/PrimeModels";
+import { useCallback, useMemo } from 'react';
+import { AlertType } from '../../common/Alert/AlertDialog';
+import { useAlert } from '../../common/Alert/useAlert';
+import APIServiceInstance from '../../common/APIService';
+import { PrimeLearningObject, PrimeLocalizationMetadata } from '../../models/PrimeModels';
 import {
   getActiveInstances,
   getDefaultIntsance,
   getJobaidUrl,
   isJobaid,
   isJobaidContentTypeUrl,
-} from "../../utils/catalog";
-import { COURSE } from "../../utils/constants";
-import { getALMObject } from "../../utils/global";
-import { clearParentLoDetails, getEnrolledInstancesCount, hasSingleActiveInstance, isEnrolledInAutoInstance, useCardIcon } from "../../utils/hooks";
-import { LaunchPlayer } from "../../utils/playback-utils";
-import { QueryParams } from "../../utils/restAdapter";
+} from '../../utils/catalog';
 import {
-  getPreferredLocalizedMetadata,
-  GetTranslation,
-} from "../../utils/translationService";
-
+  ALM_LEARNER_UPDATE_URL,
+  COURSE,
+  ENGLISH_LOCALE,
+  LEARNING_PROGRAM,
+  JOBAID,
+  AI_COACH,
+} from '../../utils/constants';
+import { getALMObject } from '../../utils/global';
+import {
+  getEnrolledInstancesCount,
+  hasSingleActiveInstance,
+  isEnrolledInAutoInstance,
+  useCardIcon,
+} from '../../utils/hooks';
+import { LaunchPlayer } from '../../utils/playback-utils';
+import { QueryParams } from '../../utils/restAdapter';
+import { getPreferredLocalizedMetadata, GetTranslation } from '../../utils/translationService';
+import { SendMessageToParent } from '../../utils/widgets/base/EventHandlingBase';
+import { doesLPHaveActiveInstance } from '../../utils/lo-utils';
+import { useUserContext } from '../../contextProviders/userContextProvider';
+import { clearBreadcrumbPathDetails } from '../../utils/breadcrumbUtils';
 
 export const useTrainingCard = (training: PrimeLearningObject) => {
   const [almAlert] = useAlert();
-  const { locale } = useIntl();
+  const { user } = useUserContext() || {};
+  const contentLocale = user?.contentLocale || ENGLISH_LOCALE;
   let {
     loFormat: format,
     loType: type,
+    loSubType: subType,
     id,
     rating,
     imageUrl,
@@ -52,30 +62,48 @@ export const useTrainingCard = (training: PrimeLearningObject) => {
     skills,
     skillNames,
   } = training;
-
   const { name, description, overview, richTextOverview } =
     useMemo((): PrimeLocalizationMetadata => {
-      return getPreferredLocalizedMetadata(training.localizedMetadata, locale);
-    }, [training.localizedMetadata, locale]);
+      return getPreferredLocalizedMetadata(training.localizedMetadata, contentLocale);
+    }, [training.localizedMetadata, contentLocale]);
 
   const { cardIconUrl, color, bannerUrl, cardBgStyle, listThumbnailBgStyle } =
     useCardIcon(training);
 
   const computedSkillsName = useMemo(() => {
     if (skillNames!?.length > 0) {
-      return skillNames?.join(", ");
+      return skillNames?.join(', ');
     }
     let tempSkillNames = new Set();
-    skills?.forEach((item) => {
+    let loSkills = skills;
+    if (training.loType === LEARNING_PROGRAM) {
+      const lpSkills = skills?.filter(skill => {
+        return skill.learningObjectId === training.id;
+      });
+      const courseSkills = skills?.filter(skill => {
+        return skill.learningObjectId !== training.id;
+      });
+      if (lpSkills?.length > 0) {
+        loSkills = lpSkills.concat(courseSkills);
+      }
+    }
+    loSkills?.forEach(item => {
       tempSkillNames.add(item.skillLevel?.skill?.name);
     });
-    return Array.from(tempSkillNames).join(", ");
+    return Array.from(tempSkillNames).join(', ');
   }, [skillNames, skills]);
+
+  const computedLOFormat = useMemo(() => {
+    if (type === JOBAID && subType && subType.toLowerCase() === AI_COACH.toLowerCase()) {
+      return AI_COACH;
+    }
+    return format;
+  }, [format, type, subType]);
 
   const cardClickHandler = useCallback(async () => {
     if (!training) return;
     let alm = getALMObject();
-    clearParentLoDetails();
+    clearBreadcrumbPathDetails(training.id);
     if (!alm.isPrimeUserLoggedIn()) {
       //Does ES have instances in response
       const activeInstances = getActiveInstances(training);
@@ -84,6 +112,14 @@ export const useTrainingCard = (training: PrimeLearningObject) => {
       } else {
         alm.navigateToInstancePage(training.id);
       }
+      return;
+    }
+
+    const lpHasNoActiveInstance =
+      training.loType === LEARNING_PROGRAM && !doesLPHaveActiveInstance(training);
+
+    if (lpHasNoActiveInstance) {
+      alm.navigateToInstancePage(training.id);
       return;
     }
 
@@ -96,14 +132,14 @@ export const useTrainingCard = (training: PrimeLearningObject) => {
             loInstanceId: training.instances[0].id,
           };
           await APIServiceInstance.enrollToTraining(queryParam);
-          almAlert(true, GetTranslation("alm.jobaid.added"), AlertType.success);
+          almAlert(true, GetTranslation('alm.jobaid.added', true), AlertType.success);
         }
         //if user logged in, then enroll if not already enrolled.
         //need to enroll silently here and then do the following
         if (isJobaidContentTypeUrl(training)) {
-          window.open(getJobaidUrl(training), "_blank");
+          window.open(getJobaidUrl(training, contentLocale), '_blank');
         } else {
-          LaunchPlayer({ trainingId: training.id });
+          LaunchPlayer({ trainingId: training.id, lo: training });
         }
       } catch (error) {}
       return;
@@ -116,14 +152,15 @@ export const useTrainingCard = (training: PrimeLearningObject) => {
       // AUTO INSTANCE CASE
       const isAutoInstanceEnrolled = isEnrolledInAutoInstance(training);
 
-      if(enrollmentCount !== 1 && hasMultipleInstances && !isAutoInstanceEnrolled && training.loType === COURSE){
+      if (
+        enrollmentCount !== 1 &&
+        hasMultipleInstances &&
+        !isAutoInstanceEnrolled &&
+        training.loType === COURSE
+      ) {
         alm.navigateToInstancePage(training.id);
-      }
-      else {
-        alm.navigateToTrainingOverviewPage(
-          training.id,
-          training.enrollment.loInstance.id
-        );
+      } else {
+        alm.navigateToTrainingOverviewPage(training.id, training.enrollment.loInstance.id);
       }
       return;
     }
@@ -137,14 +174,21 @@ export const useTrainingCard = (training: PrimeLearningObject) => {
       alm.navigateToTrainingOverviewPage(training.id, defaultInstance[0]?.id);
       return;
     }
-    window.parent.postMessage({ "origin" : window.origin , 'instancePageUrl' : `instancePage=${training.id}`,'instancePage': true}  , "*");
-
+    SendMessageToParent(
+      {
+        origin: window.origin,
+        instancePageUrl: `instancePage=${training.id}`,
+        instancePage: true,
+        type: ALM_LEARNER_UPDATE_URL,
+      },
+      '*'
+    );
     alm.navigateToInstancePage(training.id);
-  }, [training , almAlert]);
+  }, [training, almAlert]);
 
   return {
     id,
-    format,
+    format: computedLOFormat,
     type,
     skillNames: computedSkillsName,
     rating,

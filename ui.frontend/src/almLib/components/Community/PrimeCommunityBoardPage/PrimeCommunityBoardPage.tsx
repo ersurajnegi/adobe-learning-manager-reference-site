@@ -9,23 +9,23 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { PrimeCommunityBoard } from "../PrimeCommunityBoard";
-import { useBoard } from "../../../hooks/community";
-import styles from "./PrimeCommunityBoardPage.module.css";
-import { PrimeCommunityPosts } from "../PrimeCommunityPosts";
-import { PrimeCommunityMobileBackBanner } from "../PrimeCommunityMobileBackBanner";
-import { PrimeCommunityMobileScrollToTop } from "../PrimeCommunityMobileScrollToTop";
+import { PrimeCommunityBoard } from '../PrimeCommunityBoard';
+import { useBoard } from '../../../hooks/community';
+import styles from './PrimeCommunityBoardPage.module.css';
+import { PrimeCommunityPosts } from '../PrimeCommunityPosts';
+import { PrimeCommunityMobileBackBanner } from '../PrimeCommunityMobileBackBanner';
+import { PrimeCommunityMobileScrollToTop } from '../PrimeCommunityMobileScrollToTop';
 
-import { useState } from "react";
-import { getALMConfig, getPathParams } from "../../../utils/global";
-import { ALMErrorBoundary } from "../../Common/ALMErrorBoundary";
-const BOARD_ID_STR = "boardId";
+import { useState } from 'react';
+import { customEncode, getALMConfig, getPathParams } from '../../../utils/global';
+import { ALMErrorBoundary } from '../../Common/ALMErrorBoundary';
+const BOARD_ID_STR = 'boardId';
 
 const PrimeCommunityBoardPage = () => {
   const [boardId] = useState(() => {
     let { communityBoardDetailsPath } = getALMConfig();
     let pathParams = getPathParams(communityBoardDetailsPath, [BOARD_ID_STR]);
-    return pathParams[BOARD_ID_STR];
+    return customEncode(pathParams[BOARD_ID_STR]);
   });
   const { item } = useBoard(boardId);
 
@@ -36,12 +36,7 @@ const PrimeCommunityBoardPage = () => {
       <PrimeCommunityMobileScrollToTop></PrimeCommunityMobileScrollToTop>
 
       <div className={styles.primeBoardParent}>
-        {item && (
-          <PrimeCommunityBoard
-            board={item}
-            showBorder={false}
-          ></PrimeCommunityBoard>
-        )}
+        {item && <PrimeCommunityBoard board={item} showBorder={false}></PrimeCommunityBoard>}
       </div>
 
       {item && <PrimeCommunityPosts board={item}></PrimeCommunityPosts>}

@@ -9,17 +9,17 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import styles from "./PrimeCommunityObjectHeader.module.css";
-import { GetFormattedDate } from "../../../utils/dateTime";
-import { SOCIAL_MORE_OPTIONS_SVG } from "../../../utils/inline_svg";
-import { useState } from "react";
-import { useCommunityObjectOptions } from "../../../hooks/community";
-import { PrimeCommunityObjectOptions } from "../PrimeCommunityObjectOptions";
-import { PrimeCommunityAddPostDialogTrigger } from "../PrimeCommunityAddPostDialogTrigger";
-import { useConfirmationAlert } from "../../../common/Alert/useConfirmationAlert";
-import { useIntl } from "react-intl";
-import { COMMENT, DELETE, POST, REPLY, UPDATE } from "../../../utils/constants";
-import { getALMConfig } from "../../../utils/global";
+import styles from './PrimeCommunityObjectHeader.module.css';
+import { GetFormattedDate } from '../../../utils/dateTime';
+import { SOCIAL_MORE_OPTIONS_SVG } from '../../../utils/inline_svg';
+import { useState } from 'react';
+import { useCommunityObjectOptions } from '../../../hooks/community';
+import { PrimeCommunityObjectOptions } from '../PrimeCommunityObjectOptions';
+import { PrimeCommunityAddPostDialogTrigger } from '../PrimeCommunityAddPostDialogTrigger';
+import { useConfirmationAlert } from '../../../common/Alert/useConfirmationAlert';
+import { useIntl } from 'react-intl';
+import { COMMENT, DELETE, POST, REPLY, UPDATE } from '../../../utils/constants';
+import { getALMConfig } from '../../../utils/global';
 
 const PrimeCommunityObjectHeader = (props: any) => {
   const { formatMessage, locale } = useIntl();
@@ -43,29 +43,29 @@ const PrimeCommunityObjectHeader = (props: any) => {
   };
 
   const toggleOptions = () => {
-    setShowOptions((state) => !state);
+    setShowOptions(state => !state);
   };
 
   const getDeleteConfirmationString = () => {
     switch (props.type) {
       case POST:
         return formatMessage({
-          id: "alm.community.post.deleteConfirmation",
-          defaultMessage: "Are you sure you want to delete this post?",
+          id: 'alm.community.post.deleteConfirmation',
+          defaultMessage: 'Are you sure you want to delete this post?',
         });
       case COMMENT:
         return formatMessage({
-          id: "alm.community.comment.deleteConfirmation",
-          defaultMessage: "Are you sure you want to delete this comment?",
+          id: 'alm.community.comment.deleteConfirmation',
+          defaultMessage: 'Are you sure you want to delete this comment?',
         });
       case REPLY:
         return formatMessage({
-          id: "alm.community.reply.deleteConfirmation",
-          defaultMessage: "Are you sure you want to delete this reply?",
+          id: 'alm.community.reply.deleteConfirmation',
+          defaultMessage: 'Are you sure you want to delete this reply?',
         });
       default:
-        console.log("object type is missing");
-        return "";
+        console.log('object type is missing');
+        return '';
     }
   };
 
@@ -77,22 +77,22 @@ const PrimeCommunityObjectHeader = (props: any) => {
     switch (props.type) {
       case POST:
         return formatMessage({
-          id: "alm.community.post.reportConfirmation",
-          defaultMessage: "Are you sure you want to report this post?",
+          id: 'alm.community.post.reportConfirmation',
+          defaultMessage: 'Are you sure you want to report this post?',
         });
       case COMMENT:
         return formatMessage({
-          id: "alm.community.comment.reportConfirmation",
-          defaultMessage: "Are you sure you want to report this comment?",
+          id: 'alm.community.comment.reportConfirmation',
+          defaultMessage: 'Are you sure you want to report this comment?',
         });
       case REPLY:
         return formatMessage({
-          id: "alm.community.reply.reportConfirmation",
-          defaultMessage: "Are you sure you want to report this reply?",
+          id: 'alm.community.reply.reportConfirmation',
+          defaultMessage: 'Are you sure you want to report this reply?',
         });
       default:
-        console.log("object type is missing");
-        return "";
+        console.log('object type is missing');
+        return '';
     }
   };
   const reportAbuseHandler = () => {
@@ -109,7 +109,7 @@ const PrimeCommunityObjectHeader = (props: any) => {
 
   const deleteComment = async () => {
     await deleteCommentFromServer(object.id);
-    if (typeof props.deleteObjectHandler === "function") {
+    if (typeof props.deleteObjectHandler === 'function') {
       props.deleteObjectHandler();
     }
   };
@@ -120,7 +120,7 @@ const PrimeCommunityObjectHeader = (props: any) => {
 
   const deleteReply = async () => {
     await deleteReplyFromServer(object.id);
-    if (typeof props.deleteObjectHandler === "function") {
+    if (typeof props.deleteObjectHandler === 'function') {
       props.deleteObjectHandler();
     }
   };
@@ -129,35 +129,32 @@ const PrimeCommunityObjectHeader = (props: any) => {
     await reportReplyAbuse(object.id);
   };
 
-  const showConfirmationDialog = (
-    confirmationMessage: String,
-    primaryAction?: String
-  ) => {
+  const showConfirmationDialog = (confirmationMessage: String, primaryAction?: String) => {
     almConfirmationAlert(
       formatMessage({
-        id: "alm.community.board.confirmationRequired",
-        defaultMessage: "Confirmation Required",
+        id: 'alm.community.board.confirmationRequired',
+        defaultMessage: 'Confirmation Required',
       }),
       confirmationMessage,
       formatMessage({
-        id: "alm.overview.button.continue",
-        defaultMessage: "Continue",
+        id: 'alm.overview.button.continue',
+        defaultMessage: 'Continue',
       }),
       formatMessage({
-        id: "alm.community.cancel.label",
-        defaultMessage: "Cancel",
+        id: 'alm.community.cancel.label',
+        defaultMessage: 'Cancel',
       }),
       props.type === COMMENT
         ? primaryAction === DELETE
           ? deleteComment
           : reportComment
         : props.type === REPLY
-        ? primaryAction === DELETE
-          ? deleteReply
-          : reportReply
-        : primaryAction === DELETE
-        ? deletePost
-        : reportPost
+          ? primaryAction === DELETE
+            ? deleteReply
+            : reportReply
+          : primaryAction === DELETE
+            ? deletePost
+            : reportPost
     );
   };
 
@@ -172,15 +169,15 @@ const PrimeCommunityObjectHeader = (props: any) => {
     }
   };
 
-  const updateObjectHandler = (
+  const updateObjectHandler = async (
     input: any,
     postingType: any,
     resource: any,
     isResourceModified: any,
     pollOptions: any
   ) => {
-    if (typeof props.updateObjectHandler === "function") {
-      props.updateObjectHandler(
+    if (typeof props.updateObjectHandler === 'function') {
+      await props.updateObjectHandler(
         input,
         postingType,
         resource,
@@ -192,7 +189,7 @@ const PrimeCommunityObjectHeader = (props: any) => {
   };
 
   const updateRightAnswerHandler = (value: any) => {
-    if (typeof props.updateRightAnswerHandler === "function") {
+    if (typeof props.updateRightAnswerHandler === 'function') {
       props.updateRightAnswerHandler(value);
     }
   };
@@ -210,17 +207,12 @@ const PrimeCommunityObjectHeader = (props: any) => {
           alt="user-image"
           src={object.createdBy.avatarUrl}
         ></img>
-        <span className={styles.primePostOwnerName}>
-          {object.createdBy.name}
-        </span>
+        <span className={styles.primePostOwnerName}>{object.createdBy.name}</span>
         <span className={styles.primePostDateSeperator}></span>
         <span className={styles.primePostDateCreated}>
           {GetFormattedDate(object.dateCreated, locale)}
         </span>
-        <button
-          className={styles.primeCommunityOptionsIcon}
-          onClick={optionsClickHandler}
-        >
+        <button className={styles.primeCommunityOptionsIcon} onClick={optionsClickHandler}>
           {SOCIAL_MORE_OPTIONS_SVG()}
           {showOptions && (
             <PrimeCommunityObjectOptions
@@ -243,21 +235,7 @@ const PrimeCommunityObjectHeader = (props: any) => {
             post={object}
             description={props.description}
             mode={UPDATE}
-            savePostHandler={(
-              input: any,
-              postingType: any,
-              resource: any,
-              isResourceModified: any,
-              pollOptions: any
-            ) => {
-              updateObjectHandler(
-                input,
-                postingType,
-                resource,
-                isResourceModified,
-                pollOptions
-              );
-            }}
+            savePostHandler={updateObjectHandler}
             closeDialogHandler={closeDialogHandler}
           ></PrimeCommunityAddPostDialogTrigger>
         )}

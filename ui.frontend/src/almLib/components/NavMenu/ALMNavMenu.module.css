@@ -1,0 +1,351 @@
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+@import '../../styles/variables.css';
+
+.navMenuContainer {
+  display: flex;
+  align-items: center;
+}
+
+.navContainer {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 20px;
+  height: 100%;
+}
+
+.navItemWrapper {
+  position: relative;
+  flex-shrink: 0;
+  height: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.belowHeader {
+  width: 100%;
+  background-color: var(--navbar-background-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0 15px;
+  height: 48px;
+  position: sticky;
+  top: 64px;
+  z-index: 999;
+}
+
+.insideHeader {
+  background-color: var(--top-bar-background-color);
+  flex: 1;
+  min-width: 0;
+  overflow: visible;
+  height: 100%;
+  justify-content: center;
+}
+
+.insideHeader .navContainer {
+  background-color: var(--top-bar-background-color);
+  overflow: visible;
+  height: 100%;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--prime-font-size-14);
+  font-weight: var(--prime-font-weight-400);
+  color: var(--navbar-text-color);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+  position: relative;
+  height: 100%;
+}
+
+.navItem:hover {
+  background-color: var(--navbar-link-hover-bg-color);
+}
+
+.navItem:focus-visible {
+  outline: 2px solid var(--prime-color-primary);
+  outline-offset: -2px;
+}
+
+.navItemSelected {
+  color: var(--top-bar-text-color);
+}
+
+.navItemSelected[aria-haspopup] {
+  color: var(--navbar-text-color);
+}
+
+.navItemSelected:hover {
+  background-color: var(--navbar-link-active-bg-color);
+}
+
+.navItemSelected::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--nav-vertical-icon-fill-color);
+  border-radius: 3px 3px 0 0;
+}
+
+.navItemSelected[aria-haspopup]::after {
+  display: none;
+}
+
+.iconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.navText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 118px;
+}
+
+.chevronIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+  transition: transform 0.2s ease;
+}
+
+.chevronIcon svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}
+
+.chevronRight {
+  transform: rotate(-90deg);
+  margin-left: auto;
+}
+
+.navItemSelected .chevronIcon svg {
+  fill: var(--nav-vertical-icon-fill-color);
+}
+
+.moreButton {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--prime-font-size-14);
+  font-weight: var(--prime-font-weight-400);
+  color: var(--navbar-text-color);
+  transition: background-color 0.2s ease;
+  height: 100%;
+}
+
+.moreButton:hover {
+  background-color: var(--navbar-link-hover-bg-color);
+}
+
+.moreButton:focus-visible {
+  outline: 2px solid var(--prime-color-primary);
+  outline-offset: -2px;
+}
+
+.moreIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.moreIcon path {
+  fill: var(--nav-vertical-icon-fill-color) !important;
+}
+
+.moreDropdown {
+  position: fixed;
+  min-width: 200px;
+  max-width: 280px;
+  background-color: var(--navbar-background-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  padding: 8px 0;
+  max-height: 400px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.dropdownItemWrapper {
+  position: relative;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  background: var(--navbar-background-color);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--prime-font-size-14);
+  color: var(--navbar-text-color);
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.dropdownItem:hover {
+  background-color: var(--navbar-link-hover-bg-color);
+}
+
+.dropdownItem:focus-visible {
+  outline: none;
+  background-color: var(--navbar-link-hover-bg-color);
+}
+
+.dropdownItemSelected {
+  background-color: var(--navbar-link-active-bg-color);
+}
+
+.submenuDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 200px;
+  background-color: var(--navbar-background-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  padding: 8px 0;
+  max-height: 400px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.submenuDropdownLeft {
+  left: auto;
+  right: 0;
+}
+
+.nestedSubmenu {
+  position: absolute;
+  left: calc(100% - 2px);
+  top: 0;
+  min-width: 200px;
+  background-color: var(--navbar-background-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1002;
+  padding: 8px 0;
+  padding-left: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.belowHeader .navItem,
+.belowHeader .moreButton,
+.belowHeader .dropdownItem {
+  color: var(--navbar-text-color);
+}
+
+.belowHeader .navItem:hover,
+.belowHeader .moreButton:hover,
+.belowHeader .dropdownItem:hover {
+  background-color: var(--navbar-link-hover-bg-color);
+}
+
+.belowHeader .moreDropdown {
+  background-color: var(--navbar-background-color);
+}
+
+.insideHeader .navItem {
+  color: var(--top-bar-text-color);
+}
+
+.insideHeader .moreButton {
+  color: var(--top-bar-text-color);
+}
+
+.insideHeader .moreDropdown,
+.insideHeader .submenuDropdown,
+.insideHeader .nestedSubmenu {
+  background-color: var(--top-bar-background-color);
+}
+
+.insideHeader .dropdownItem {
+  background-color: var(--top-bar-background-color);
+  color: var(--top-bar-text-color);
+}
+
+.insideHeader .dropdownItem:hover,
+.insideHeader .dropdownItemSelected {
+  background-color: var(--top-bar-hover-color);
+}
+
+@media screen and (min-width: 1768px) {
+  .navText {
+    max-width: 150px;
+  }
+}
+
+@media screen and (min-width: 1280px) and (max-width: 1767px) {
+  .navText {
+    max-width: 118px;
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1279px) {
+  .insideHeader .navItem {
+    padding: 8px;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .belowHeader {
+    padding: 0 12px;
+    height: 44px;
+    overflow-x: auto;
+  }
+
+  .belowHeader .navContainer {
+    gap: 8px;
+  }
+
+  .belowHeader .navItem {
+    padding: 8px 12px;
+    font-size: var(--prime-font-size-12);
+  }
+
+  .insideHeader {
+    display: none;
+  }
+}

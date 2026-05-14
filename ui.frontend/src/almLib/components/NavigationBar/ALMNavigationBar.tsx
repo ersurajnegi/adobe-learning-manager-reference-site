@@ -9,14 +9,15 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { useIntl } from "react-intl";
-import styles from "./ALMNavigationBar.module.css";
-import { Link, useLocation } from "react-router-dom";
-import { CATALOG, HOME } from "../../utils/constants";
-import { useEffect, useMemo, useState } from "react";
-import { getRegistrationsURLs } from "../../utils/global";
-import ShowMenu from "@spectrum-icons/workflow/ShowMenu";
-import Close from "@spectrum-icons/workflow/Close";
+import { useIntl } from 'react-intl';
+import styles from './ALMNavigationBar.module.css';
+import { Link, useLocation } from 'react-router-dom';
+import { CATALOG, HOME } from '../../utils/constants';
+import { useEffect, useMemo, useState } from 'react';
+import { getRegistrationsURLs } from '../../utils/global';
+import ShowMenu from '@spectrum-icons/workflow/ShowMenu';
+import Close from '@spectrum-icons/workflow/Close';
+import { GetTranslation } from '../../utils/translationService';
 
 const ALMNavigationBar = (props: any) => {
   const location = useLocation();
@@ -31,8 +32,8 @@ const ALMNavigationBar = (props: any) => {
 
   const accountAttributes = accountData ? accountData.data.attributes : {};
 
-  const companyLogo = accountAttributes?.logoUrl || "";
-  const companyName = accountAttributes?.name || "";
+  const companyLogo = accountAttributes?.logoUrl || '';
+  const companyName = accountAttributes?.name || '';
 
   const { signUpURL, signInURL } = useMemo(() => {
     return getRegistrationsURLs(accountConfig, accountJson.almDomain);
@@ -41,8 +42,8 @@ const ALMNavigationBar = (props: any) => {
   const setActiveButtonCss = (buttonLabel: string) => {
     let homeButton = document.getElementById(HOME);
     let catalogButton = document.getElementById(CATALOG);
-    const activeMenuCss = "3px solid var(--prime-color-primary)";
-    const NONE = "none";
+    const activeMenuCss = '3px solid var(--prime-color-primary)';
+    const NONE = 'none';
     if (homeButton && catalogButton) {
       if (buttonLabel.indexOf(HOME) > -1) {
         homeButton.style.borderBottom = activeMenuCss;
@@ -72,13 +73,8 @@ const ALMNavigationBar = (props: any) => {
 
   const getHomeButton = () => {
     return (
-      <Link
-        to={props.homeLink}
-        id={HOME}
-        className={styles.homeButton}
-        onClick={goToHomePage}
-      >
-        {formatMessage({ id: "alm.text.home" })}
+      <Link to={props.homeLink} id={HOME} className={styles.homeButton} onClick={goToHomePage}>
+        {formatMessage({ id: 'alm.text.home' })}
       </Link>
     );
   };
@@ -91,7 +87,7 @@ const ALMNavigationBar = (props: any) => {
         className={styles.catalogButton}
         onClick={goToCatalogPage}
       >
-        {formatMessage({ id: "alm.text.catalog" })}
+        {GetTranslation('alm.text.catalog', true)}
       </Link>
     );
   };
@@ -99,14 +95,14 @@ const ALMNavigationBar = (props: any) => {
   const getSignUpButton = () => {
     return (
       <a href={signUpURL} className={styles.signUpButton}>
-        {formatMessage({ id: "alm.text.signUp" })}
+        {formatMessage({ id: 'alm.text.signUp' })}
       </a>
     );
   };
   const getSignInButton = () => {
     return (
       <a href={signInURL} className={styles.signInButton}>
-        {formatMessage({ id: "alm.text.signIn" })}
+        {formatMessage({ id: 'alm.text.signIn' })}
       </a>
     );
   };
@@ -121,13 +117,13 @@ const ALMNavigationBar = (props: any) => {
 
   const showLogo = () => {
     return accountData && accountData.data.attributes.logoStyling
-      ? accountData.data.attributes.logoStyling.indexOf("LOGO") > -1
+      ? accountData.data.attributes.logoStyling.indexOf('LOGO') > -1
       : true;
   };
 
   const showOrgName = () => {
     return accountData && accountData.data.attributes.logoStyling
-      ? accountData.data.attributes.logoStyling.indexOf("NAME") > -1
+      ? accountData.data.attributes.logoStyling.indexOf('NAME') > -1
       : true;
   };
 
@@ -138,16 +134,8 @@ const ALMNavigationBar = (props: any) => {
           <div className={styles.mobileMenuIcon} onClick={toggleMobileMenu}>
             <ShowMenu />
           </div>
-          {showLogo() && (
-            <img
-              className={styles.companyLogo}
-              src={companyLogo}
-              alt={companyLogo}
-            />
-          )}
-          {showOrgName() && (
-            <div className={styles.companyName}>{companyName}</div>
-          )}
+          {showLogo() && <img className={styles.companyLogo} src={companyLogo} alt={companyLogo} />}
+          {showOrgName() && <div className={styles.companyName}>{companyName}</div>}
           <ul className={styles.headerMenu}>
             <li>{getHomeButton()}</li>
             <li>{getCatalogButton()}</li>
@@ -159,42 +147,27 @@ const ALMNavigationBar = (props: any) => {
           {showMobileMenu && (
             <div className={styles.mobileMenu}>
               <div className={styles.mobileMenuOptions}>
-                <div
-                  className={styles.closeMenuButton}
-                  onClick={toggleMobileMenu}
-                >
+                <div className={styles.closeMenuButton} onClick={toggleMobileMenu}>
                   <Close />
                 </div>
                 <hr className={styles.primeVerticalSeparator}></hr>
 
-                <div
-                  className={styles.mobileMenuOption}
-                  onClick={toggleMobileMenu}
-                >
+                <div className={styles.mobileMenuOption} onClick={toggleMobileMenu}>
                   {getHomeButton()}
                 </div>
                 <hr className={styles.primeVerticalSeparator}></hr>
 
-                <div
-                  className={styles.mobileMenuOption}
-                  onClick={toggleMobileMenu}
-                >
+                <div className={styles.mobileMenuOption} onClick={toggleMobileMenu}>
                   {getCatalogButton()}
                 </div>
                 <hr className={styles.primeVerticalSeparator}></hr>
 
-                <div
-                  className={styles.mobileMenuOption}
-                  onClick={toggleMobileMenu}
-                >
+                <div className={styles.mobileMenuOption} onClick={toggleMobileMenu}>
                   {getSignUpButton()}
                 </div>
                 <hr className={styles.primeVerticalSeparator}></hr>
 
-                <div
-                  className={styles.mobileMenuOption}
-                  onClick={toggleMobileMenu}
-                >
+                <div className={styles.mobileMenuOption} onClick={toggleMobileMenu}>
                   {getSignInButton()}
                 </div>
                 <hr className={styles.primeVerticalSeparator}></hr>

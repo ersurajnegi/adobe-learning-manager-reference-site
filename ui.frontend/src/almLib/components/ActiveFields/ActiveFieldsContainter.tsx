@@ -9,18 +9,14 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { lightTheme, Provider } from "@adobe/react-spectrum";
-import { useEffect, useState } from "react";
-import { useIntl } from "react-intl";
-import { useProfile } from "../../hooks";
-import {
-  getALMConfig,
-  getConfigurableAttributes,
-  PrimeConfig,
-} from "../../utils/global";
-import { ALMErrorBoundary } from "../Common/ALMErrorBoundary";
-import styles from "./ActiveFieldsContainter.module.css";
-import ALMActiveFields from "./ALMActiveFields";
+import { lightTheme, Provider } from '@adobe/react-spectrum';
+import { useEffect, useState } from 'react';
+import { useIntl } from 'react-intl';
+import { useProfile } from '../../hooks';
+import { getALMConfig, getConfigurableAttributes, PrimeConfig } from '../../utils/global';
+import { ALMErrorBoundary } from '../Common/ALMErrorBoundary';
+import styles from './ActiveFieldsContainter.module.css';
+import ALMActiveFields from './ALMActiveFields';
 
 const getActiveFieldAttributes = (config: PrimeConfig) => {
   let cssSelector = config.mountingPoints.activeFieldsContainer;
@@ -31,12 +27,8 @@ const getActiveFieldAttributes = (config: PrimeConfig) => {
 const ActiveFieldsContainter = () => {
   const { formatMessage } = useIntl();
   const config = getALMConfig();
-  const {
-    profileAttributes,
-    updateAccountActiveFields,
-    userFieldData,
-    setUserFieldData,
-  } = useProfile();
+  const { profileAttributes, updateAccountActiveFields, userFieldData, setUserFieldData } =
+    useProfile();
   const { user, accountActiveFields } = profileAttributes;
   const [predefinedMultiValues, setPredefinedMultiValues] = useState(new Map());
 
@@ -60,7 +52,7 @@ const ActiveFieldsContainter = () => {
       });
       setPredefinedMultiValues(selectedMultiValues);
     } else {
-      accountActiveFields?.fields?.forEach((activeField) => {
+      accountActiveFields?.fields?.forEach(activeField => {
         if (activeField.allowedValues.length > 0 && activeField.isMultiValue) {
           if (userFields[activeField.name]) {
             multiValues = userFields[activeField.name].filter((value: string) =>
@@ -88,11 +80,7 @@ const ActiveFieldsContainter = () => {
     setUserFieldData({ fields });
   };
 
-  const onSwitchValueUpdate = (
-    attrName: string,
-    attrValue: string,
-    fieldName: string
-  ) => {
+  const onSwitchValueUpdate = (attrName: string, attrValue: string, fieldName: string) => {
     let fields: any = userFieldData.fields || {};
     if (attrValue) {
       if (!fields[fieldName]) {
@@ -102,9 +90,7 @@ const ActiveFieldsContainter = () => {
     }
     // Remove the value from data if user switch off.
     else {
-      fields[fieldName] = fields[fieldName]?.filter(
-        (x: string) => x !== attrName
-      );
+      fields[fieldName] = fields[fieldName]?.filter((x: string) => x !== attrName);
       setUserFieldData({ fields });
     }
   };
@@ -116,7 +102,7 @@ const ActiveFieldsContainter = () => {
 
   return (
     <ALMErrorBoundary>
-      <Provider theme={lightTheme} colorScheme={"light"}>
+      <Provider theme={lightTheme} colorScheme={'light'}>
         <div className={styles.pageContainer}>
           <ALMActiveFields
             title={section1Title}
@@ -151,8 +137,8 @@ const ActiveFieldsContainter = () => {
                   onClick={UpdateAccountActiveFields}
                 >
                   {formatMessage({
-                    id: "alm.profile.fields.saveProfileChanges",
-                    defaultMessage: "Save Changes",
+                    id: 'alm.profile.fields.saveProfileChanges',
+                    defaultMessage: 'Save Changes',
                   })}
                 </button>
               </div>

@@ -1,0 +1,511 @@
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+@import '../../styles/variables.css';
+
+.primePrlOverlay {
+  -webkit-box-shadow: 0;
+  -moz-box-shadow: 0;
+  -ms-box-shadow: 0;
+  -o-box-shadow: 0;
+  box-shadow: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  left: 0;
+  opacity: 1;
+  overflow: auto;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 12;
+}
+.primePrlDialog * {
+  box-sizing: border-box;
+}
+.primePrlDialog {
+  color: var(--prime-color-neutral-3);
+  border-color: var(--prime-color-neutral-3);
+  -webkit-box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  -ms-box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  -o-box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  background: var(--prime-color-white);
+  border: 0 solid var(--prime-color-neutral-2);
+  border-radius: 12px;
+  font-size: var(--prime-font-size-14);
+  margin: auto;
+  position: relative;
+  z-index: 2;
+  width: 80%;
+  max-width: 834px;
+  min-width: 834px;
+  height: 635px;
+  box-sizing: border-box;
+}
+@keyframes movingTopToBottom {
+  0% {
+    top: -25%;
+  }
+  100% {
+    top: 0%;
+  }
+}
+.primePrlBody {
+  display: flex;
+  font-size: var(--prime-font-size-14);
+  font-weight: 400;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+  height: 100%;
+}
+.primePrlChild {
+  width: 50%;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+.primePrlLeft {
+  padding-right: 20px;
+  padding: 34px;
+  position: relative;
+}
+.primePrlRight {
+  padding-left: 20px;
+  position: relative;
+  padding: 34px 0px 34px 25px;
+  background-color: var(--prime-color-neutral-3);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.primePrlStepContainer {
+  display: flex;
+  align-items: center;
+}
+
+.primePrlStep {
+  background: var(--prime-color-white);
+  color: var(--prime-color-neutral-1);
+  border-radius: 4px;
+  opacity: 1;
+  padding: 3px 10px;
+  font-size: var(--prime-font-size-12);
+  line-height: 15px;
+}
+
+.primePrlStepCurrent {
+  border: 1px solid var(--prime-color-primary);
+  color: var(--prime-color-primary);
+}
+.primePrlArrowRight {
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 5px solid var(--prime-color-neutral-1);
+  display: inline-block;
+  margin: 0 5px;
+}
+.primePrlStepHeading h3 {
+  margin: 30px 0 0 0;
+  color: var(--prime-color-neutral-1);
+  opacity: 1;
+  font-size: var(--prime-font-size-18);
+  word-break: break-word;
+}
+.primePrlStepHeading p {
+  margin: 5px 0 0 0;
+  color: var(--prime-color-neutral-1);
+  opacity: 1;
+  font-size: var(--prime-font-size-14);
+  padding-bottom: 15px;
+  word-break: break-word;
+}
+.primePrlStepSeparator {
+  border-bottom: 1px solid var(--prime-color-neutral-2);
+  padding-bottom: 5px;
+}
+.primePrlSelectedItemsContainer h3 {
+  margin: 20px 0 0 0;
+  color: var(--prime-color-neutral-1);
+  opacity: 1;
+  font-size: var(--prime-font-size-14);
+  word-break: break-all;
+}
+.primePrlSelectedItemsContainer p {
+  margin: 5px 0 0 0;
+  color: var(--prime-color-neutral-1);
+  opacity: 1;
+  font-size: var(--prime-font-size-12);
+  line-height: 24px;
+  padding-bottom: 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-all;
+}
+.primePrlRightContent {
+  height: 100%;
+  max-height: calc(100% - 40px);
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.primeButtonsContainer {
+  display: flex;
+  justify-content: space-between;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  max-height: 50px;
+  bottom: 0;
+  padding-right: 34px;
+}
+.primeButtonsLabel {
+  padding-right: 10px;
+  word-break: break-word;
+  color: var(--prime-color-neutral-1);
+}
+.primeButtonsChild {
+  display: flex;
+}
+.primeButtonsChild .primePrlDoneButton:nth-child(n) {
+  margin-left: 5px;
+}
+
+.primePrlDoneButton {
+  color: var(--prime-color-white);
+  background: var(--prime-color-primary);
+  font-size: var(--prime-font-size-14);
+  border: 1px solid transparent;
+  border-radius: 30px;
+  cursor: pointer;
+  height: 30px;
+  margin: 0;
+  min-width: 80px;
+  padding: 0 15px;
+  text-transform: none;
+  white-space: nowrap;
+  overflow: visible;
+  text-indent: 0px;
+  text-shadow: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  -webkit-writing-mode: horizontal-tb !important;
+  text-rendering: auto;
+  letter-spacing: normal;
+  word-spacing: normal;
+}
+.primePrlDoneButton[disabled] {
+  color: var(--prime-color-neutral-3);
+  background: var(--prime-color-neutral-2);
+  pointer-events: none;
+}
+.primePrlSecondaryButton {
+  background: var(--prime-color-neutral-4);
+  color: var(--prime-color-primary);
+}
+.primePrlStartContainer {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  box-sizing: border-box;
+  height: 100%;
+}
+.primePrlStartImage {
+  width: 100%;
+}
+.primePrlStartContainer svg {
+  width: 100%;
+  height: 325px;
+  margin-bottom: 60px;
+  padding: 0 10px;
+}
+.primePrlStartContainer .primePrlStartLabel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 0 34px;
+  word-break: break-word;
+}
+.primePrlStartContainer .primePrlStartLabel h1 {
+  margin: 0 0 12px 0;
+  color: var(--prime-color-black);
+  font-size: var(--prime-font-size-24);
+  line-height: 35px;
+  font-weight: 600;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+  font-weight: 600;
+}
+.primePrlStartContainer .primePrlStartLabel p {
+  margin: 0 0 24px 0;
+  color: var(--prime-color-black);
+  font-size: var(--prime-font-size-16);
+  line-height: 24px;
+  font-weight: normal;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+.primePrlStartContainer button {
+  height: 40px;
+  padding: 0 30px;
+}
+.primePrlErrorContainer {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 25px;
+  box-sizing: border-box;
+  height: 100%;
+}
+.primePrlErrorMessageContainer {
+  display: flex;
+  flex-direction: column;
+  border-radius: 3px;
+  position: relative;
+}
+.primePrlErrorMessageContainer h2 {
+  font-size: var(--prime-font-size-18);
+  line-height: 22px;
+  margin-top: 0px;
+  padding-right: 0;
+  word-break: break-word;
+  text-align: center;
+}
+.primePrlErrorMessageContainer p {
+  margin: 0;
+  color: var(--prime-color-neutral-3);
+  word-break: break-word;
+}
+.primePrlErrorMessageContainer svg {
+  margin-bottom: 50px;
+  transform: scale(0.8);
+}
+.primePrlModalLoader {
+  margin-left: 10px;
+  background-size: contain;
+  height: 32px;
+  width: 32px;
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  margin: 20px;
+}
+.primePrlSvg {
+  position: absolute;
+  bottom: 34px;
+  width: 100%;
+}
+.primePrlSvg svg {
+  width: 80%;
+  display: block;
+}
+.primePrlSubmitLoader {
+  border: 3px solid var(--prime-color-neutral-4);
+  border-radius: 50%;
+  border-top: 3px solid var(--prime-color-secondary);
+  width: 20px;
+  height: 20px;
+  float: right;
+  margin-top: 2px;
+  -webkit-animation: submit-button-spin 1s linear infinite;
+  animation: submit-button-spin 1s linear infinite;
+}
+@-webkit-keyframes submitButtonSpin {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+@keyframes submitButtonSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@media screen and (max-width: 991px) {
+  .primePrlDialog {
+    min-width: 700px;
+    max-width: 700px;
+  }
+}
+@media screen and (max-width: 767px) {
+  .primePrlDialog {
+    max-width: 100%;
+    width: 100%;
+    min-width: 100%;
+    max-height: 95%;
+    height: auto;
+    top: 10px;
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    overflow: auto;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .primePrlStartContainer {
+    padding: 0;
+  }
+  .primePrlStartContainer svg {
+    width: 100%;
+    height: 100%;
+    min-height: 218px;
+    margin: 0 0 20px;
+    padding: 0 10px;
+    box-sizing: border-box;
+  }
+  .primePrlStartContainer .primePrlStartLabel {
+    padding: 0 20px 12px;
+  }
+  .primePrlStartContainer .primePrlStartLabel h1 {
+    text-align: left;
+    font-size: var(--prime-font-size-18);
+    line-height: 27px;
+    display: block;
+    word-break: break-word;
+  }
+  .primePrlStartContainer .primePrlStartLabel p {
+    text-align: left;
+    font-size: var(--prime-font-size-14);
+    line-height: 20px;
+    display: block;
+    word-break: break-word;
+  }
+  .primePrlStartContainer .primePrlStartLabel button {
+    width: 100%;
+    font-size: var(--prime-font-size-16);
+    line-height: 20px;
+    font-weight: bold;
+  }
+  .primePrlStartImage {
+    width: 100%;
+  }
+  .primePrlBody {
+    flex-direction: column;
+  }
+  .primePrlChild {
+    width: 100%;
+    padding: 16px;
+    background: none;
+  }
+  .primePrlRight {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .primePrlRight hr {
+  }
+  .primePrlRightContent {
+    max-height: 300px;
+    margin: 0 -6px;
+    margin-bottom: 20px;
+    border: 1px solid var(--prime-color-neutral-2);
+    padding: 10px 8px;
+    border-radius: 12px;
+  }
+  .primeButtonsContainer {
+    padding-right: 0;
+    margin-bottom: 10px;
+  }
+  .primePrlStepHeading h3 {
+    margin: 15px 0px 0px;
+    word-break: break-word;
+  }
+  .primePrlSelectedItemsContainer h3 {
+    margin: 15px 0px 0px;
+    word-break: break-word;
+  }
+  .primePrlStepHeading p {
+    border: none;
+    word-break: break-word;
+  }
+  .primePrlStepSeparator {
+    padding-bottom: 5px;
+  }
+
+  .primePrlErrorContainer {
+    padding: 20px;
+  }
+  .primePrlErrorMessageContainer {
+    border: none;
+    max-width: 100%;
+    width: 100%;
+  }
+  .primePrlErrorMessageContainer h2 {
+    font-size: var(--prime-font-size-18);
+    line-height: 24px;
+  }
+  .primePrlErrorMessageContainer p {
+    text-align: center;
+    font-size: var(--prime-font-size-14);
+    line-height: 20px;
+  }
+  .primePrlErrorMessageContainer svg {
+    margin-bottom: 40px;
+  }
+  .primePrlSvg {
+    display: none;
+  }
+}
+.primelxp-prl-svg-cls-1,
+.primelxp-prl-svg-cls-2 {
+  fill: var(--prime-color-neutral-4);
+}
+.primelxp-prl-svg-cls-3,
+.primelxp-prl-svg-cls-4 {
+  fill: var(--prime-color-white);
+}
+.primelxp-prl-svg-cls-5,
+.primelxp-prl-svg-cls-6 {
+  fill: var(--prime-color-secondary);
+}
+.primelxp-prl-svg-cls-6,
+.primelxp-prl-svg-cls-4,
+.primelxp-prl-svg-cls-7,
+.primelxp-prl-svg-cls-2,
+.primelxp-prl-svg-cls-8 {
+  stroke: var(--prime-color-neutral-5);
+}
+.primelxp-prl-svg-cls-7 {
+  fill: var(--prime-color-neutral-2);
+}
+.primelxp-prl-svg-cls-8 {
+  fill: none;
+}
+.primePrlDoneButton:focus,
+.primePrlDoneButton:hover {
+  border-color: var(--prime-color-primary);
+  outline: 0;
+}

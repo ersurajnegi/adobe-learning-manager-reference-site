@@ -1,0 +1,7 @@
+#base=js
+
+category-widget.js
+coursesandpaths-widget.js
+alm-widget-dialog.js
+alm-autocomplete.js
+alm-autocomplete-datasources.js

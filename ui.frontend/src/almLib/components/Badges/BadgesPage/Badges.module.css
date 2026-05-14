@@ -1,14 +1,22 @@
-@import "../../../styles/variables.css";
+/*
+Copyright 2021 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+@import '../../../styles/variables.css';
 
 .dashboardcontainer {
   background: var(--prime-color-nc4);
   margin: 0;
   padding-left: 0;
   padding-right: 0;
-  padding-bottom: 80px;
-  height: 100vh;
   overflow-x: auto;
-  padding-top: 57px;
   display: block;
   box-sizing: inherit;
   overflow-y: auto;
@@ -18,7 +26,7 @@
   margin: 0 auto;
   padding: 0 15px;
   box-sizing: inherit;
-  font-weight: normal;
+  font-weight: var(--prime-font-weight-400);
 }
 
 @media screen and (min-width: 1050px) {
@@ -29,14 +37,12 @@
 
 .heading {
   color: var(--prime-color-nc3);
-  font-weight: normal;
   margin-top: 20px;
   margin-bottom: 10px;
-  font-size: 29px;
+  font-size: var(--prime-font-size-28);
   margin: 20px 0 10px;
-  font-weight: 400;
+  font-weight: var(--prime-font-weight-400);
   line-height: 1.1;
-  font-style: normal;
   font-family: var(--prime-font-family);
 }
 
@@ -46,7 +52,6 @@
   border-radius: 5px;
   margin-top: 25px;
   min-height: 300px;
-  padding: 10px 25px;
 }
 
 .headingContainer {
@@ -56,12 +61,10 @@
 
 .text {
   color: var(--prime-color-nc3);
-  font-family: var(--prime-font-family);
 }
 
 .badgecontainer {
   color: var(--prime-color-nc3);
-  font-family: var(--prime-font-family);
 }
 
 .listitem {
@@ -84,11 +87,64 @@
   margin: 20px 0;
 }
 
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  min-height: 200px;
+  border: 1px solid var(--dark-grey-6);
+  border-radius: 5px;
+  margin: 20px;
+}
+
+.emptyStateIcon {
+  margin-bottom: 20px;
+}
+
+.emptyStateIcon svg {
+  width: 80px;
+  height: auto;
+}
+
+.emptyStateText {
+  color: var(--prime-color-nc3);
+  font-size: var(--prime-font-size-16);
+  font-weight: var(--prime-font-weight-400);
+  margin-bottom: 10px;
+}
+
+.emptyStateLink {
+  margin-top: 5px;
+}
+
+.link {
+  color: var(--prime-color-primary);
+  text-decoration: none;
+  font-size: var(--prime-font-size-14);
+  cursor: pointer;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
   .text {
-    font-size: 14px;
+    font-size: var(--prime-font-size-14);
   }
   .heading {
-    font-size: 25px;
+    font-size: var(--prime-font-size-25);
+  }
+  .emptyState {
+    padding: 40px 15px;
+  }
+  .emptyStateIcon svg {
+    width: 60px;
+  }
+  .emptyStateText {
+    font-size: var(--prime-font-size-14);
   }
 }

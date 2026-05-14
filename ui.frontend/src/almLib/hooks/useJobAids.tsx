@@ -12,18 +12,32 @@ governing permissions and limitations under the License.
 /* eslint-disable no-script-url */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 
-import { PrimeLearningObject } from "../models/PrimeModels";
-import { useState } from "react";
-import { isJobaidContentTypeUrl } from "../utils/catalog";
-import { useIntl } from "react-intl";
-import { useAlert } from "../common/Alert/useAlert";
+import { PrimeLearningObject } from '../models/PrimeModels';
+import { useCallback, useState } from 'react';
+import { getJobaidUrl, isJobaidContentTypeUrl } from '../utils/catalog';
+import { useIntl } from 'react-intl';
+import { useAlert } from '../common/Alert/useAlert';
+import APIServiceInstance from '../common/APIService';
+import { GetTranslation } from '../utils/translationService';
+import { AlertType } from '../common/Alert/AlertDialog';
+import { LaunchPlayer } from '../utils/playback-utils';
+import { getWidgetConfig, updateURLParams } from '../utils/global';
+import { CalculateIfTablet } from '../utils/widgets/utils';
+import { ENGLISH_LOCALE, JOB_AID_ID, UPDATE_LO_ERROR } from '../utils/constants';
+import { fetchJobAidResource, getTraining } from '../utils/lo-utils';
+import { openJobAid } from '../components/Catalog/PrimeTrainingCardV2/PrimeTrainingCardV2.helper';
+import { DEFUALT_LO_INCLUDE } from '../common/ALMCustomHooks';
+import { useUserContext } from '../contextProviders/userContextProvider';
 
 export const useJobAids = (
   training: PrimeLearningObject,
-  enrollmentHandler: Function,
-  unEnrollmentHandler: Function,
-  jobAidClickHandler: Function
+  handleLoEnrollment?: Function,
+  updateLearningObject?: Function,
+  unEnrollmentHandler?: Function,
+  removeTrainingFromListById?: Function
 ) => {
+  const { user } = useUserContext() || {};
+  const contentLocale = user?.contentLocale || ENGLISH_LOCALE;
   const { formatMessage } = useIntl();
   //on click, if not enrolled show popup alert
   const [isEnrolled, setIsEnrolled] = useState(() => {
@@ -31,32 +45,96 @@ export const useJobAids = (
   });
   const [showAlert, setShowAlert] = useState(false);
   const [almAlert] = useAlert();
-
+  const handleUnenrollment = async (enrollmentId: string) => {
+    if (!enrollmentId) {
+      setIsEnrolled(true);
+    }
+    try {
+      await APIServiceInstance.unenrollFromTraining(enrollmentId);
+      setIsEnrolled(false);
+      if (updateLearningObject) {
+        await updateLearningObject(training.id);
+      }
+    } catch (error) {
+      if ((error as any)?.message === UPDATE_LO_ERROR) {
+        removeTrainingFromListById && removeTrainingFromListById(training.id);
+      } else {
+        almAlert(true, GetTranslation('alm.unenrollment.error'), AlertType.error);
+      }
+      setIsEnrolled(true);
+    }
+  };
+  const handleJobAidClick = useCallback(
+    (training: PrimeLearningObject, options?: { playerDimension?: string }) => {
+      if (isJobaidContentTypeUrl(training)) {
+        window.open(getJobaidUrl(training, contentLocale), '_blank');
+      } else {
+        const playerDimension =
+          options?.playerDimension ??
+          (getWidgetConfig().isMobile || CalculateIfTablet() ? '100%' : '70%');
+        LaunchPlayer({ trainingId: training.id, playerDimension, lo: training });
+      }
+    },
+    [contentLocale]
+  );
   const unenroll = () => {
-    unEnrollmentHandler({
-      enrollmentId: training.enrollment.id,
-      isSupplementaryLO: true,
-    });
-    setIsEnrolled(false);
+    handleUnenrollment(training?.enrollment?.id);
   };
 
-  const enroll = () => {
-    enrollmentHandler({
-      id: training.id,
-      instanceId: training.instances[0].id,
-      isSupplementaryLO: false,
-    });
-    setIsEnrolled(true);
+  const handleJobAidEnrollment = (isEnrolling: boolean) => {
+    if (isEnrolling) {
+      handleLoEnrollment?.({
+        id: training.id,
+        instanceId: training.instances[0].id,
+        isSupplementaryLO: false,
+      });
+    } else if (training?.enrollment?.id) {
+      unEnrollmentHandler?.({
+        enrollmentId: training.enrollment.id,
+        isSupplementaryLO: true,
+      });
+    }
+    setIsEnrolled(isEnrolling);
+  };
+
+  const launchJobAid = async (jobAidId: string) => {
+    try {
+      const training = await getTraining(jobAidId, DEFUALT_LO_INCLUDE);
+      if (training && training.enrollment) {
+        const resourceLocation = (await fetchJobAidResource(training, false, contentLocale)) || '';
+        openJobAid(training, resourceLocation);
+      } else {
+        throw new Error('Job Aid not enrolled or found');
+      }
+    } catch (e) {
+      almAlert(true, GetTranslation('alm.jobAidLaunch.error', true), AlertType.error);
+    } finally {
+      updateURLParams({ [JOB_AID_ID]: '' });
+    }
+  };
+
+  const enrollJobAid = () => handleJobAidEnrollment(true);
+  const unenrollJobAid = () => handleJobAidEnrollment(false);
+  const enroll = async () => {
+    if (!handleLoEnrollment) {
+      return;
+    }
+    try {
+      await handleLoEnrollment(training.id, training.instances[0].id);
+      setIsEnrolled(true);
+    } catch (error) {
+      throw new Error();
+    }
   };
 
   const nameClickHandler = () => {
     if (isJobaidContentTypeUrl(training)) {
-      jobAidClickHandler(training);
+      handleJobAidClick(training, { playerDimension: '100%' });
       return;
     }
 
     if (isEnrolled) {
-      jobAidClickHandler(training);
+      handleJobAidClick(training, { playerDimension: '100%' });
       return;
     } else {
       // alert("not in your list"); - only for overview page
@@ -67,13 +145,13 @@ export const useJobAids = (
   };
 
   const jobAidAddToListMsg = formatMessage({
-    id: "alm.overview.job.aid.add.from.list",
-    defaultMessage: "Add to my list",
+    id: 'alm.overview.job.aid.add.from.list',
+    defaultMessage: 'Add to my list',
   });
 
   const jobAidRemoveToListMsg = formatMessage({
-    id: "alm.overview.job.aid.remove.from.list",
-    defaultMessage: "Remove from my list",
+    id: 'alm.overview.job.aid.remove.from.list',
+    defaultMessage: 'Remove from my list',
   });
 
   return {
@@ -82,7 +160,11 @@ export const useJobAids = (
     jobAidAddToListMsg,
     jobAidRemoveToListMsg,
     nameClickHandler,
+    enrollJobAid,
+    unenrollJobAid,
     isEnrolled,
     showAlert,
+    handleJobAidClick,
+    launchJobAid,
   };
 };

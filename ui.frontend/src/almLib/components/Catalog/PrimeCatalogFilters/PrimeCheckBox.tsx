@@ -9,16 +9,19 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import styles from "./PrimeCheckBox.module.css";
-import { Checkbox } from "@adobe/react-spectrum";
-import { GetTranslation } from "../../../utils/translationService";
+import styles from './PrimeCheckBox.module.css';
+import { Checkbox } from '@adobe/react-spectrum';
+import { GetTranslation } from '../../../utils/translationService';
 
 const PrimeCheckbox: React.FC<{
   label: string;
   filterType: string;
   checked: boolean;
   changeHandler: Function;
-  isListDynamic?: boolean; }> = (props) => { const { checked, filterType, label, changeHandler, isListDynamic = false } = props;
+  isListDynamic?: boolean;
+  automationId?: string;
+}> = props => {
+  const { checked, filterType, label, changeHandler, isListDynamic = false, automationId } = props;
 
   const onChangeHandler = (checked: boolean) => {
     changeHandler({
@@ -27,14 +30,15 @@ const PrimeCheckbox: React.FC<{
       label,
     });
   };
- 
+  const labelToShow = isListDynamic ? label : GetTranslation(label, true);
   return (
     <Checkbox
       onChange={onChangeHandler}
       isSelected={checked}
       UNSAFE_className={styles.primeCheckbox}
+      {...(automationId ? { 'data-automationId': automationId } : {})}
     >
-      {isListDynamic ? label : GetTranslation(label, true)}
+      <span title={labelToShow}>{labelToShow}</span>
     </Checkbox>
   );
 };
